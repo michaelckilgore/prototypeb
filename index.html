@@ -7,36 +7,10 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="dashboard">
-
-  <!-- CURRENT CONDITIONS -->
-  <div id="overlay-temp" class="overlay">74°F</div>
-  <div id="overlay-humidity" class="overlay">Humidity: 57%</div>
-  <div id="overlay-dewpoint" class="overlay">Dew Point: 65°F</div>
-  <div id="overlay-conditions" class="overlay">Sunny</div>
-
-  <!-- NEXT THREE DAYS -->
-  <div id="overlay-day1" class="overlay">70° / 44°</div>
-  <div id="overlay-day2" class="overlay">62° / 45°</div>
-  <div id="overlay-day3" class="overlay">68° / 50°</div>
-
-  <!-- LIGHTNING DATA SUMMARY -->
-  <div id="overlay-lightning" class="overlay">0 Strikes</div>
-
-  <!-- BAROMETRIC PRESSURE TREND -->
-  <div id="overlay-pressure" class="overlay">28.97 inHg ▼</div>
-
-  <!-- RAINFALL DATA -->
-  <div id="overlay-rainfall" class="overlay">0.00 in</div>
-
-  <!-- INDOOR WEATHER -->
-  <div id="overlay-indoor-temp" class="overlay">67°F</div>
-  <div id="overlay-indoor-humidity" class="overlay">57%</div>
-  <div id="overlay-indoor-dewpoint" class="overlay">Dew Point: 55°F</div>
-
-  <!-- FOOTER LOGO -->
-  <div id="overlay-footer-logo" class="overlay">SH</div>
-
+<div id="dashboard-container">
+  <canvas id="dashboard-canvas"></canvas>
 </div>
+
+<script src="script.js"></script>
 </body>
 </html>
