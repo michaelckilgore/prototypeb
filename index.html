@@ -1,236 +1,74 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
 <meta charset="UTF-8">
-<title>Sugar Hill Weather Station</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUGAR HILL REPORTING STATION • RUSHVILLE, IN</title>
 <link rel="stylesheet" href="style.css">
-
 </head>
-
 <body>
+<div id="dashboard">
 
-<div class="canvas">
+  <div id="current-conditions" class="section">
+    <h2>CURRENT CONDITIONS</h2>
+    <div id="current-data">Temp: --° | Humidity: --%</div>
+  </div>
 
-<div class="header">
-SUGAR HILL REPORTING STATION
-</div>
+  <div id="next-three-days" class="section">
+    <h2>NEXT THREE DAYS</h2>
+    <div class="forecast-day">Mon H:--° L:--°</div>
+    <div class="forecast-day">Tue H:--° L:--°</div>
+    <div class="forecast-day">Wed H:--° L:--°</div>
+  </div>
 
-<div class="location">
-Rushville, Indiana
-</div>
+  <div id="radar" class="section">
+    <h2>RADAR IMAGE HERE</h2>
+    <img id="radar-img" src="" alt="Radar" style="max-width:100%; max-height:100%;">
+  </div>
 
-<div class="warning">
-⚠ TORNADO WARNING – Rush County until 8:30 PM – TAKE COVER NOW
-</div>
+  <div id="lightning" class="section">
+    <h2>LIGHTNING DATA SUMMARY</h2>
+    <div id="lightning-data">No Data</div>
+  </div>
 
+  <div id="barometric" class="section">
+    <h2>BAROMETRIC PRESSURE TREND</h2>
+    <canvas id="pressure-chart"></canvas>
+  </div>
 
-<!-- CURRENT CONDITIONS -->
+  <div id="rainfall" class="section">
+    <h2>RAINFALL DATA</h2>
+    <canvas id="rainfall-chart"></canvas>
+  </div>
 
-<div class="panel current">
+  <div id="indoor-weather" class="section">
+    <h2>INDOOR WEATHER</h2>
+    <div id="indoor-data">Temp: --° | Humidity: --%</div>
+  </div>
 
-<h2>Current Conditions</h2>
-
-<img class="icon" src="images/storm.svg">
-
-<div class="temp">72°</div>
-
-<div class="stats">
-
-<div>
-Humidity<br>
-<b>68%</b>
-</div>
-
-<div>
-Dew Point<br>
-<b>61°</b>
-</div>
-
-<div>
-Pressure<br>
-<b>30.01 <span class="trend up">▲</span></b>
-</div>
-
-</div>
+  <footer>
+    <div id="footer-logo">SH</div>
+  </footer>
 
 </div>
 
-
-<!-- FORECAST -->
-
-<div class="panel forecast">
-
-<h2>Short Term Forecast</h2>
-
-<div class="forecast-row">
-
-<div>
-<img src="images/storm.svg">
-<p>7PM</p>
-<b>71°</b>
-</div>
-
-<div>
-<img src="images/rain.svg">
-<p>8PM</p>
-<b>69°</b>
-</div>
-
-<div>
-<img src="images/rain.svg">
-<p>9PM</p>
-<b>66°</b>
-</div>
-
-<div>
-<img src="images/cloud.svg">
-<p>10PM</p>
-<b>64°</b>
-</div>
-
-</div>
-
-</div>
-
-
-<!-- RADAR -->
-
-<div class="radar">
-
-<img src="images/radar.jpg">
-
-</div>
-
-
-<!-- LIGHTNING PANEL -->
-
-<div class="panel lightning">
-
-<h2>Lightning Activity</h2>
-
-
-<div class="chart">
-
-<svg viewBox="0 0 300 80">
-
-<rect x="0" y="20" width="300" height="1" class="grid"/>
-<rect x="0" y="40" width="300" height="1" class="grid"/>
-<rect x="0" y="60" width="300" height="1" class="grid"/>
-
-<defs>
-<linearGradient id="lightningFill" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#33c9ff" stop-opacity="0.8"/>
-<stop offset="100%" stop-color="#33c9ff" stop-opacity="0"/>
-</linearGradient>
-</defs>
-
-<polygon points="0,70 40,65 80,60 120,45 160,50 200,30 240,35 300,20 300,80 0,80"
-fill="url(#lightningFill)"></polygon>
-
-<polyline points="0,70 40,65 80,60 120,45 160,50 200,30 240,35 300,20"
-class="sparkline"></polyline>
-
-</svg>
-
-</div>
-
-
-<div class="chart">
-
-<svg viewBox="0 0 300 80">
-
-<rect x="0" y="20" width="300" height="1" class="grid"/>
-<rect x="0" y="40" width="300" height="1" class="grid"/>
-<rect x="0" y="60" width="300" height="1" class="grid"/>
-
-<polygon points="0,60 40,55 80,52 120,40 160,45 200,35 240,38 300,30 300,80 0,80"
-fill="url(#lightningFill)"></polygon>
-
-<polyline points="0,60 40,55 80,52 120,40 160,45 200,35 240,38 300,30"
-class="sparkline"></polyline>
-
-</svg>
-
-</div>
-
-
-<div class="chart">
-
-<svg viewBox="0 0 300 80">
-
-<rect x="0" y="20" width="300" height="1" class="grid"/>
-<rect x="0" y="40" width="300" height="1" class="grid"/>
-<rect x="0" y="60" width="300" height="1" class="grid"/>
-
-<polygon points="0,75 40,70 80,65 120,60 160,55 200,50 240,48 300,40 300,80 0,80"
-fill="url(#lightningFill)"></polygon>
-
-<polyline points="0,75 40,70 80,65 120,60 160,55 200,50 240,48 300,40"
-class="sparkline"></polyline>
-
-</svg>
-
-</div>
-
-
-<div class="chart">
-
-<svg viewBox="0 0 300 80">
-
-<rect x="0" y="20" width="300" height="1" class="grid"/>
-<rect x="0" y="40" width="300" height="1" class="grid"/>
-<rect x="0" y="60" width="300" height="1" class="grid"/>
-
-<polygon points="0,65 40,60 80,58 120,52 160,50 200,46 240,44 300,40 300,80 0,80"
-fill="url(#lightningFill)"></polygon>
-
-<polyline points="0,65 40,60 80,58 120,52 160,50 200,46 240,44 300,40"
-class="sparkline"></polyline>
-
-</svg>
-
-</div>
-
-
-<div class="lightning-grid">
-
-<div>Last Min<br><b>3</b></div>
-<div>15 Min<br><b>28</b></div>
-<div>Hour<br><b>85</b></div>
-<div>Day<br><b>212</b></div>
-
-</div>
-
-</div>
-
-
-<!-- RAIN -->
-
-<div class="panel rain">
-
-<h2>Rainfall</h2>
-
-<div class="rain-grid">
-
-<div>
-Daily<br>
-<b>0.15"</b>
-</div>
-
-<div>
-Rate<br>
-<b>0.08"/hr</b>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
+<script>
+  // Populate NEXT THREE DAYS
+  const forecast = [
+    { day: 'Mon', high: 78, low: 62 },
+    { day: 'Tue', high: 80, low: 64 },
+    { day: 'Wed', high: 75, low: 60 }
+  ];
+
+  const forecastContainer = document.getElementById('next-three-days');
+  const dayDivs = forecastContainer.querySelectorAll('.forecast-day');
+  forecast.forEach((f, i) => {
+    if(dayDivs[i]) {
+      dayDivs[i].textContent = `${f.day} H:${f.high}° L:${f.low}°`;
+    }
+  });
+
+  // Placeholder: add Chart.js or other dynamic data scripts later
+</script>
 </body>
-
 </html>
