@@ -1,53 +1,17 @@
-/* Base dashboard */
+/* Make the canvas fill the screen horizontally and scale height proportionally */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #000;
+  background: black;
+  display: flex;
+  justify-content: center;
 }
 
-#dashboard {
+#dashboard-container {
   position: relative;
-  width: 1920px;
-  height: 1600px; /* includes footer space */
-  margin: 0 auto;
-  background: url('https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png') no-repeat top center;
-  background-size: cover;
 }
 
-/* All dynamic overlays */
-.overlay {
-  position: absolute;
-  font-weight: bold;
-  color: white;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
-  pointer-events: none;
-  font-family: "Segoe UI", Arial, sans-serif;
+#dashboard-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
-
-/* CURRENT CONDITIONS */
-#overlay-temp { top: 160px; left: 300px; font-size: 72px; }
-#overlay-humidity { top: 260px; left: 300px; font-size: 32px; }
-#overlay-dewpoint { top: 300px; left: 300px; font-size: 32px; }
-#overlay-conditions { top: 340px; left: 300px; font-size: 32px; }
-
-/* NEXT THREE DAYS */
-#overlay-day1 { top: 380px; left: 600px; font-size: 32px; }
-#overlay-day2 { top: 380px; left: 830px; font-size: 32px; }
-#overlay-day3 { top: 380px; left: 1060px; font-size: 32px; }
-
-/* LIGHTNING DATA SUMMARY */
-#overlay-lightning { top: 780px; left: 280px; font-size: 28px; }
-
-/* BAROMETRIC PRESSURE TREND */
-#overlay-pressure { top: 820px; left: 600px; font-size: 28px; }
-
-/* RAINFALL DATA */
-#overlay-rainfall { top: 1050px; left: 600px; font-size: 28px; }
-
-/* INDOOR WEATHER */
-#overlay-indoor-temp { top: 1280px; left: 280px; font-size: 36px; }
-#overlay-indoor-humidity { top: 1320px; left: 280px; font-size: 28px; }
-#overlay-indoor-dewpoint { top: 1350px; left: 280px; font-size: 28px; }
-
-/* FOOTER LOGO */
-#overlay-footer-logo { top: 1450px; left: calc(50% - 32px); font-size: 48px; }
