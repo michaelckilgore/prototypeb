@@ -8,44 +8,93 @@ body {
 
 #dashboard {
   position: relative;
-  width: 1920px; /* matches image width */
-  min-height: 1350px; /* extra vertical space for footer */
+  width: 1920px; /* matches background image width */
+  height: 1350px; /* include extra footer space */
   margin: 0 auto;
   background: url('https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png') no-repeat top center;
   background-size: cover;
 }
 
-/* Glass-morphism style for sections */
+/* Glass-morphism style for all sections */
 .section {
-  position: relative;
+  position: absolute; /* absolute positioning for exact alignment */
   backdrop-filter: blur(10px);
   background: rgba(0, 0, 0, 0.5);
   border-radius: 12px;
-  margin: 20px 60px;
   padding: 20px;
-  /* temporary outline for alignment */
-  border: 2px dashed red;
+  border: 2px dashed red; /* temporary outline to see placement */
 }
 
+/* Section headers */
 .section h2 {
   font-weight: bold;
   color: white;
   margin: 0 0 10px 0;
 }
 
-/* Approximate heights for each section based on your image */
-#current-conditions { height: 150px; }
-#next-three-days { height: 120px; display: flex; justify-content: space-around; align-items: center; }
-#radar { height: 300px; display: flex; justify-content: center; align-items: center; }
-#lightning { height: 100px; }
-#barometric { height: 200px; }
-#rainfall { height: 200px; }
-#indoor-weather { height: 120px; }
+/* Absolute positions for sections (rough starting points) */
+#current-conditions {
+  top: 50px;
+  left: 60px;
+  width: 400px;
+  height: 150px;
+}
 
-/* Footer with extra black space */
+#next-three-days {
+  top: 220px;
+  left: 60px;
+  width: 500px;
+  height: 120px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#radar {
+  top: 370px;
+  left: 60px;
+  width: 800px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#lightning {
+  top: 690px;
+  left: 60px;
+  width: 400px;
+  height: 100px;
+}
+
+#barometric {
+  top: 810px;
+  left: 60px;
+  width: 600px;
+  height: 200px;
+}
+
+#rainfall {
+  top: 1030px;
+  left: 60px;
+  width: 600px;
+  height: 200px;
+}
+
+#indoor-weather {
+  top: 1250px;
+  left: 60px;
+  width: 400px;
+  height: 120px;
+}
+
+/* Footer with SH logo */
 footer {
-  position: relative;
-  height: 180px; /* push SH logo further down */
+  position: absolute;
+  top: 1380px; /* far below indoor weather */
+  left: 0;
+  width: 100%;
+  height: 150px;
   background: rgba(0,0,0,0.8);
   display: flex;
   justify-content: center;
