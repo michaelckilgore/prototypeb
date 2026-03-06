@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta charset="UTF-8">
 <title>Sugar Hill Weather Station</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -22,6 +26,7 @@ Rushville, Indiana
 ⚠ TORNADO WARNING – Rush County until 8:30 PM – TAKE COVER NOW
 </div>
 
+
 <!-- CURRENT CONDITIONS -->
 
 <div class="panel current">
@@ -33,9 +38,22 @@ Rushville, Indiana
 <div class="temp">72°</div>
 
 <div class="stats">
-<div>Humidity<br><b>68%</b></div>
-<div>Dew Point<br><b>61°</b></div>
-<div>Pressure<br><b>30.01 ▲</b></div>
+
+<div>
+Humidity<br>
+<b>68%</b>
+</div>
+
+<div>
+Dew Point<br>
+<b>61°</b>
+</div>
+
+<div>
+Pressure<br>
+<b>30.01 <span class="trend up">▲</span></b>
+</div>
+
 </div>
 
 </div>
@@ -87,21 +105,95 @@ Rushville, Indiana
 </div>
 
 
-<!-- LIGHTNING -->
+<!-- LIGHTNING PANEL -->
 
 <div class="panel lightning">
 
-<h2>Lightning Data Summary</h2>
+<h2>Lightning Activity</h2>
 
-<svg viewBox="0 0 300 100">
 
-<polyline
-points="0,80 40,70 80,75 120,55 160,60 200,40 240,45 300,25"
-fill="none"
-stroke="#3ec5ff"
-stroke-width="4"/>
+<div class="chart">
+
+<svg viewBox="0 0 300 80">
+
+<rect x="0" y="20" width="300" height="1" class="grid"/>
+<rect x="0" y="40" width="300" height="1" class="grid"/>
+<rect x="0" y="60" width="300" height="1" class="grid"/>
+
+<defs>
+<linearGradient id="lightningFill" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#33c9ff" stop-opacity="0.8"/>
+<stop offset="100%" stop-color="#33c9ff" stop-opacity="0"/>
+</linearGradient>
+</defs>
+
+<polygon points="0,70 40,65 80,60 120,45 160,50 200,30 240,35 300,20 300,80 0,80"
+fill="url(#lightningFill)"></polygon>
+
+<polyline points="0,70 40,65 80,60 120,45 160,50 200,30 240,35 300,20"
+class="sparkline"></polyline>
 
 </svg>
+
+</div>
+
+
+<div class="chart">
+
+<svg viewBox="0 0 300 80">
+
+<rect x="0" y="20" width="300" height="1" class="grid"/>
+<rect x="0" y="40" width="300" height="1" class="grid"/>
+<rect x="0" y="60" width="300" height="1" class="grid"/>
+
+<polygon points="0,60 40,55 80,52 120,40 160,45 200,35 240,38 300,30 300,80 0,80"
+fill="url(#lightningFill)"></polygon>
+
+<polyline points="0,60 40,55 80,52 120,40 160,45 200,35 240,38 300,30"
+class="sparkline"></polyline>
+
+</svg>
+
+</div>
+
+
+<div class="chart">
+
+<svg viewBox="0 0 300 80">
+
+<rect x="0" y="20" width="300" height="1" class="grid"/>
+<rect x="0" y="40" width="300" height="1" class="grid"/>
+<rect x="0" y="60" width="300" height="1" class="grid"/>
+
+<polygon points="0,75 40,70 80,65 120,60 160,55 200,50 240,48 300,40 300,80 0,80"
+fill="url(#lightningFill)"></polygon>
+
+<polyline points="0,75 40,70 80,65 120,60 160,55 200,50 240,48 300,40"
+class="sparkline"></polyline>
+
+</svg>
+
+</div>
+
+
+<div class="chart">
+
+<svg viewBox="0 0 300 80">
+
+<rect x="0" y="20" width="300" height="1" class="grid"/>
+<rect x="0" y="40" width="300" height="1" class="grid"/>
+<rect x="0" y="60" width="300" height="1" class="grid"/>
+
+<polygon points="0,65 40,60 80,58 120,52 160,50 200,46 240,44 300,40 300,80 0,80"
+fill="url(#lightningFill)"></polygon>
+
+<polyline points="0,65 40,60 80,58 120,52 160,50 200,46 240,44 300,40"
+class="sparkline"></polyline>
+
+</svg>
+
+</div>
+
 
 <div class="lightning-grid">
 
@@ -123,8 +215,15 @@ stroke-width="4"/>
 
 <div class="rain-grid">
 
-<div>Daily<br><b>0.15"</b></div>
-<div>Rate<br><b>0.08"/hr</b></div>
+<div>
+Daily<br>
+<b>0.15"</b>
+</div>
+
+<div>
+Rate<br>
+<b>0.08"/hr</b>
+</div>
 
 </div>
 
@@ -133,4 +232,5 @@ stroke-width="4"/>
 </div>
 
 </body>
+
 </html>
