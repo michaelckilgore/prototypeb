@@ -3,114 +3,51 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background-color: #000;
-  color: white;
 }
 
 #dashboard {
   position: relative;
-  width: 1920px; /* matches background image width */
-  height: 1350px; /* include extra footer space */
+  width: 1920px;
+  height: 1600px; /* includes footer space */
   margin: 0 auto;
   background: url('https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png') no-repeat top center;
   background-size: cover;
 }
 
-/* Glass-morphism style for all sections */
-.section {
-  position: absolute; /* absolute positioning for exact alignment */
-  backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
-  padding: 20px;
-  border: 2px dashed red; /* temporary outline to see placement */
-}
-
-/* Section headers */
-.section h2 {
-  font-weight: bold;
-  color: white;
-  margin: 0 0 10px 0;
-}
-
-/* Absolute positions for sections (rough starting points) */
-#current-conditions {
-  top: 50px;
-  left: 60px;
-  width: 400px;
-  height: 150px;
-}
-
-#next-three-days {
-  top: 220px;
-  left: 60px;
-  width: 500px;
-  height: 120px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-
-#radar {
-  top: 370px;
-  left: 60px;
-  width: 800px;
-  height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#lightning {
-  top: 690px;
-  left: 60px;
-  width: 400px;
-  height: 100px;
-}
-
-#barometric {
-  top: 810px;
-  left: 60px;
-  width: 600px;
-  height: 200px;
-}
-
-#rainfall {
-  top: 1030px;
-  left: 60px;
-  width: 600px;
-  height: 200px;
-}
-
-#indoor-weather {
-  top: 1250px;
-  left: 60px;
-  width: 400px;
-  height: 120px;
-}
-
-/* Footer with SH logo */
-footer {
+/* All dynamic overlays */
+.overlay {
   position: absolute;
-  top: 1380px; /* far below indoor weather */
-  left: 0;
-  width: 100%;
-  height: 150px;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid yellow; /* temporary outline for alignment */
-}
-
-#footer-logo {
-  color: white;
   font-weight: bold;
-  font-size: 32px;
+  color: white;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+  pointer-events: none;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-/* Forecast day blocks for NEXT THREE DAYS */
-.forecast-day {
-  text-align: center;
-  flex: 1;
-  color: white;
-}
+/* CURRENT CONDITIONS */
+#overlay-temp { top: 160px; left: 300px; font-size: 72px; }
+#overlay-humidity { top: 260px; left: 300px; font-size: 32px; }
+#overlay-dewpoint { top: 300px; left: 300px; font-size: 32px; }
+#overlay-conditions { top: 340px; left: 300px; font-size: 32px; }
+
+/* NEXT THREE DAYS */
+#overlay-day1 { top: 380px; left: 600px; font-size: 32px; }
+#overlay-day2 { top: 380px; left: 830px; font-size: 32px; }
+#overlay-day3 { top: 380px; left: 1060px; font-size: 32px; }
+
+/* LIGHTNING DATA SUMMARY */
+#overlay-lightning { top: 780px; left: 280px; font-size: 28px; }
+
+/* BAROMETRIC PRESSURE TREND */
+#overlay-pressure { top: 820px; left: 600px; font-size: 28px; }
+
+/* RAINFALL DATA */
+#overlay-rainfall { top: 1050px; left: 600px; font-size: 28px; }
+
+/* INDOOR WEATHER */
+#overlay-indoor-temp { top: 1280px; left: 280px; font-size: 36px; }
+#overlay-indoor-humidity { top: 1320px; left: 280px; font-size: 28px; }
+#overlay-indoor-dewpoint { top: 1350px; left: 280px; font-size: 28px; }
+
+/* FOOTER LOGO */
+#overlay-footer-logo { top: 1450px; left: calc(50% - 32px); font-size: 48px; }
