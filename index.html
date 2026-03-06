@@ -2,58 +2,75 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sugar Hill Reporting Station</title>
+<title>Sugar Hill Weather Station</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="screen">
+<div class="canvas">
 
-<div class="title">
-SUGAR HILL REPORTING STATION • RUSHVILLE, IN
+<div class="header">
+SUGAR HILL REPORTING STATION
+</div>
+
+<div class="location">
+Rushville, Indiana
 </div>
 
 <div class="warning">
-⚠ TORNADO WARNING — TAKE COVER NOW
+⚠ TORNADO WARNING – Rush County until 8:30 PM – TAKE COVER NOW
 </div>
 
-<div class="layout">
-
-<!-- LEFT COLUMN -->
-
-<div class="left">
+<!-- CURRENT CONDITIONS -->
 
 <div class="panel current">
 
-<div class="icon">
-<img src="images/storm.svg">
+<h2>Current Conditions</h2>
+
+<img class="icon" src="images/storm.svg">
+
+<div class="temp">72°</div>
+
+<div class="stats">
+<div>Humidity<br><b>68%</b></div>
+<div>Dew Point<br><b>61°</b></div>
+<div>Pressure<br><b>30.01 ▲</b></div>
 </div>
 
-<div class="temp">
-72°
 </div>
 
-<div class="details">
-<div>Dewpoint 61°</div>
-<div>Humidity 68%</div>
-<div>Pressure 30.01 ▲</div>
-</div>
 
-</div>
-
+<!-- FORECAST -->
 
 <div class="panel forecast">
 
-<h3>Short Term Forecast</h3>
+<h2>Short Term Forecast</h2>
 
-<div class="hours">
+<div class="forecast-row">
 
-<div><img src="images/storm.svg"><br>7 PM<br>71°</div>
-<div><img src="images/rain.svg"><br>8 PM<br>69°</div>
-<div><img src="images/rain.svg"><br>9 PM<br>66°</div>
-<div><img src="images/cloud.svg"><br>10 PM<br>64°</div>
+<div>
+<img src="images/storm.svg">
+<p>7PM</p>
+<b>71°</b>
+</div>
 
+<div>
+<img src="images/rain.svg">
+<p>8PM</p>
+<b>69°</b>
+</div>
+
+<div>
+<img src="images/rain.svg">
+<p>9PM</p>
+<b>66°</b>
+</div>
+
+<div>
+<img src="images/cloud.svg">
+<p>10PM</p>
+<b>64°</b>
 </div>
 
 </div>
@@ -70,25 +87,23 @@ SUGAR HILL REPORTING STATION • RUSHVILLE, IN
 </div>
 
 
-<!-- RIGHT COLUMN -->
-
-<div class="right">
+<!-- LIGHTNING -->
 
 <div class="panel lightning">
 
-<h3>Lightning Data</h3>
+<h2>Lightning Data Summary</h2>
 
-<svg viewBox="0 0 200 80">
+<svg viewBox="0 0 300 100">
 
 <polyline
-points="0,70 30,60 60,65 90,40 120,45 150,20 180,40 200,30"
+points="0,80 40,70 80,75 120,55 160,60 200,40 240,45 300,25"
 fill="none"
-stroke="#66ccff"
-stroke-width="3"/>
+stroke="#3ec5ff"
+stroke-width="4"/>
 
 </svg>
 
-<div class="counts">
+<div class="lightning-grid">
 
 <div>Last Min<br><b>3</b></div>
 <div>15 Min<br><b>28</b></div>
@@ -100,18 +115,16 @@ stroke-width="3"/>
 </div>
 
 
+<!-- RAIN -->
+
 <div class="panel rain">
 
-<h3>Rainfall</h3>
+<h2>Rainfall</h2>
 
-<div class="rainstats">
+<div class="rain-grid">
 
-<div>Daily<br><b>.15"</b></div>
-<div>Rate<br><b>.08"/hr</b></div>
-
-</div>
-
-</div>
+<div>Daily<br><b>0.15"</b></div>
+<div>Rate<br><b>0.08"/hr</b></div>
 
 </div>
 
