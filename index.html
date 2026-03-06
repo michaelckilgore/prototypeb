@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="UTF-8">
 <title>Sugar Hill Weather Station</title>
@@ -15,76 +16,158 @@ SUGAR HILL REPORTING STATION • RUSHVILLE, IN
 </div>
 
 <div class="alert">
-⚠ TORNADO WARNING: Rushville, IN and surrounding areas until 8:30 PM. TAKE COVER NOW.
+⚠ TORNADO WARNING: Rushville and surrounding areas until 8:30 PM
 </div>
 
 
 <div class="grid">
 
-<div class="left-panel">
+<!-- LEFT PANEL -->
 
-<div class="panel current">
-<h2>CURRENT CONDITIONS</h2>
+<div>
+
+<div class="panel">
+
+<h2>Current Conditions</h2>
+
+<div class="current-top">
+
+<img class="weather-icon" src="images/storm.png">
+
 <div class="temp">72°F</div>
 
+</div>
+
 <div class="stats">
-<div>Dew Point<br><b>61°F</b></div>
-<div>Humidity<br><b>68%</b></div>
-<div>Pressure<br><b>30.01</b></div>
+
+<div>
+Dew Point<br>
+<b>61°F</b>
+</div>
+
+<div>
+Humidity<br>
+<b>68%</b>
+</div>
+
+<div>
+Pressure<br>
+<b>30.01</b>
+<span class="arrow up">▲</span>
 </div>
 
 </div>
 
+</div>
 
-<div class="panel forecast">
-<h2>SHORT-TERM FORECAST</h2>
+
+<div class="panel">
+
+<h2>Short-Term Forecast</h2>
 
 <div class="forecast-row">
-<div>7 PM<br>71°</div>
-<div>8 PM<br>69°</div>
-<div>9 PM<br>66°</div>
-<div>10 PM<br>64°</div>
+
+<div>
+<img src="images/storm.png"><br>
+71°
+</div>
+
+<div>
+<img src="images/rain.png"><br>
+69°
+</div>
+
+<div>
+<img src="images/rain.png"><br>
+66°
+</div>
+
+<div>
+<img src="images/cloud.png"><br>
+64°
+</div>
+
 </div>
 
 </div>
 
 
 <div class="panel indoor">
+
 Indoor Temp 74°F • Dewpoint 62°F • Humidity 55%
-</div>
 
 </div>
 
+</div>
 
+
+<!-- RADAR -->
 
 <div class="radar">
+
 <img src="images/radar.jpg">
+
 </div>
 
 
+<!-- RIGHT PANEL -->
 
-<div class="right-panel">
+<div>
 
-<div class="panel lightning">
-<h2>LIGHTNING DATA</h2>
+<div class="panel">
+
+<h2>⚡ Lightning Data</h2>
+
+<svg class="spark" viewBox="0 0 200 70">
+
+<polyline
+fill="none"
+stroke="#66ccff"
+stroke-width="3"
+points="0,60 30,50 60,55 90,30 120,40 150,15 180,35 200,25"/>
+
+<polyline
+fill="none"
+stroke="#ffcc66"
+stroke-width="3"
+points="0,65 30,60 60,58 90,45 120,35 150,30 180,20 200,18"/>
+
+<polyline
+fill="none"
+stroke="#ff6666"
+stroke-width="3"
+points="0,68 30,64 60,60 90,50 120,42 150,38 180,28 200,25"/>
+
+</svg>
 
 <div class="light-stats">
-<div>Last Minute<br><b>3</b></div>
-<div>15 Minutes<br><b>28</b></div>
-<div>Last Hour<br><b>85</b></div>
-<div>Last Day<br><b>212</b></div>
-</div>
+
+<div>Last Min<br><b>3</b></div>
+<div>15 Min<br><b>28</b></div>
+<div>Hour<br><b>85</b></div>
+<div>Day<br><b>212</b></div>
 
 </div>
 
+</div>
 
-<div class="panel rain">
 
-<h2>RAINFALL</h2>
+<div class="panel">
+
+<h2>Rainfall</h2>
 
 <div class="rain-stats">
-<div>Daily Total<br><b>0.15"</b></div>
-<div>Rate<br><b>0.08"/hr</b></div>
+
+<div>
+Daily<br>
+<b>0.15"</b>
+</div>
+
+<div>
+Rate<br>
+<b>0.08"/hr</b>
+</div>
+
 </div>
 
 </div>
