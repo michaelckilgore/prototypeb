@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sugar Hill Reporting Station</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="header">
+SUGAR HILL REPORTING STATION • RUSHVILLE, IN
+</div>
+
+<div class="warning">
+⚠ TORNADO WARNING: Rushville and surrounding areas until 8:30 PM — TAKE COVER NOW
+</div>
+
+<div class="main-grid">
+
+<div class="panel left">
+
+<h2>CURRENT CONDITIONS</h2>
+
+<div class="temp">72°F</div>
+
+<div class="stats">
+<div>Dew Point<br><b>61°F</b></div>
+<div>Humidity<br><b>68%</b></div>
+<div>Pressure<br><b>30.01 inHg</b></div>
+</div>
+
+<h3>SHORT TERM FORECAST</h3>
+
+<div class="forecast">
+<div>7 PM<br>71°<br>Storms</div>
+<div>8 PM<br>69°<br>Heavy Rain</div>
+<div>9 PM<br>66°<br>Rain</div>
+<div>10 PM<br>64°<br>Cloudy</div>
+</div>
+
+</div>
+
+
+<div class="panel radar">
+
+<img src="assets/radar.jpg">
+
+</div>
+
+
+<div class="panel right">
+
+<h2>LIGHTNING DATA</h2>
+
+<div class="lightning">
+Last Minute: <b>3</b><br>
+Last 15 Minutes: <b>28</b><br>
+Last Hour: <b>85</b><br>
+Last Day: <b>212</b>
+</div>
+
+<h2>RAINFALL</h2>
+
+<div>
+Daily Total: <b>0.15"</b><br>
+Rain Rate: <b>0.08"/hr</b>
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+Rushville Weather • Temp 72° • Humidity 68%
+</div>
+
+</body>
+</html>
