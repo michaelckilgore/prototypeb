@@ -9,66 +9,34 @@
 <body>
 <div id="dashboard">
 
-  <div id="current-conditions" class="section">
-    <h2>CURRENT CONDITIONS</h2>
-    <div id="current-data">Temp: --° | Humidity: --%</div>
-  </div>
+  <!-- CURRENT CONDITIONS -->
+  <div id="overlay-temp" class="overlay">74°F</div>
+  <div id="overlay-humidity" class="overlay">Humidity: 57%</div>
+  <div id="overlay-dewpoint" class="overlay">Dew Point: 65°F</div>
+  <div id="overlay-conditions" class="overlay">Sunny</div>
 
-  <div id="next-three-days" class="section">
-    <h2>NEXT THREE DAYS</h2>
-    <div class="forecast-day">Mon H:--° L:--°</div>
-    <div class="forecast-day">Tue H:--° L:--°</div>
-    <div class="forecast-day">Wed H:--° L:--°</div>
-  </div>
+  <!-- NEXT THREE DAYS -->
+  <div id="overlay-day1" class="overlay">70° / 44°</div>
+  <div id="overlay-day2" class="overlay">62° / 45°</div>
+  <div id="overlay-day3" class="overlay">68° / 50°</div>
 
-  <div id="radar" class="section">
-    <h2>RADAR IMAGE HERE</h2>
-    <img id="radar-img" src="" alt="Radar" style="max-width:100%; max-height:100%;">
-  </div>
+  <!-- LIGHTNING DATA SUMMARY -->
+  <div id="overlay-lightning" class="overlay">0 Strikes</div>
 
-  <div id="lightning" class="section">
-    <h2>LIGHTNING DATA SUMMARY</h2>
-    <div id="lightning-data">No Data</div>
-  </div>
+  <!-- BAROMETRIC PRESSURE TREND -->
+  <div id="overlay-pressure" class="overlay">28.97 inHg ▼</div>
 
-  <div id="barometric" class="section">
-    <h2>BAROMETRIC PRESSURE TREND</h2>
-    <canvas id="pressure-chart"></canvas>
-  </div>
+  <!-- RAINFALL DATA -->
+  <div id="overlay-rainfall" class="overlay">0.00 in</div>
 
-  <div id="rainfall" class="section">
-    <h2>RAINFALL DATA</h2>
-    <canvas id="rainfall-chart"></canvas>
-  </div>
+  <!-- INDOOR WEATHER -->
+  <div id="overlay-indoor-temp" class="overlay">67°F</div>
+  <div id="overlay-indoor-humidity" class="overlay">57%</div>
+  <div id="overlay-indoor-dewpoint" class="overlay">Dew Point: 55°F</div>
 
-  <div id="indoor-weather" class="section">
-    <h2>INDOOR WEATHER</h2>
-    <div id="indoor-data">Temp: --° | Humidity: --%</div>
-  </div>
-
-  <footer>
-    <div id="footer-logo">SH</div>
-  </footer>
+  <!-- FOOTER LOGO -->
+  <div id="overlay-footer-logo" class="overlay">SH</div>
 
 </div>
-
-<script>
-  // Populate NEXT THREE DAYS
-  const forecast = [
-    { day: 'Mon', high: 78, low: 62 },
-    { day: 'Tue', high: 80, low: 64 },
-    { day: 'Wed', high: 75, low: 60 }
-  ];
-
-  const forecastContainer = document.getElementById('next-three-days');
-  const dayDivs = forecastContainer.querySelectorAll('.forecast-day');
-  forecast.forEach((f, i) => {
-    if(dayDivs[i]) {
-      dayDivs[i].textContent = `${f.day} H:${f.high}° L:${f.low}°`;
-    }
-  });
-
-  // Placeholder: Chart.js or other dynamic data scripts can go here
-</script>
 </body>
 </html>
