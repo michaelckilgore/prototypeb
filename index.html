@@ -1,100 +1,60 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta charset="UTF-8">
-<title>Sugar Hill Weather Station</title>
+<title>Sugar Hill Reporting Station</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="container">
+<div class="screen">
 
-<div class="header">
+<div class="title">
 SUGAR HILL REPORTING STATION • RUSHVILLE, IN
 </div>
 
-<div class="alert">
-⚠ TORNADO WARNING: Rushville and surrounding areas until 8:30 PM
+<div class="warning">
+⚠ TORNADO WARNING — TAKE COVER NOW
 </div>
 
+<div class="layout">
 
-<div class="grid">
+<!-- LEFT COLUMN -->
 
-<!-- LEFT PANEL -->
+<div class="left">
 
-<div>
+<div class="panel current">
 
-<div class="panel">
-
-<h2>Current Conditions</h2>
-
-<div class="current-top">
-
-<img class="weather-icon" src="images/storm.png">
-
-<div class="temp">72°F</div>
-
+<div class="icon">
+<img src="images/storm.svg">
 </div>
 
-<div class="stats">
-
-<div>
-Dew Point<br>
-<b>61°F</b>
+<div class="temp">
+72°
 </div>
 
-<div>
-Humidity<br>
-<b>68%</b>
-</div>
-
-<div>
-Pressure<br>
-<b>30.01</b>
-<span class="arrow up">▲</span>
-</div>
-
+<div class="details">
+<div>Dewpoint 61°</div>
+<div>Humidity 68%</div>
+<div>Pressure 30.01 ▲</div>
 </div>
 
 </div>
 
 
-<div class="panel">
+<div class="panel forecast">
 
-<h2>Short-Term Forecast</h2>
+<h3>Short Term Forecast</h3>
 
-<div class="forecast-row">
+<div class="hours">
 
-<div>
-<img src="images/storm.svg"><br>
-71°
-</div>
-
-<div>
-<img src="images/rain.svg"><br>
-69°
-</div>
-
-<div>
-<img src="images/rain.svg"><br>
-66°
-</div>
-
-<div>
-<img src="images/cloud.png"><br>
-64°
-</div>
+<div><img src="images/storm.svg"><br>7 PM<br>71°</div>
+<div><img src="images/rain.svg"><br>8 PM<br>69°</div>
+<div><img src="images/rain.svg"><br>9 PM<br>66°</div>
+<div><img src="images/cloud.svg"><br>10 PM<br>64°</div>
 
 </div>
-
-</div>
-
-
-<div class="panel indoor">
-
-Indoor Temp 74°F • Dewpoint 62°F • Humidity 55%
 
 </div>
 
@@ -110,37 +70,25 @@ Indoor Temp 74°F • Dewpoint 62°F • Humidity 55%
 </div>
 
 
-<!-- RIGHT PANEL -->
+<!-- RIGHT COLUMN -->
 
-<div>
+<div class="right">
 
-<div class="panel">
+<div class="panel lightning">
 
-<h2>⚡ Lightning Data</h2>
+<h3>Lightning Data</h3>
 
-<svg class="spark" viewBox="0 0 200 70">
+<svg viewBox="0 0 200 80">
 
 <polyline
+points="0,70 30,60 60,65 90,40 120,45 150,20 180,40 200,30"
 fill="none"
 stroke="#66ccff"
-stroke-width="3"
-points="0,60 30,50 60,55 90,30 120,40 150,15 180,35 200,25"/>
-
-<polyline
-fill="none"
-stroke="#ffcc66"
-stroke-width="3"
-points="0,65 30,60 60,58 90,45 120,35 150,30 180,20 200,18"/>
-
-<polyline
-fill="none"
-stroke="#ff6666"
-stroke-width="3"
-points="0,68 30,64 60,60 90,50 120,42 150,38 180,28 200,25"/>
+stroke-width="3"/>
 
 </svg>
 
-<div class="light-stats">
+<div class="counts">
 
 <div>Last Min<br><b>3</b></div>
 <div>15 Min<br><b>28</b></div>
@@ -152,21 +100,14 @@ points="0,68 30,64 60,60 90,50 120,42 150,38 180,28 200,25"/>
 </div>
 
 
-<div class="panel">
+<div class="panel rain">
 
-<h2>Rainfall</h2>
+<h3>Rainfall</h3>
 
-<div class="rain-stats">
+<div class="rainstats">
 
-<div>
-Daily<br>
-<b>0.15"</b>
-</div>
-
-<div>
-Rate<br>
-<b>0.08"/hr</b>
-</div>
+<div>Daily<br><b>.15"</b></div>
+<div>Rate<br><b>.08"/hr</b></div>
 
 </div>
 
