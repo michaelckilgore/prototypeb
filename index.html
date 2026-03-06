@@ -2,77 +2,97 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sugar Hill Reporting Station</title>
-<link rel="stylesheet" href="styles.css">
+<title>Sugar Hill Weather Station</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
+<div class="container">
 
 <div class="header">
 SUGAR HILL REPORTING STATION • RUSHVILLE, IN
 </div>
 
-<div class="warning">
-⚠ TORNADO WARNING: Rushville and surrounding areas until 8:30 PM — TAKE  COVER NOW
+<div class="alert">
+⚠ TORNADO WARNING: Rushville, IN and surrounding areas until 8:30 PM. TAKE COVER NOW.
 </div>
 
-<div class="main-grid">
 
-<div class="panel left">
+<div class="grid">
 
+<div class="left-panel">
+
+<div class="panel current">
 <h2>CURRENT CONDITIONS</h2>
-
 <div class="temp">72°F</div>
 
 <div class="stats">
 <div>Dew Point<br><b>61°F</b></div>
 <div>Humidity<br><b>68%</b></div>
-<div>Pressure<br><b>30.01 inHg</b></div>
-</div>
-
-<h3>SHORT TERM FORECAST</h3>
-
-<div class="forecast">
-<div>7 PM<br>71°<br>Storms</div>
-<div>8 PM<br>69°<br>Heavy Rain</div>
-<div>9 PM<br>66°<br>Rain</div>
-<div>10 PM<br>64°<br>Cloudy</div>
+<div>Pressure<br><b>30.01</b></div>
 </div>
 
 </div>
 
 
-<div class="panel radar">
+<div class="panel forecast">
+<h2>SHORT-TERM FORECAST</h2>
 
-<img src="radar.jpg">
+<div class="forecast-row">
+<div>7 PM<br>71°</div>
+<div>8 PM<br>69°</div>
+<div>9 PM<br>66°</div>
+<div>10 PM<br>64°</div>
+</div>
 
 </div>
 
 
-<div class="panel right">
+<div class="panel indoor">
+Indoor Temp 74°F • Dewpoint 62°F • Humidity 55%
+</div>
 
+</div>
+
+
+
+<div class="radar">
+<img src="images/radar.jpg">
+</div>
+
+
+
+<div class="right-panel">
+
+<div class="panel lightning">
 <h2>LIGHTNING DATA</h2>
 
-<div class="lightning">
-Last Minute: <b>3</b><br>
-Last 15 Minutes: <b>28</b><br>
-Last Hour: <b>85</b><br>
-Last Day: <b>212</b>
+<div class="light-stats">
+<div>Last Minute<br><b>3</b></div>
+<div>15 Minutes<br><b>28</b></div>
+<div>Last Hour<br><b>85</b></div>
+<div>Last Day<br><b>212</b></div>
 </div>
+
+</div>
+
+
+<div class="panel rain">
 
 <h2>RAINFALL</h2>
 
-<div>
-Daily Total: <b>0.15"</b><br>
-Rain Rate: <b>0.08"/hr</b>
+<div class="rain-stats">
+<div>Daily Total<br><b>0.15"</b></div>
+<div>Rate<br><b>0.08"/hr</b></div>
 </div>
 
 </div>
 
 </div>
 
-<div class="footer">
-Rushville Weather • Temp 72° • Humidity 68%
+</div>
+
 </div>
 
 </body>
