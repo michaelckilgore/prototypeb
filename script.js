@@ -1,12 +1,7 @@
 const canvas = document.getElementById("dashboard");
 const ctx = canvas.getContext("2d");
 
-const bg = new Image();
-bg.src = "images/weather-background.png";
-
-const rain = new Image();
-rain.src = "images/rain.svg";
-
+// WEATHER DATA
 const data = {
 temp:74.3,
 dew:65,
@@ -19,87 +14,62 @@ forecast:[
 ]
 };
 
-function drawTemp(text,x,y,size,color){
+// LOAD TEMPLATE
+const bg = new Image();
+bg.src = "images/weather-background.png";
 
-ctx.font="bold "+size+"px Segoe UI";
+// LOAD ICON
+const rain = new Image();
+rain.src = "images/rain.svg";
 
-const g=ctx.createLinearGradient(0,y,0,y+size);
-
-g.addColorStop(0,"#ffffff");
-g.addColorStop(1,color);
-
-ctx.fillStyle=g;
-
-ctx.shadowColor=color;
-ctx.shadowBlur=18;
-
-ctx.fillText(text,x,y);
-
-ctx.shadowBlur=0;
-
-}
-
-function text(t,x,y,s){
-
-ctx.font="bold "+s+"px Segoe UI";
-ctx.fillStyle="#E6EAF0";
-
-ctx.shadowColor="black";
-ctx.shadowBlur=4;
-
-ctx.fillText(t,x,y);
-
-ctx.shadowBlur=0;
-
-}
-
+// SAFE DRAW FUNCTION
 function draw(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
+// background fallback
+ctx.fillStyle = "#0f1a26";
+ctx.fillRect(0,0,1920,1080);
 
+// draw template if it exists
+if(bg.complete){
 ctx.drawImage(bg,0,0,1920,1080);
+}
 
-// icon
-
+// draw icon if it exists
+if(rain.complete){
 ctx.drawImage(rain,90,140,70,70);
+}
 
-// current temp
+// CURRENT TEMP
+ctx.fillStyle="#FFD59E";
+ctx.font="bold 90px Segoe UI";
+ctx.fillText(data.temp.toFixed(1)+"°",180,200);
 
-drawTemp(data.temp.toFixed(1)+"°",180,140,90,"#FFD59E");
+// CONDITIONS
+ctx.fillStyle="#E6EAF0";
+ctx.font="40px Segoe UI";
 
-// conditions
+ctx.fillText(data.dew+"°",60,300);
+ctx.fillText(data.humidity+"%",160,300);
+ctx.fillText(data.pressure.toFixed(2),260,300);
 
-drawTemp(data.dew+"°",60,250,28,"#FFD59E");
-
-text(data.humidity+"%",160,250,28);
-
-text(data.pressure.toFixed(2),260,250,28);
-
-// forecast
-
+// FORECAST
 data.forecast.forEach((d,i)=>{
 
-let x=600+(i*250);
+let x = 600 + (i*250);
 
-drawTemp(d.high+"°",x,360,50,"#FFD59E");
+ctx.fillStyle="#FFD59E";
+ctx.font="bold 60px Segoe UI";
+ctx.fillText(d.high+"°",x,420);
 
 ctx.fillStyle="rgba(255,255,255,.4)";
-ctx.fillRect(x+70,375,3,35);
+ctx.fillRect(x+70,435,3,40);
 
-drawTemp(d.low+"°",x+90,360,46,"#FFD59E");
+ctx.fillStyle="#FFD59E";
+ctx.fillText(d.low+"°",x+90,420);
 
 });
 
 }
 
-// ensure images load first
-
-let loaded=0;
-
-function ready(){
-loaded++;
-if(loaded===2) draw();
-}
-
-bg.onload=ready;
-rain.onload=ready;
+// DRAW ON LOAD
+window.onload = draw;
