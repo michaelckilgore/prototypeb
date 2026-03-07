@@ -1,17 +1,13 @@
-/* Make the canvas fill the screen horizontally and scale height proportionally */
-body {
+html, body {
   margin: 0;
-  background: black;
-  display: flex;
-  justify-content: center;
+  padding: 0;
+  background: black; /* matches dashboard theme */
+  height: 100%;
+  width: 100%;
 }
 
-#dashboard-container {
-  position: relative;
-}
-
-#dashboard-canvas {
+canvas {
   display: block;
-  max-width: 100%;
-  height: auto;
+  width: 100%;
+  height: 100%;
 }
