@@ -1,107 +1,96 @@
-// Get canvas and context
 const canvas = document.getElementById('dashboard-canvas');
 const ctx = canvas.getContext('2d');
 
-// Load the template image
 const img = new Image();
-img.src = 'https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png'; 
+img.src = 'https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png';
 
-// Function to get color by temperature
 function getTempColor(temp) {
-  if (temp < 30) return '#00BFFF';       // Blue
-  if (temp < 40) return '#1E90FF';       // Light Blue
-  if (temp < 50) return '#00FFFF';       // Cyan
-  if (temp < 60) return '#00FF00';       // Green
-  if (temp < 70) return '#FFFF00';       // Yellow
-  if (temp < 80) return '#FFA500';       // Orange
-  if (temp < 90) return '#FF4500';       // Red-Orange
-  return '#FF0000';                       // Dark Red
+  if (temp < 30) return '#00BFFF';
+  if (temp < 40) return '#1E90FF';
+  if (temp < 50) return '#00FFFF';
+  if (temp < 60) return '#00FF00';
+  if (temp < 70) return '#FFFF00';
+  if (temp < 80) return '#FFA500';
+  if (temp < 90) return '#FF4500';
+  return '#FF0000';
 }
 
 img.onload = () => {
+  // Set canvas internal drawing size to match template
   canvas.width = img.width;
   canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
 
-  // ------------------ Current Temperature ------------------
-  let currentTemp = 74.3;
-  let tempX = 150;
-  let tempY = 155;
+  function drawDashboard() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.font = 'bold 50px "Segoe UI"';
-  ctx.fillStyle = getTempColor(currentTemp);
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.shadowBlur = 4;
+    // Draw template
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  ctx.fillText(currentTemp.toFixed(1), tempX, tempY);
+    // Calculate scale factors based on displayed size
+    const scaleX = canvas.clientWidth / img.width;
+    const scaleY = canvas.clientHeight / img.height;
 
-  // ------------------ Dew Point ------------------
-  let dewPointTemp = 65;
-  let dewX = 55;
-  let dewY = 243;
+    // Helper to scale coordinates and font
+    function drawTextScaled(text, x, y, fontSize, color) {
+      ctx.font = `bold ${fontSize * scaleY}px "Segoe UI"`; // scale font vertically
+      ctx.fillStyle = color;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.shadowColor = 'rgba(0,0,0,0.7)';
+      ctx.shadowBlur = 4;
+      ctx.fillText(text, x * scaleX, y * scaleY);
+    }
 
-  ctx.font = 'bold 28px "Segoe UI"';
-  ctx.fillStyle = getTempColor(dewPointTemp);
-  ctx.fillText(dewPointTemp + '°', dewX, dewY);
+    // ------------------ Current Temperature ------------------
+    let currentTemp = 74.3;
+    drawTextScaled(currentTemp.toFixed(1), 150, 155, 50, getTempColor(currentTemp));
 
-  // ------------------ Humidity ------------------
-  let humidity = 57;
-  let humX = 157;
-  let humY = 243;
+    // ------------------ Dew Point ------------------
+    let dewPointTemp = 65;
+    drawTextScaled(dewPointTemp + '°', 55, 243, 28, getTempColor(dewPointTemp));
 
-  ctx.fillStyle = 'white';
-  ctx.fillText(humidity + '%', humX, humY);
+    // ------------------ Humidity ------------------
+    drawTextScaled('57%', 157, 243, 28, 'white');
 
-  // ------------------ Pressure ------------------
-  let pressure = 28.97;
-  let pressX = 252;
-  let pressY = 243;
+    // ------------------ Pressure ------------------
+    drawTextScaled('28.97', 252, 243, 28, 'white');
 
-  ctx.fillText(pressure.toFixed(2), pressX, pressY);
+    // ------------------ Next Three Days ------------------
+    let nextThreeDays = [
+      { high: 70, low: 44, x: 600, y: 380 },
+      { high: 62, low: 45, x: 830, y: 380 },
+      { high: 68, low: 50, x: 1060, y: 380 }
+    ];
 
-  // ------------------ Next Three Days ------------------
-  let nextThreeDays = [
-    { high: 70, low: 44, x: 600, y: 380 },
-    { high: 62, low: 45, x: 830, y: 380 },
-    { high: 68, low: 50, x: 1060, y: 380 }
-  ];
+    nextThreeDays.forEach(day => {
+      drawTextScaled(day.high + '°', day.x, day.y, 32, getTempColor(day.high));
+      drawTextScaled(day.low + '°', day.x + 70, day.y, 32, getTempColor(day.low));
+    });
 
-  ctx.font = 'bold 32px "Segoe UI"';
-  nextThreeDays.forEach(day => {
-    ctx.fillStyle = getTempColor(day.high);
-    ctx.fillText(day.high + '°', day.x, day.y);
+    // ------------------ Indoor Weather ------------------
+    drawTextScaled(67, 280, 1280, 32, getTempColor(67));
+    drawTextScaled('57% Humidity', 280, 1320, 32, 'white');
+    drawTextScaled(55 + '°', 280, 1350, 32, getTempColor(55));
 
-    ctx.fillStyle = getTempColor(day.low);
-    ctx.fillText(day.low + '°', day.x + 70, day.y);
+    // ------------------ Lightning ------------------
+    drawTextScaled('0 Strikes', 280, 780, 32, 'white');
+
+    // ------------------ Rainfall ------------------
+    drawTextScaled('0.00 in', 600, 1050, 32, 'white');
+
+    // ------------------ Footer logo ------------------
+    ctx.font = `bold ${48 * scaleY}px "Segoe UI"`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.fillText('SH', (canvas.width / 2) * scaleX, 1450 * scaleY);
+  }
+
+  // Initial draw
+  drawDashboard();
+
+  // Redraw on window resize
+  window.addEventListener('resize', () => {
+    drawDashboard();
   });
-
-  // ------------------ Lightning ------------------
-  ctx.fillStyle = 'white';
-  ctx.fillText('0 Strikes', 280, 780);
-
-  // ------------------ Rainfall ------------------
-  ctx.fillText('0.00 in', 600, 1050);
-
-  // ------------------ Indoor Weather ------------------
-  let indoorTemp = 67;
-  let indoorDew = 55;
-
-  // Indoor Temperature
-  ctx.fillStyle = getTempColor(indoorTemp);
-  ctx.fillText(indoorTemp, 280, 1280);
-
-  // Indoor Humidity stays white
-  ctx.fillStyle = 'white';
-  ctx.fillText('57% Humidity', 280, 1320);
-
-  // Indoor Dew Point color-coded
-  ctx.fillStyle = getTempColor(indoorDew);
-  ctx.fillText(indoorDew + '°', 280, 1350);
-
-  // ------------------ Footer logo ------------------
-  ctx.font = 'bold 48px "Segoe UI"';
-  ctx.textAlign = 'center';
-  ctx.fillText('SH', canvas.width / 2, 1450);
 };
