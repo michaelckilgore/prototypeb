@@ -1,133 +1,231 @@
-const canvas = document.getElementById('dashboard-canvas');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("dashboard-canvas");
+const ctx = canvas.getContext("2d");
 
-const img = new Image();
-img.src = 'https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png'; 
+const bg = new Image();
+bg.src = "images/weather-background.png"; // your background image
 
-// Load rain SVG
 const rainIcon = new Image();
-rainIcon.src = 'images/rain.svg'; // your rain icon path
+rainIcon.src = "images/rain.svg";
 
-function getTempColor(temp) {
-  if (temp < 30) return '#00BFFF';
-  if (temp < 40) return '#1E90FF';
-  if (temp < 50) return '#00FFFF';
-  if (temp < 60) return '#00FF00';
-  if (temp < 70) return '#FFFF00';
-  if (temp < 80) return '#FFA500';
-  if (temp < 90) return '#FF4500';
-  return '#FF0000';
+// ---------------- TEMP COLOR SCALE ----------------
+
+function getTempColor(temp){
+
+if (temp < 30) return "#8EC9FF";
+if (temp < 40) return "#7FB8FF";
+if (temp < 50) return "#8FE0FF";
+if (temp < 60) return "#9BE8B2";
+if (temp < 70) return "#FFF3A6";
+if (temp < 80) return "#FFD59E";
+if (temp < 90) return "#FFB59E";
+return "#FF9E9E";
+
 }
 
-function lightenColor(hex, lum) {
-    hex = String(hex).replace(/[^0-9a-f]/gi, '');
-    if (hex.length < 6) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-    let rgb = "#", c, i;
-    for (i = 0; i < 3; i++) {
-        c = parseInt(hex.substr(i*2,2),16);
-        c = Math.round(Math.min(Math.max(0, c + (c * lum)),255)).toString(16);
-        rgb += ("00"+c).substr(c.length);
-    }
-    return rgb;
+// ---------------- GRADIENT TEXT ----------------
+
+function drawTempText(text,x,y,fontSize,color){
+
+ctx.font = `bold ${fontSize}px Segoe UI`;
+ctx.textAlign = "left";
+ctx.textBaseline = "top";
+
+const gradient = ctx.createLinearGradient(
+0,
+y,
+0,
+y + fontSize
+);
+
+gradient.addColorStop(0,"#FFFFFF");
+gradient.addColorStop(0.35,color);
+gradient.addColorStop(1,color);
+
+ctx.fillStyle = gradient;
+
+ctx.shadowColor = "rgba(0,0,0,.35)";
+ctx.shadowBlur = 6;
+
+ctx.fillText(text,x,y);
+
+ctx.shadowBlur = 0;
+
 }
 
-img.onload = () => {
-    canvas.width = img.width;
-    canvas.height = img.height;
+// ---------------- NORMAL TEXT ----------------
 
-    function drawDashboard() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+function drawText(text,x,y,size){
 
-        const scaleX = canvas.clientWidth / img.width;
-        const scaleY = canvas.clientHeight / img.height;
+ctx.font = `bold ${size}px Segoe UI`;
+ctx.fillStyle = "#FFFFFF";
+ctx.textAlign = "left";
+ctx.textBaseline = "top";
 
-        function drawTextScaled(text, x, y, fontSize, tempColor) {
-            ctx.font = `bold ${fontSize * scaleY}px "Segoe UI"`;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.shadowColor = 'rgba(0,0,0,0.7)';
-            ctx.shadowBlur = 4;
+ctx.shadowColor = "rgba(0,0,0,.35)";
+ctx.shadowBlur = 4;
 
-            // Gradient fill
-            const gradient = ctx.createLinearGradient(0, y * scaleY, 0, (y + fontSize) * scaleY);
-            gradient.addColorStop(0, lightenColor(tempColor, 0.4));
-            gradient.addColorStop(1, tempColor);
-            ctx.fillStyle = gradient;
+ctx.fillText(text,x,y);
 
-            ctx.fillText(text, x * scaleX, y * scaleY);
-        }
+ctx.shadowBlur = 0;
 
-        // ------------------ Current Temperature ------------------
-        let currentTemp = 74.3;
-        let tempX = 180; // adjust to right of icon
-        let tempY = 155;
+}
 
-        // Draw rain icon
-        const iconSize = 60; // scaled size
-        ctx.drawImage(rainIcon, 150 * scaleX, tempY * scaleY, iconSize * scaleX, iconSize * scaleY);
+// ---------------- DRAW DASHBOARD ----------------
 
-        drawTextScaled(currentTemp.toFixed(1) + '°', tempX, tempY, 50, getTempColor(currentTemp));
+function drawDashboard(data){
 
-        // ------------------ Dew Point ------------------
-        let dewPointTemp = 65;
-        let dewX = 55;
-        let dewY = 243 - 2; // nudged slightly up
+ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        drawTextScaled(dewPointTemp + '°', dewX, dewY, 26, getTempColor(dewPointTemp));
+ctx.drawImage(bg,0,0,canvas.width,canvas.height);
 
-        // ------------------ Humidity ------------------
-        let humidity = 57;
-        let humX = 157;
-        let humY = 243 - 2; // nudged up
+// CURRENT TEMP
 
-        drawTextScaled(humidity + '%', humX, humY, 26, '#FFFFFF');
+ctx.drawImage(rainIcon,140,150,60,60);
 
-        // ------------------ Pressure ------------------
-        let pressure = 28.97;
-        let pressX = 252;
-        let pressY = 243 - 2; // nudged up
+drawTempText(
+data.currentTemp.toFixed(1) + "°",
+210,
+150,
+52,
+getTempColor(data.currentTemp)
+);
 
-        drawTextScaled(pressure.toFixed(2), pressX, pressY, 26, '#FFFFFF');
+// DEW POINT
 
-        // ------------------ Next Three Days ------------------
-        const nextThreeDays = [
-            { high: 70, low: 44, x: 600, y: 380 },
-            { high: 62, low: 45, x: 830, y: 380 },
-            { high: 68, low: 50, x: 1060, y: 380 }
-        ];
+drawTempText(
+data.dewPoint + "°",
+55,
+240,
+22,
+getTempColor(data.dewPoint)
+);
 
-        nextThreeDays.forEach(day => {
-            drawTextScaled(day.high + '°', day.x, day.y, 32, getTempColor(day.high));
-            drawTextScaled(day.low + '°', day.x + 70, day.y, 32, getTempColor(day.low));
-        });
+// HUMIDITY
 
-        // ------------------ Indoor Weather ------------------
-        const indoorTemp = 67;
-        const indoorDew = 55;
+drawText(
+data.humidity + "%",
+155,
+238,
+22
+);
 
-        drawTextScaled(indoorTemp + '°', 280, 1280, 32, getTempColor(indoorTemp));
-        drawTextScaled('57% Humidity', 280, 1320, 32, '#FFFFFF');
-        drawTextScaled(indoorDew + '°', 280, 1350, 32, getTempColor(indoorDew));
+// PRESSURE
 
-        // ------------------ Lightning ------------------
-        drawTextScaled('0 Strikes', 280, 780, 32, '#FFFFFF');
+drawText(
+data.pressure.toFixed(2),
+250,
+238,
+22
+);
 
-        // ------------------ Rainfall ------------------
-        drawTextScaled('0.00 in', 600, 1050, 32, '#FFFFFF');
+// FORECAST DAYS
 
-        // ------------------ Footer logo ------------------
-        ctx.font = `bold ${48 * scaleY}px "Segoe UI"`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = 'white';
-        ctx.fillText('SH', (canvas.width / 2) * scaleX, 1450 * scaleY);
-    }
+data.forecast.forEach((day,i)=>{
 
-    // Initial draw
-    drawDashboard();
+const x = 600 + (i * 230);
+const y = 380;
 
-    // Redraw on window resize
-    window.addEventListener('resize', () => {
-        drawDashboard();
-    });
+drawTempText(
+day.high + "°",
+x,
+y,
+32,
+getTempColor(day.high)
+);
+
+drawTempText(
+day.low + "°",
+x + 70,
+y,
+32,
+getTempColor(day.low)
+);
+
+});
+
+// INDOOR WEATHER
+
+drawTempText(
+data.indoorTemp + "°",
+280,
+1280,
+30,
+getTempColor(data.indoorTemp)
+);
+
+drawText(
+data.indoorHumidity + "% Humidity",
+280,
+1320,
+26
+);
+
+drawTempText(
+data.indoorDew + "°",
+280,
+1350,
+26,
+getTempColor(data.indoorDew)
+);
+
+// LIGHTNING
+
+drawText(
+data.lightning + " Strikes",
+280,
+780,
+28
+);
+
+// RAINFALL
+
+drawText(
+data.rainfall.toFixed(2) + " in",
+600,
+1050,
+28
+);
+
+// FOOTER LOGO
+
+ctx.font = "bold 48px Segoe UI";
+ctx.textAlign = "center";
+ctx.fillStyle = "#FFFFFF";
+ctx.fillText("SH",canvas.width/2,1450);
+
+}
+
+// ---------------- SAMPLE DATA ----------------
+
+const sampleData = {
+
+currentTemp: 74.3,
+dewPoint: 65,
+humidity: 57,
+pressure: 28.97,
+
+forecast: [
+{high:70,low:44},
+{high:62,low:45},
+{high:68,low:50}
+],
+
+indoorTemp:67,
+indoorHumidity:57,
+indoorDew:55,
+
+lightning:0,
+rainfall:0
+
+};
+
+// ---------------- INIT ----------------
+
+bg.onload = () => {
+
+canvas.width = bg.width;
+canvas.height = bg.height;
+
+drawDashboard(sampleData);
+
 };
