@@ -1,10 +1,12 @@
 body{
 margin:0;
-background:#000;
+background:black;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
-#dashboard{
-display:block;
-width:100vw;
-height:100vh;
+canvas{
+border:0;
 }
