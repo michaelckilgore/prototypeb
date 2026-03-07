@@ -4,20 +4,20 @@ const ctx = canvas.getContext('2d');
 
 // Load the template image
 const img = new Image();
-img.src = 'https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png'; // use your image URL or local path
+img.src = 'https://i.postimg.cc/x1nFF5jq/weathersample2-1blankkindoffixed.png'; // your template URL or local path
 
 img.onload = () => {
-  // Set canvas size to the image size
+  // Set canvas size to match the image
   canvas.width = img.width;
   canvas.height = img.height;
 
-  // Draw template background
+  // Draw the template
   ctx.drawImage(img, 0, 0);
 
-  // ---------- Current Conditions ----------
-  let currentTemp = 74.3; // tenths for current temperature
-  let tempX = 300;         // adjust to align under "Current Conditions" header
-  let tempY = 220;
+  // ------------------ Current Temperature ------------------
+  let currentTemp = 74.3; // tenths of a degree
+  let tempX = 101;         // measured X
+  let tempY = 160;         // measured Y
 
   ctx.font = 'bold 72px "Segoe UI"';
   ctx.fillStyle = 'white';
@@ -28,15 +28,9 @@ img.onload = () => {
 
   ctx.fillText(currentTemp.toFixed(1) + '°F', tempX, tempY);
 
-  // ---------- Dew Point ----------
-  let dewPointTemp = 65;   // whole number
-  let dewX = 300;          // align under "Dew Point" header
-  let dewY = 500;
-
+  // ------------------ Other overlays (unchanged) ------------------
   ctx.font = 'bold 32px "Segoe UI"';
-  ctx.fillText(dewPointTemp + '°F', dewX, dewY);
 
-  // ---------- Other overlays (unchanged) ----------
   // Next three days
   ctx.fillText('70° / 44°', 600, 380);
   ctx.fillText('62° / 45°', 830, 380);
