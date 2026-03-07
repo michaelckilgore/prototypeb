@@ -1,13 +1,58 @@
-<!DOCTYPE html>
-<html>
+\<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Weather Panel</title>
+<title>Weather Display Prototype</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
-<canvas id="dashboard" width="1920" height="1080"></canvas>
+<div class="panel">
+
+<header>
+<div class="location">RUSHVILLE WEATHER CENTER</div>
+<div id="clock"></div>
+</header>
+
+<div class="main">
+
+<div class="current">
+<div class="temp" id="temp">72°</div>
+<div class="condition" id="condition">Partly Cloudy</div>
+</div>
+
+<div class="stats">
+<div>Humidity <span id="humidity">61%</span></div>
+<div>Wind <span id="wind">9 mph</span></div>
+<div>Pressure <span id="pressure">29.98</span></div>
+<div>Dewpoint <span id="dew">58°</span></div>
+</div>
+
+</div>
+
+<div class="charts">
+
+<div class="chartbox">
+<div class="charttitle">Temperature Trend</div>
+<canvas id="tempChart"></canvas>
+</div>
+
+<div class="chartbox">
+<div class="charttitle">Lightning Activity</div>
+<canvas id="lightningChart"></canvas>
+</div>
+
+</div>
+
+<footer>
+<div class="ticker">
+<span>LOCAL WEATHER PROTOTYPE DISPLAY • SPORTS MODULE READY • STOCK MODULE READY • RADAR PANEL READY</span>
+</div>
+</footer>
+
+</div>
 
 <script src="script.js"></script>
 
