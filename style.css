@@ -1,7 +1,6 @@
-html,body{
+body{
 margin:0;
-padding:0;
-background:#000;
+background:black;
 overflow:hidden;
 font-family:Segoe UI, Arial, sans-serif;
 }
