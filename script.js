@@ -1,23 +1,23 @@
 const canvas = document.getElementById("dashboard");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas(){
+function resize(){
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 }
 
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+resize();
+window.addEventListener("resize", resize);
 
-// ---------------- IMAGES ----------------
+// images (optional)
 
 const bg = new Image();
 bg.src = "images/weather-background.png";
 
-const icon = new Image();
-icon.src = "images/rain.svg";
+const rain = new Image();
+rain.src = "images/rain.svg";
 
-// ---------------- TEMP COLORS ----------------
+// pastel temp colors
 
 function tempColor(t){
 
@@ -32,78 +32,37 @@ return "#FF9E9E";
 
 }
 
-// ---------------- LIGHTEN ----------------
-
-function lighten(hex,amt){
-
-let num=parseInt(hex.replace("#",""),16);
-
-let r=(num>>16)+amt;
-let g=((num>>8)&255)+amt;
-let b=(num&255)+amt;
-
-r=Math.min(255,r);
-g=Math.min(255,g);
-b=Math.min(255,b);
-
-return "#" + (b | (g<<8) | (r<<16)).toString(16);
-
-}
-
-// ---------------- GLASS PANEL ----------------
-
-function glass(x,y,w,h){
-
-ctx.fillStyle="rgba(20,25,35,.35)";
-ctx.fillRect(x,y,w,h);
-
-ctx.strokeStyle="rgba(255,255,255,.08)";
-ctx.strokeRect(x,y,w,h);
-
-}
-
-// ---------------- TEMP TEXT ----------------
+// draw gradient temp
 
 function drawTemp(text,x,y,size,color){
 
-ctx.font=`bold ${size}px Segoe UI`;
-ctx.textBaseline="top";
+ctx.font = "bold "+size+"px Segoe UI";
 
-ctx.shadowColor=color;
-ctx.shadowBlur=18;
-ctx.globalAlpha=.35;
-ctx.fillStyle=color;
+const grad = ctx.createLinearGradient(0,y,0,y+size);
 
-ctx.fillText(text,x,y);
+grad.addColorStop(0,"white");
+grad.addColorStop(1,color);
 
-ctx.globalAlpha=1;
+ctx.fillStyle = grad;
 
-const light=lighten(color,60);
-
-const g=ctx.createLinearGradient(0,y,0,y+size);
-
-g.addColorStop(0,light);
-g.addColorStop(1,color);
-
-ctx.shadowBlur=4;
-ctx.shadowColor="rgba(0,0,0,.35)";
-ctx.fillStyle=g;
+ctx.shadowColor = color;
+ctx.shadowBlur = 15;
 
 ctx.fillText(text,x,y);
 
-ctx.shadowBlur=0;
+ctx.shadowBlur = 0;
 
 }
 
-// ---------------- NORMAL TEXT ----------------
+// normal text
 
-function text(t,x,y,s){
+function text(t,x,y,size){
 
-ctx.font=`bold ${s}px Segoe UI`;
-ctx.fillStyle="#E6EAF0";
+ctx.font = "bold "+size+"px Segoe UI";
+ctx.fillStyle = "#E6EAF0";
 
-ctx.shadowColor="rgba(0,0,0,.4)";
-ctx.shadowBlur=4;
+ctx.shadowColor="black";
+ctx.shadowBlur=5;
 
 ctx.fillText(t,x,y);
 
@@ -111,9 +70,9 @@ ctx.shadowBlur=0;
 
 }
 
-// ---------------- SAMPLE DATA ----------------
+// sample data
 
-const data={
+const data = {
 
 temp:74.3,
 dew:65,
@@ -128,51 +87,46 @@ forecast:[
 
 };
 
-// ---------------- DRAW ----------------
-
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
-// background
+// fallback background so screen never goes black
+ctx.fillStyle="#0c1118";
+ctx.fillRect(0,0,canvas.width,canvas.height);
 
+// background image if available
 if(bg.complete){
 ctx.drawImage(bg,0,0,canvas.width,canvas.height);
 }
 
-// glass panels
-
-glass(40,120,380,160);
-glass(canvas.width/2-350,350,700,150);
-
-// icon
-
-if(icon.complete){
-ctx.drawImage(icon,90,160,60,60);
+// rain icon
+if(rain.complete){
+ctx.drawImage(rain,80,120,70,70);
 }
 
 // current temp
 
-drawTemp(data.temp.toFixed(1)+"°",180,150,64,tempColor(data.temp));
+drawTemp(data.temp.toFixed(1)+"°",170,120,70,tempColor(data.temp));
 
 // conditions
 
-drawTemp(data.dew+"°",60,240,24,tempColor(data.dew));
-text(data.humidity+"%",160,240,24);
-text(data.pressure.toFixed(2),250,240,24);
+drawTemp(data.dew+"°",60,230,26,tempColor(data.dew));
+text(data.humidity+"%",160,230,26);
+text(data.pressure.toFixed(2),260,230,26);
 
 // forecast
 
 data.forecast.forEach((d,i)=>{
 
-let x=canvas.width/2-300+(i*220);
+let x = 500 + (i*220);
 
-drawTemp(d.high+"°",x,390,36,tempColor(d.high));
+drawTemp(d.high+"°",x,350,40,tempColor(d.high));
 
 ctx.fillStyle="rgba(255,255,255,.4)";
-ctx.fillRect(x+50,400,2,28);
+ctx.fillRect(x+55,360,2,30);
 
-drawTemp(d.low+"°",x+65,390,32,tempColor(d.low));
+drawTemp(d.low+"°",x+70,350,36,tempColor(d.low));
 
 });
 
