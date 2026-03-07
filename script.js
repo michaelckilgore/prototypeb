@@ -1,250 +1,193 @@
 const canvas = document.getElementById("dashboard-canvas");
 const ctx = canvas.getContext("2d");
 
+canvas.width = 1920;
+canvas.height = 1080;
+
 const bg = new Image();
 bg.src = "images/weather-background.png";
 
 const rainIcon = new Image();
 rainIcon.src = "images/rain.svg";
 
-function resizeCanvas(){
+let shimmerOffset = 0;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// ---------------- TEMP COLOR ----------------
 
-drawDashboard(sampleData);
+function getTempColor(t){
 
-}
-
-window.addEventListener("resize", resizeCanvas);
-
-// ---------------- TEMP COLOR SCALE ----------------
-
-function getTempColor(temp){
-
-if (temp < 30) return "#8EC9FF";
-if (temp < 40) return "#7FB8FF";
-if (temp < 50) return "#8FE0FF";
-if (temp < 60) return "#9BE8B2";
-if (temp < 70) return "#FFF3A6";
-if (temp < 80) return "#FFD59E";
-if (temp < 90) return "#FFB59E";
+if(t<30) return "#8EC9FF";
+if(t<40) return "#7FB8FF";
+if(t<50) return "#8FE0FF";
+if(t<60) return "#9BE8B2";
+if(t<70) return "#FFF3A6";
+if(t<80) return "#FFD59E";
+if(t<90) return "#FFB59E";
 return "#FF9E9E";
 
 }
 
 // ---------------- LIGHTEN COLOR ----------------
 
-function lightenColor(hex,amount){
+function lighten(hex,amt){
 
-let num = parseInt(hex.replace("#",""),16);
+let num=parseInt(hex.replace("#",""),16);
 
-let r = (num >> 16) + amount;
-let g = ((num >> 8) & 0x00FF) + amount;
-let b = (num & 0x0000FF) + amount;
+let r=(num>>16)+amt;
+let g=((num>>8)&0x00FF)+amt;
+let b=(num&0x0000FF)+amt;
 
-r = Math.min(255,r);
-g = Math.min(255,g);
-b = Math.min(255,b);
+r=Math.min(255,r);
+g=Math.min(255,g);
+b=Math.min(255,b);
 
-return "#" + (b | (g << 8) | (r << 16)).toString(16);
+return "#"+(b|(g<<8)|(r<<16)).toString(16);
 
 }
 
-// ---------------- TEMPERATURE TEXT ----------------
+// ---------------- GLASS PANEL ----------------
 
-function drawTempText(text,x,y,size,color){
+function glass(x,y,w,h){
 
-ctx.textAlign = "left";
-ctx.textBaseline = "top";
+ctx.fillStyle="rgba(20,25,35,.35)";
+ctx.fillRect(x,y,w,h);
 
-// glow layer
-ctx.font = `bold ${size}px Segoe UI`;
-ctx.globalAlpha = .35;
-ctx.shadowColor = color;
-ctx.shadowBlur = 20;
-ctx.fillStyle = color;
+ctx.strokeStyle="rgba(255,255,255,.08)";
+ctx.strokeRect(x,y,w,h);
+
+}
+
+// ---------------- TEMP TEXT ----------------
+
+function drawTemp(text,x,y,size,color){
+
+ctx.font=`bold ${size}px Segoe UI`;
+ctx.textBaseline="top";
+
+// glow
+ctx.shadowColor=color;
+ctx.shadowBlur=18;
+ctx.globalAlpha=.35;
+ctx.fillStyle=color;
 ctx.fillText(text,x,y);
 
-// gradient layer
-ctx.globalAlpha = 1;
+// gradient text
+ctx.globalAlpha=1;
+ctx.shadowBlur=4;
+ctx.shadowColor="rgba(0,0,0,.35)";
 
-const lighter = lightenColor(color,60);
+const light=lighten(color,60);
 
-const gradient = ctx.createLinearGradient(
-0,
-y,
-0,
-y + size
-);
+const g=ctx.createLinearGradient(0,y,0,y+size);
 
-gradient.addColorStop(0,lighter);
-gradient.addColorStop(1,color);
+g.addColorStop(0,light);
+g.addColorStop(.6,color);
+g.addColorStop(1,color);
 
-ctx.shadowBlur = 4;
-ctx.shadowColor = "rgba(0,0,0,.35)";
-ctx.fillStyle = gradient;
+ctx.fillStyle=g;
 
 ctx.fillText(text,x,y);
 
-ctx.shadowBlur = 0;
+ctx.shadowBlur=0;
 
 }
 
 // ---------------- NORMAL TEXT ----------------
 
-function drawText(text,x,y,size){
+function text(t,x,y,s){
 
-ctx.font = `bold ${size}px Segoe UI`;
-ctx.fillStyle = "#E8E8E8";
+ctx.font=`bold ${s}px Segoe UI`;
+ctx.fillStyle="#E6EAF0";
 
-ctx.textAlign = "left";
-ctx.textBaseline = "top";
+ctx.shadowColor="rgba(0,0,0,.4)";
+ctx.shadowBlur=4;
 
-ctx.shadowColor = "rgba(0,0,0,.35)";
-ctx.shadowBlur = 4;
+ctx.fillText(t,x,y);
 
-ctx.fillText(text,x,y);
-
-ctx.shadowBlur = 0;
+ctx.shadowBlur=0;
 
 }
 
-// ---------------- DASHBOARD ----------------
+// ---------------- FORECAST BLOCK ----------------
 
-function drawDashboard(data){
+function forecast(day,x){
+
+drawTemp(day.high+"°",x,420,38,getTempColor(day.high));
+
+ctx.fillStyle="rgba(255,255,255,.4)";
+ctx.fillRect(x+52,430,2,30);
+
+drawTemp(day.low+"°",x+65,420,34,getTempColor(day.low));
+
+}
+
+// ---------------- DRAW ----------------
+
+function draw(data){
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
 
-// background
 ctx.drawImage(bg,0,0,canvas.width,canvas.height);
 
-// CURRENT TEMP ICON (moved left)
+// panels
 
-ctx.drawImage(rainIcon,90,150,60,60);
+glass(40,120,380,170);      // current
+glass(520,340,760,140);     // forecast
+glass(240,720,300,150);     // lightning
+glass(540,960,360,120);     // rain
+glass(240,1180,320,200);    // indoor
 
-// CURRENT TEMP
+// icon
 
-drawTempText(
-data.currentTemp.toFixed(1)+"°",
-180,
-150,
-56,
-getTempColor(data.currentTemp)
-);
+ctx.drawImage(rainIcon,95,155,60,60);
 
-// DEW POINT
+// current temp
 
-drawTempText(
-data.dewPoint+"°",
-55,
-240,
-22,
-getTempColor(data.dewPoint)
-);
+drawTemp(data.currentTemp.toFixed(1)+"°",180,150,64,getTempColor(data.currentTemp));
 
-// HUMIDITY
+// shimmer highlight
 
-drawText(
-data.humidity+"%",
-155,
-238,
-22
-);
+ctx.globalAlpha=.15;
+ctx.fillStyle="white";
+ctx.fillRect(180+shimmerOffset,150,12,70);
+ctx.globalAlpha=1;
 
-// PRESSURE
+// conditions
 
-drawText(
-data.pressure.toFixed(2),
-250,
-238,
-22
-);
+drawTemp(data.dew+"°",60,245,24,getTempColor(data.dew));
+text(data.humidity+"%",160,245,24);
+text(data.pressure.toFixed(2),250,245,24);
 
-// FORECAST
+// forecast
 
-data.forecast.forEach((day,i)=>{
+data.forecast.forEach((d,i)=>{
 
-const x = 600 + (i*230);
-const y = 380;
-
-drawTempText(
-day.high+"°",
-x,
-y,
-34,
-getTempColor(day.high)
-);
-
-drawTempText(
-day.low+"°",
-x+70,
-y,
-34,
-getTempColor(day.low)
-);
+forecast(d,560+(i*240));
 
 });
 
-// INDOOR
+// lightning
 
-drawTempText(
-data.indoorTemp+"°",
-280,
-1280,
-32,
-getTempColor(data.indoorTemp)
-);
+text(data.lightning+" Strikes",260,760,28);
 
-drawText(
-data.indoorHumidity+"% Humidity",
-280,
-1320,
-26
-);
+// rain
 
-drawTempText(
-data.indoorDew+"°",
-280,
-1350,
-26,
-getTempColor(data.indoorDew)
-);
+text(data.rain.toFixed(2)+" in",580,1000,28);
 
-// LIGHTNING
+// indoor
 
-drawText(
-data.lightning+" Strikes",
-280,
-780,
-28
-);
-
-// RAINFALL
-
-drawText(
-data.rainfall.toFixed(2)+" in",
-600,
-1050,
-28
-);
-
-// FOOTER
-
-ctx.font = "bold 48px Segoe UI";
-ctx.textAlign = "center";
-ctx.fillStyle = "#FFFFFF";
-
-ctx.fillText("SH",canvas.width/2,1450);
+drawTemp(data.indoorTemp+"°",270,1230,34,getTempColor(data.indoorTemp));
+text(data.indoorHumidity+"% Humidity",270,1270,26);
+drawTemp(data.indoorDew+"°",270,1305,26,getTempColor(data.indoorDew));
 
 }
 
 // ---------------- SAMPLE DATA ----------------
 
-const sampleData = {
+const data={
 
 currentTemp:74.3,
-dewPoint:65,
+dew:65,
 humidity:57,
 pressure:28.97,
 
@@ -254,19 +197,33 @@ forecast:[
 {high:68,low:50}
 ],
 
+lightning:0,
+rain:0,
+
 indoorTemp:67,
 indoorHumidity:57,
-indoorDew:55,
-
-lightning:0,
-rainfall:0
+indoorDew:55
 
 };
 
-// ---------------- INIT ----------------
+// ---------------- LOOP ----------------
 
-bg.onload = ()=>{
+function loop(){
 
-resizeCanvas();
+shimmerOffset+=1;
+
+if(shimmerOffset>200) shimmerOffset=-60;
+
+draw(data);
+
+requestAnimationFrame(loop);
+
+}
+
+// ---------------- START ----------------
+
+bg.onload=()=>{
+
+loop();
 
 };
