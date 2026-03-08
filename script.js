@@ -1,243 +1,312 @@
-const canvas = document.getElementById("dashboard");
-const ctx = canvas.getContext("2d");
-canvas.width = 1920;
-canvas.height = 1080;
+const canvas = document.getElementById("dashboard")
+const ctx = canvas.getContext("2d")
 
-// ================= FAKE DATA =================
-const current = { temp: 74.3, dew: 65, humidity: 57, pressure: 28.97, condition:"Sunny", rainRate: 0.05 };
-const forecast = [
-    { day:"Mon", high:70, low:44 },
-    { day:"Tue", high:62, low:45 },
-    { day:"Wed", high:68, low:50 }
-];
-const rainfall = { dailyTotal: 0.3 };
-const indoor = { temp: 67.0, humidity: 57, dew: 65 };
+canvas.width = 1920
+canvas.height = 1080
+
+/* ---------------- GRID SYSTEM ---------------- */
+
+const margin = 60
+const gap = 30
+
+const colWidth = (1920 - margin*2 - gap*2) / 3
+
+const col1 = margin
+const col2 = margin + colWidth + gap
+const col3 = margin + (colWidth + gap) * 2
+
+const headerHeight = 100
+const row1Y = headerHeight + 40
+const row2Y = row1Y + 320 + gap
+const row3Y = row2Y + 260 + gap
+
+/* ---------------- FAKE DATA ---------------- */
+
+const current = {
+temp:74,
+condition:"Sunny",
+dew:65,
+humidity:57,
+pressure:28.97
+}
+
+const rainfall = {
+daily:0.30,
+rate:0.05
+}
+
+const wind = {
+speed:12,
+gust:18,
+direction:135
+}
+
+const indoor = {
+temp:67,
+humidity:55,
+dew:60
+}
+
 const lightning = {
-    lastStrike: "2026-03-08 14:15",
-    distance: 2.5,
-    direction: "↗",
-    strikesLastMinute: 0,
-    strikesLast15Min: 1,
-    strikesLastHour: 3,
-    strikesSinceMidnight: 8
-};
-const wind = { speed: 12, gust: 18, direction: 135 };
-
-// ================= ICON =================
-const icon = new Image();
-icon.src = "images/rain.svg"; // placeholder
-
-// ================= FORECAST ROTATION =================
-let forecastIndex = 0;
-let forecastTimer = 0;
-
-// ================= HELPER: PASTEL GRADIENT TEXT =================
-function pastelGradient(colorTop, colorBottom, x, y, text, fontSize){
-    const grad = ctx.createLinearGradient(0, y - fontSize, 0, y);
-    grad.addColorStop(0, colorTop);
-    grad.addColorStop(1, colorBottom);
-    ctx.fillStyle = grad;
-    ctx.fillText(text, x, y);
+last:"2026-03-08 14:15",
+distance:2.5,
+direction:"↗",
+minute:0,
+fifteen:1,
+hour:3,
+midnight:8
 }
 
-// ================= DRAW LOOP =================
+const forecast = [
+{high:70,low:44},
+{high:62,low:45},
+{high:68,low:50}
+]
+
+/* ---------------- HELPERS ---------------- */
+
+function panel(x,y,w,h,title){
+
+ctx.fillStyle='rgba(40,50,70,0.55)'
+ctx.fillRect(x,y,w,h)
+
+ctx.fillStyle="#FFF"
+ctx.font="bold 30px Arial"
+ctx.fillText(title,x+20,y+40)
+
+}
+
+function gradientText(c1,c2,x,y,text,size){
+
+const g=ctx.createLinearGradient(0,y-size,0,y)
+g.addColorStop(0,c1)
+g.addColorStop(1,c2)
+
+ctx.fillStyle=g
+ctx.font="bold "+size+"px Arial"
+ctx.fillText(text,x,y)
+
+}
+
+function getNextThreeDays(){
+
+const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+
+let today=new Date()
+
+let labels=[]
+
+for(let i=1;i<=3;i++){
+
+let d=new Date(today)
+d.setDate(today.getDate()+i)
+
+labels.push(days[d.getDay()])
+
+}
+
+return labels
+
+}
+
+/* ---------------- DRAW LOOP ---------------- */
+
 function draw(){
-    ctx.clearRect(0,0,1920,1080);
 
-    // -------- Background --------
-    ctx.fillStyle = 'rgba(20,30,50,0.5)';
-    ctx.fillRect(50,50,1820,980);
+ctx.clearRect(0,0,1920,1080)
 
-    // -------- Header --------
-    ctx.fillStyle = "#FFFFFFAA";
-    ctx.font = "bold 36px Arial";
-    ctx.fillText("SUGAR HILL REPORTING STATION • RUSHVILLE, IN",60,90);
+/* HEADER */
 
-    // -------- CURRENT CONDITIONS --------
-    ctx.fillStyle = 'rgba(40,50,70,0.6)';
-    ctx.fillRect(50,140,600,260);
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("CURRENT CONDITIONS",60,180);
+ctx.fillStyle='rgba(30,40,70,0.7)'
+ctx.fillRect(0,0,canvas.width,headerHeight)
 
-    if(icon.complete) ctx.drawImage(icon,70,200,70,70);
+const title="SUGAR HILL REPORTING STATION"
+ctx.font="bold 44px Arial"
+ctx.fillStyle="#FFF"
 
-    ctx.font = "bold 120px Arial";
-    pastelGradient("#FFE0E0","#FFC8C8",160,250,current.temp.toFixed(1)+"°",120);
+let titleWidth=ctx.measureText(title).width
+let centerX=(canvas.width-titleWidth)/2
 
-    ctx.font="40px Arial";
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.fillText(current.condition,160,310);
+ctx.shadowColor="#6FE8FF"
+ctx.shadowBlur=15
+ctx.fillText(title,centerX,55)
+ctx.shadowBlur=0
 
-    // Dew, Humidity, Pressure headers
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFAA";
-    ctx.fillText("DEW POINT",160,350);
-    ctx.fillText("HUMIDITY",320,350);
-    ctx.fillText("PRESSURE",480,350);
+ctx.font="22px Arial"
+ctx.fillStyle="#A0FFE0"
 
-    // Values
-    ctx.font="40px Arial";
-    pastelGradient("#D0FFEE","#A0FFD0",160,390,current.dew+"°",40);
-    pastelGradient("#D0E0FF","#A0C8FF",320,390,current.humidity+"%",40);
-    pastelGradient("#FFD0FF","#FFA0FF",480,390,current.pressure.toFixed(2),40);
+const subtitle="RUSHVILLE, INDIANA"
+let subWidth=ctx.measureText(subtitle).width
 
-    // Pressure in MB
-    let pressureMB = (current.pressure*33.8639).toFixed(1);
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.fillText(`${pressureMB} MB`,580,390);
+ctx.fillText(subtitle,(canvas.width-subWidth)/2,85)
 
-    // -------- THREE DAY FORECAST --------
-    ctx.fillStyle = 'rgba(40,50,70,0.5)';
-    ctx.fillRect(50,450,700,200);
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("THREE DAY FORECAST",60,490);
+/* CURRENT CONDITIONS */
 
-    ctx.font="bold 30px Arial";
-    let fx = 80;
-    for(let i=0;i<3;i++){
-        let f = forecast[(forecastIndex+i)%3];
-        ctx.fillStyle="#FFFFFFCC";
-        ctx.fillText(f.day, fx,530);
-        pastelGradient("#FFD0AA","#FFC080",fx,570,f.high+"°",50);
-        ctx.fillStyle="rgba(255,255,255,0.4)";
-        ctx.fillRect(fx+80,580,3,40);
-        pastelGradient("#80D0FF","#40A0FF",fx+100,570,f.low+"°",46);
-        fx+=200;
-    }
-    forecastTimer++;
-    if(forecastTimer%300===0) forecastIndex=(forecastIndex+1)%3;
+panel(col1,row1Y,colWidth,320,"CURRENT CONDITIONS")
 
-    // -------- RAINFALL DATA --------
-    ctx.fillStyle = 'rgba(40,50,70,0.5)';
-    ctx.fillRect(700,140,300,260);
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("RAINFALL DATA",710,180);
+gradientText("#FFE0E0","#FFC8C8",col1+20,row1Y+200,current.temp+"°",150)
 
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFAA";
-    ctx.fillText("DAILY TOTAL (in)",710,230);
-    ctx.fillText("CURRENT RATE (in/hr)",710,280);
+ctx.fillStyle="#FFF"
+ctx.font="32px Arial"
+ctx.fillText(current.condition,col1+260,row1Y+130)
 
-    ctx.font="40px Arial";
-    pastelGradient("#80D0FF","#40A0FF",920,230,rainfall.dailyTotal.toFixed(2),40);
-    pastelGradient("#D0E0FF","#A0C8FF",960,280,current.rainRate.toFixed(2),40);
+ctx.font="24px Arial"
 
-    // -------- RADAR PLACEHOLDER --------
-    const radarX = canvas.width/2-150;
-    const radarY = 650;
-    const radarSize = 300;
-    ctx.fillStyle='rgba(40,50,70,0.5)';
-    ctx.fillRect(radarX,radarY,radarSize,radarSize);
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("RADAR IMAGE HERE", radarX+20, radarY+radarSize/2+12);
+ctx.fillText("Dew",col1+260,row1Y+180)
+ctx.fillText("Humidity",col1+350,row1Y+180)
+ctx.fillText("Pressure",col1+470,row1Y+180)
 
-    // -------- LIGHTNING DATA SUMMARY --------
-    ctx.fillStyle = 'rgba(40,50,70,0.5)';
-    ctx.fillRect(1050,140,600,260);
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("LIGHTNING DATA SUMMARY",1060,180);
+gradientText("#A0FFD0","#D0FFEE",col1+260,row1Y+210,current.dew+"°",30)
+gradientText("#A0C8FF","#D0E0FF",col1+350,row1Y+210,current.humidity+"%",30)
 
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFAA";
-    ctx.fillText("Most Recent Strike:",1060,230);
-    ctx.fillText("Distance:",1060,270);
-    ctx.fillText("Direction:",1060,310);
+let mb=Math.round(current.pressure*33.8639)
 
-    ctx.font="40px Arial";
-    pastelGradient("#FFD0AA","#FFC080",1300,230,lightning.lastStrike,40);
-    pastelGradient("#80D0FF","#40A0FF",1300,270,lightning.distance+" mi",40);
-    pastelGradient("#D0FFEE","#A0FFD0",1300,310,lightning.direction,40);
+gradientText("#FFA0FF","#FFD0FF",col1+470,row1Y+210,current.pressure.toFixed(2),30)
 
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFAA";
-    ctx.fillText("Strikes Last Minute:",1060,360);
-    ctx.fillText("Last 15 Minutes:",1060,390);
-    ctx.fillText("Last Hour:",1060,420);
-    ctx.fillText("Since Midnight:",1060,450);
+ctx.font="18px Arial"
+ctx.fillStyle="#FFF"
+ctx.fillText(mb+" MB",col1+540,row1Y+210)
 
-    ctx.font="40px Arial";
-    pastelGradient("#FFD0AA","#FFC080",1300,360,lightning.strikesLastMinute,40);
-    pastelGradient("#80D0FF","#40A0FF",1300,390,lightning.strikesLast15Min,40);
-    pastelGradient("#D0FFEE","#A0FFD0",1300,420,lightning.strikesLastHour,40);
-    pastelGradient("#FFA0FF","#FF80FF",1300,450,lightning.strikesSinceMidnight,40);
+/* RADAR */
 
-    // -------- INDOOR WEATHER --------
-    ctx.fillStyle = 'rgba(40,50,70,0.5)';
-    ctx.fillRect(50,700,600,200);
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("INDOOR WEATHER",60,740);
+panel(col2,row1Y,colWidth,320,"RADAR")
 
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFAA";
-    ctx.fillText("TEMPERATURE",60,780);
-    ctx.fillText("HUMIDITY",240,780);
-    ctx.fillText("DEW POINT",400,780);
+ctx.font="36px Arial"
+ctx.fillStyle="#FFFFFFAA"
+ctx.fillText("RADAR IMAGE HERE",col2+120,row1Y+180)
 
-    ctx.font="40px Arial";
-    pastelGradient("#FFE0E0","#FFC8C8",60,820,indoor.temp.toFixed(1)+"°",40);
-    pastelGradient("#D0E0FF","#A0C8FF",240,820,indoor.humidity+"%",40);
-    pastelGradient("#D0FFEE","#A0FFD0",400,820,indoor.dew+"°",40);
+/* LIGHTNING */
 
-    // -------- WIND CONDITIONS --------
-    const vaneX = 700;
-    const vaneY = 700;
-    const vaneWidth = 400;
-    const vaneHeight = 200;
-    ctx.fillStyle='rgba(40,50,70,0.5)';
-    ctx.fillRect(vaneX,vaneY,vaneWidth,vaneHeight);
+panel(col3,row1Y,colWidth,320,"LIGHTNING")
 
-    ctx.fillStyle="#FFFFFFCC";
-    ctx.font="bold 36px Arial";
-    ctx.fillText("WIND CONDITIONS",vaneX+20,vaneY+40);
+ctx.font="24px Arial"
+ctx.fillStyle="#FFF"
 
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFFFFFAA";
-    ctx.fillText("Speed (mph):",vaneX+20,vaneY+80);
-    ctx.fillText("Gust (mph):",vaneX+20,vaneY+120);
-    ctx.fillText("Direction:",vaneX+20,vaneY+160);
+ctx.fillText("Last Strike",col3+20,row1Y+90)
+ctx.fillText("Distance",col3+20,row1Y+120)
+ctx.fillText("Direction",col3+20,row1Y+150)
 
-    ctx.font="40px Arial";
-    pastelGradient("#FFD0AA","#FFC080",vaneX+180,vaneY+80,wind.speed,40);
-    pastelGradient("#80D0FF","#40A0FF",vaneX+180,vaneY+120,wind.gust,40);
+gradientText("#FFC080","#FFD0AA",col3+200,row1Y+90,lightning.last,26)
+gradientText("#80D0FF","#40A0FF",col3+200,row1Y+120,lightning.distance+" mi",26)
+gradientText("#A0FFD0","#D0FFEE",col3+200,row1Y+150,lightning.direction,28)
 
-    const arrowLength = 50;
-    const centerX = vaneX + 320;
-    const centerY = vaneY + 120;
-    const angleRad = (wind.direction - 90) * Math.PI / 180;
+ctx.font="22px Arial"
 
-    ctx.save();
-    ctx.translate(centerX,centerY);
-    ctx.rotate(angleRad);
+ctx.fillText("Last Minute",col3+20,row1Y+200)
+ctx.fillText("15 Minutes",col3+20,row1Y+230)
+ctx.fillText("Last Hour",col3+20,row1Y+260)
+ctx.fillText("Since Midnight",col3+20,row1Y+290)
 
-    ctx.strokeStyle = "#FFFFFFCC";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(arrowLength,0);
-    ctx.stroke();
+gradientText("#FFD0AA","#FFC080",col3+200,row1Y+200,lightning.minute,26)
+gradientText("#80D0FF","#40A0FF",col3+200,row1Y+230,lightning.fifteen,26)
+gradientText("#A0FFD0","#D0FFEE",col3+200,row1Y+260,lightning.hour,26)
+gradientText("#FF80FF","#FFA0FF",col3+200,row1Y+290,lightning.midnight,26)
 
-    ctx.fillStyle="#FFEEAA";
-    ctx.beginPath();
-    ctx.moveTo(arrowLength,0);
-    ctx.lineTo(arrowLength-12,6);
-    ctx.lineTo(arrowLength-12,-6);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+/* FORECAST */
 
-    // -------- Footer Ticker --------
-    ctx.fillStyle = "#A0FFE0";
-    ctx.font="24px Arial";
-    ctx.fillText("LOCAL WEATHER PROTOTYPE DISPLAY • SPORTS MODULE READY • STOCK MODULE READY • RADAR PANEL READY",60,1030);
+panel(col1,row2Y,colWidth,260,"3 DAY FORECAST")
 
-    requestAnimationFrame(draw);
+const labels=getNextThreeDays()
+
+let fx=col1+40
+
+for(let i=0;i<3;i++){
+
+ctx.fillStyle="#FFF"
+ctx.font="30px Arial"
+ctx.fillText(labels[i],fx,row2Y+110)
+
+gradientText("#FFC080","#FFD0AA",fx,row2Y+160,forecast[i].high+"°",40)
+
+ctx.fillStyle="#888"
+ctx.fillRect(fx+60,row2Y+130,2,40)
+
+gradientText("#40A0FF","#80D0FF",fx+70,row2Y+160,forecast[i].low+"°",40)
+
+fx+=180
+
 }
 
-draw();
+/* WIND */
+
+panel(col2,row2Y,colWidth,260,"WIND")
+
+ctx.font="24px Arial"
+ctx.fillStyle="#FFF"
+
+ctx.fillText("Speed",col2+20,row2Y+110)
+ctx.fillText("Gust",col2+20,row2Y+140)
+
+gradientText("#FFC080","#FFD0AA",col2+110,row2Y+110,wind.speed,30)
+gradientText("#80D0FF","#40A0FF",col2+110,row2Y+140,wind.gust,30)
+
+const cx=col2+350
+const cy=row2Y+140
+const angle=(wind.direction-90)*Math.PI/180
+
+ctx.save()
+ctx.translate(cx,cy)
+ctx.rotate(angle)
+
+ctx.strokeStyle="#FFF"
+ctx.lineWidth=4
+
+ctx.beginPath()
+ctx.moveTo(0,0)
+ctx.lineTo(70,0)
+ctx.stroke()
+
+ctx.beginPath()
+ctx.moveTo(70,0)
+ctx.lineTo(55,8)
+ctx.lineTo(55,-8)
+ctx.closePath()
+ctx.fillStyle="#FFEEAA"
+ctx.fill()
+
+ctx.restore()
+
+/* RAIN */
+
+panel(col3,row2Y,colWidth,260,"RAINFALL")
+
+ctx.font="24px Arial"
+ctx.fillStyle="#FFF"
+
+ctx.fillText("Daily Total",col3+20,row2Y+110)
+ctx.fillText("Rain Rate",col3+20,row2Y+150)
+
+gradientText("#40A0FF","#80D0FF",col3+220,row2Y+110,rainfall.daily+" in",34)
+gradientText("#80D0FF","#A0C8FF",col3+220,row2Y+150,rainfall.rate+" in/hr",34)
+
+/* INDOOR */
+
+panel(col1,row3Y,colWidth,200,"INDOOR WEATHER")
+
+ctx.font="24px Arial"
+ctx.fillStyle="#FFF"
+
+ctx.fillText("Temp",col1+20,row3Y+100)
+ctx.fillText("Humidity",col1+180,row3Y+100)
+ctx.fillText("Dew",col1+360,row3Y+100)
+
+gradientText("#FFC8C8","#FFE0E0",col1+20,row3Y+140,indoor.temp+"°",34)
+gradientText("#A0C8FF","#D0E0FF",col1+180,row3Y+140,indoor.humidity+"%",34)
+gradientText("#A0FFD0","#D0FFEE",col1+360,row3Y+140,indoor.dew+"°",34)
+
+/* FOOTER */
+
+ctx.fillStyle="#A0FFE0"
+ctx.font="24px Arial"
+
+ctx.fillText(
+"LOCAL WEATHER PROTOTYPE DISPLAY • SPORTS AND STOCK PANELS AVAILABLE",
+margin,
+1040
+)
+
+requestAnimationFrame(draw)
+
+}
+
+draw()
