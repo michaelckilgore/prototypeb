@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Sugar Hill Weather Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="eyebrow">LIVE PERSONAL WEATHER STATION</div>
+        <h1 class="station-title">Sugar Hill Reporting Station</h1>
+        <div class="meta-row">
+          <span id="stationTime">Updated --:--</span>
+          <span class="dot">•</span>
+          <span id="stationLocation">Rushville, Indiana</span>
+        </div>
+      </div>
+
+      <div class="alert-pill" id="alertPill">
+        <span class="alert-label">Status</span>
+        <span class="alert-value">Nominal</span>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+      <section class="panel hero-panel">
+        <div class="hero-main">
+          <div class="condition-stack">
+            <div class="condition-icon-wrap">
+              <div class="condition-icon" id="conditionIcon">⛅</div>
+            </div>
+
+            <div class="condition-copy">
+              <div class="current-temp-row">
+                <span class="current-temp" id="currentTemp">58°</span>
+                <span class="temp-trend up" id="tempTrend">▲ 2° / hr</span>
+              </div>
+              <div class="current-condition" id="currentCondition">Partly Cloudy</div>
+              <div class="feels-like">
+                Feels like <span id="feelsLike">60°</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metrics-strip">
+            <div class="metric-card">
+              <div class="metric-label">Humidity</div>
+              <div class="metric-value" id="humidity">54%</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Wind</div>
+              <div class="metric-value" id="wind">9 mph NW</div>
+            </div>
+            <div class="metric-card metric-card-wide">
+              <div class="metric-label">Barometer</div>
+              <div class="metric-value barometer-line" id="barometerLine">
+                <span id="barometerValue">30.14 in</span>
+                <span class="pressure-trend up" id="pressureTrend">▲ Rising</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="mini-stat">
+            <div class="mini-stat-label">Dew Point</div>
+            <div class="mini-stat-value" id="dewPoint">41°</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Visibility</div>
+            <div class="mini-stat-value" id="visibility">10 mi</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">Rain Today</div>
+            <div class="mini-stat-value" id="rainToday">0.00 in</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-label">UV Index</div>
+            <div class="mini-stat-value" id="uvIndex">3</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-kicker">TEMPERATURE TREND</div>
+            <h2>Past 24 Hours</h2>
+          </div>
+          <div class="panel-note">Rolling 24-hour view</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="tempChart" width="1200" height="420"></canvas>
+        </div>
+      </section>
+
+      <section class="panel observed-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-kicker">LIVE STATION DATA</div>
+            <h2>Observed Today</h2>
+          </div>
+        </div>
+
+        <div class="observed-grid">
+          <div class="observed-item">
+            <span class="observed-label">High</span>
+            <span class="observed-value" id="dayHigh">62°</span>
+          </div>
+          <div class="observed-item">
+            <span class="observed-label">Low</span>
+            <span class="observed-value" id="dayLow">38°</span>
+          </div>
+          <div class="observed-item">
+            <span class="observed-label">Wind Gust</span>
+            <span class="observed-value" id="windGust">18 mph</span>
+          </div>
+          <div class="observed-item">
+            <span class="observed-label">Rain Rate</span>
+            <span class="observed-value" id="rainRate">0.00 in/hr</span>
+          </div>
+          <div class="observed-item">
+            <span class="observed-label">Pressure Trend</span>
+            <span class="observed-value" id="pressureText">Rising</span>
+          </div>
+          <div class="observed-item">
+            <span class="observed-label">Sunrise / Sunset</span>
+            <span class="observed-value" id="sunTimes">7:01a / 6:31p</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel timeline-panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-kicker">NEXT FEW HOURS</div>
+            <h2>Station Outlook</h2>
+          </div>
+        </div>
+
+        <div class="hourly-row" id="hourlyRow"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
