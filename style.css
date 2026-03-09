@@ -10,7 +10,7 @@ html, body {
 #canvas-container {
     width: 100%;
     height: 100vh;
-    overflow-y: auto; /* vertical scroll for tall canvas */
+    overflow-y: auto; /* vertical scroll */
 }
 
 canvas {
