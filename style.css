@@ -1,4 +1,3 @@
-/* Full-page container for scrolling canvas */
 html, body {
     margin: 0;
     padding: 0;
@@ -11,10 +10,10 @@ html, body {
 #canvas-container {
     width: 100%;
     height: 100vh;
-    overflow-y: auto; /* enable vertical scroll */
+    overflow-y: auto; /* vertical scroll for tall canvas */
 }
 
 canvas {
-    display: block; /* remove extra bottom margin */
-    background-color: #1a2030; /* dark broadcast-style background */
+    display: block;
+    background-color: #1a2030;
 }
