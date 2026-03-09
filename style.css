@@ -1,10 +1,20 @@
-body{
-margin:0;
-background:linear-gradient(#0c1220,#1a2038);
-overflow:hidden;
-font-family:Arial, Helvetica, sans-serif;
+/* Full-page container for scrolling canvas */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #1a2030;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
 }
 
-canvas{
-display:block;
+#canvas-container {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto; /* enable vertical scroll */
+}
+
+canvas {
+    display: block; /* remove extra bottom margin */
+    background-color: #1a2030; /* dark broadcast-style background */
 }
