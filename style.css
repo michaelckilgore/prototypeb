@@ -342,3 +342,56 @@ display:grid;
 grid-template-columns:repeat(3,1fr);
 text-align:center;
 }
+@media (max-width: 900px) {
+
+  .dashboard{
+    grid-template-columns:1fr;
+  }
+
+  .panel{
+    width:100%;
+  }
+
+  .wind-section{
+    grid-template-columns:1fr;
+    text-align:center;
+  }
+
+  .today-grid{
+    grid-template-columns:1fr;
+  }
+
+  .temp-graph{
+    grid-template-columns:1fr;
+  }
+
+  .sunmoon{
+    grid-template-columns:1fr;
+  }
+
+  .indoor{
+    grid-template-columns:1fr;
+  }
+
+  .forecast{
+    grid-template-columns:1fr;
+  }
+
+  .lightning-top{
+    grid-template-columns:1fr;
+  }
+
+  .lightning-history{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .current{
+    grid-template-columns:1fr;
+    text-align:center;
+  }
+
+  .current-stats{
+    grid-template-columns:1fr;
+  }
+
+}
