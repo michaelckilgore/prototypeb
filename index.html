@@ -1,325 +1,668 @@
-const data = {
-  current: {
-    temp: 74.2,
-    condition: "Storm",
-    dew: 65,
-    humidity: 57,
-    pressureIn: 28.97
-  },
-  wind: {
-    speed: 12,
-    gust: 18,
-    directionDeg: 135
-  },
-  indoor: {
-    temp: 67,
-    humidity: 55,
-    dew: 60
-  },
-  rainfall: {
-    daily: 0.30,
-    rate: 0.05
-  },
-  lightning: {
-    last: new Date(2026, 2, 8, 14, 15),
-    distance: 2.5,
-    direction: "↗",
-    minute: 0,
-    fifteen: 1,
-    hour: 3,
-    midnight: 8
-  },
-  today: {
-    high: 75,
-    low: 51,
-    sunrise: "8:04 AM",
-    sunset: "7:41 PM",
-    moon: "Waning Gibbous",
-    tempsSinceMidnight: [51, 52, 53, 55, 57, 60, 63, 68, 72, 74, 75, 74]
-  },
-  forecast: [
-    { high: 70, low: 44, cond: "Storm" },
-    { high: 62, low: 45, cond: "Storm" },
-    { high: 68, low: 50, cond: "Storm" }
-  ],
-  alerts: [
-    {
-      type: "Severe Thunderstorm Warning",
-      text: "Severe Thunderstorm Warning for Rush County until 1:30 PM EDT. At 12:45 PM EDT, National Weather Service Doppler Radar indicated a severe thunderstorm near Homer moving east at 30 mph. The storm will be near Rushville around 1:05 PM."
-    }
-  ]
-};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sugar Hill Reporting Station</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
 
-function tempGradientStops(temp) {
-  const intervals = [
-    { max: 30, top: "#A0E0FF", bottom: "#70C0FF" },
-    { max: 40, top: "#90D4FF", bottom: "#60B0FF" },
-    { max: 50, top: "#80C8FF", bottom: "#50A0FF" },
-    { max: 60, top: "#A0FFD0", bottom: "#70D0A0" },
-    { max: 70, top: "#FFE0E0", bottom: "#FFC8C8" },
-    { max: 80, top: "#FFD080", bottom: "#FFB060" },
-    { max: 90, top: "#FFC050", bottom: "#FF9040" },
-    { max: 100, top: "#FFA040", bottom: "#FF7040" },
-    { max: 110, top: "#FF8040", bottom: "#FF5030" },
-    { max: 120, top: "#FF6040", bottom: "#FF3020" }
-  ];
-  for (const item of intervals) {
-    if (temp <= item.max) return item;
-  }
-  return intervals[intervals.length - 1];
-}
+<body>
 
-function applyTempGradient(el, temp) {
-  const colors = tempGradientStops(temp);
-  el.style.backgroundImage = `linear-gradient(180deg, ${colors.top} 0%, ${colors.bottom} 100%)`;
-}
+<header class="header">
 
-function formatStrikeTime(date) {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  let hours = date.getHours();
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const suffix = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12;
-  return `${month}/${day} ${hours}:${minutes} ${suffix}`;
-}
+<div class="station">
+SUGAR HILL REPORTING STATION
+</div>
 
-function degToCompass(num) {
-  const val = Math.floor((num / 22.5) + 0.5);
-  const arr = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-  return arr[val % 16];
-}
+<div class="location">
+Rushville, Indiana
+</div>
 
-function getNextThreeDayLabels() {
-  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  const today = new Date();
-  return [
-    "Today",
-    days[(today.getDay() + 1) % 7],
-    days[(today.getDay() + 2) % 7]
-  ];
-}
+<div id="clock" class="clock">
+--:--
+</div>
 
-function updateClock() {
-  const now = new Date();
-  const str = now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZoneName: "short"
-  });
-  document.getElementById("clock").textContent = str;
-}
+</header>
 
-function pressureMb(inches) {
-  return Math.round(inches * 33.8639);
-}
 
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value;
-}
+<section class="alerts">
 
-function renderWarnings() {
-  const alerts = data.alerts || [];
-  const activeBar = document.getElementById("active-alerts-bar");
-  const activeList = document.getElementById("active-alerts-list");
-  const priorityBar = document.getElementById("priority-alerts-bar");
-  const priorityTrack = document.getElementById("priority-alerts-track");
+<div id="active-alerts-bar" class="alert-bar">
 
-  if (alerts.length === 0) {
-    activeBar.hidden = true;
-    priorityBar.hidden = true;
-    return;
-  }
+<div class="alert-title">
+Active Warnings
+</div>
 
-  activeBar.hidden = false;
-  activeList.innerHTML = "";
+<div id="active-alerts-list" class="alert-text"></div>
 
-  const list = document.createElement("div");
-  list.className = "alert-list";
+</div>
 
-  alerts.forEach(alert => {
-    const chip = document.createElement("div");
-    chip.className = "alert-chip";
-    chip.textContent = alert.type;
-    list.appendChild(chip);
-  });
 
-  activeList.appendChild(list);
+<div id="priority-alerts-bar" class="alert-bar">
 
-  const priorityTypes = new Set([
-    "Tornado Warning",
-    "Tornado Emergency",
-    "Severe Thunderstorm Warning"
-  ]);
+<div class="alert-title">
+Warning Text
+</div>
 
-  const priorityAlerts = alerts.filter(a => priorityTypes.has(a.type));
+<div class="ticker">
+<div id="priority-alerts-track"></div>
+</div>
 
-  if (priorityAlerts.length === 0) {
-    priorityBar.hidden = true;
-    return;
-  }
+</div>
 
-  priorityBar.hidden = false;
-  priorityTrack.textContent = priorityAlerts.map(a => a.text).join("   •   ");
-}
+</section>
 
-function renderForecast() {
-  const labels = getNextThreeDayLabels();
 
-  for (let i = 0; i < 3; i++) {
-    const item = data.forecast[i];
-    setText(`f${i}-label`, labels[i]);
-    setText(`f${i}-high`, `${item.high}°`);
-    setText(`f${i}-low`, `${item.low}°`);
-    setText(`f${i}-cond`, item.cond);
 
-    applyTempGradient(document.getElementById(`f${i}-high`), item.high);
-    applyTempGradient(document.getElementById(`f${i}-low`), item.low);
-  }
-}
+<main class="dashboard">
 
-function renderWindArrow() {
-  const arrow = document.getElementById("wind-arrow");
-  const deg = data.wind.directionDeg;
-  arrow.style.transform = `rotate(${deg - 90}deg)`;
-}
+<!-- CURRENT CONDITIONS -->
 
-function renderTodayGraph() {
-  const canvas = document.getElementById("today-graph");
-  const ctx = canvas.getContext("2d");
+<section class="panel">
 
-  const width = canvas.width;
-  const height = canvas.height;
-  ctx.clearRect(0, 0, width, height);
+<h2>Current Conditions</h2>
 
-  const padding = { top: 16, right: 12, bottom: 18, left: 8 };
-  const chartW = width - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
+<div class="current">
 
-  const temps = data.today.tempsSinceMidnight;
-  const minT = data.today.low;
-  const maxT = data.today.high;
+<div class="current-left">
 
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.lineWidth = 1;
+<img src="images/storm.svg" class="current-icon">
 
-  for (let i = 0; i <= 4; i++) {
-    const y = padding.top + (chartH / 4) * i;
-    ctx.beginPath();
-    ctx.moveTo(padding.left, y);
-    ctx.lineTo(width - padding.right, y);
-    ctx.stroke();
-  }
+<div id="current-condition">
+Storm
+</div>
 
-  for (let i = 0; i < temps.length - 1; i++) {
-    const t1 = temps[i];
-    const t2 = temps[i + 1];
+</div>
 
-    const x1 = padding.left + (chartW / (temps.length - 1)) * i;
-    const x2 = padding.left + (chartW / (temps.length - 1)) * (i + 1);
+<div class="current-right">
 
-    const y1 = padding.top + chartH - ((t1 - minT) / (maxT - minT || 1)) * chartH;
-    const y2 = padding.top + chartH - ((t2 - minT) / (maxT - minT || 1)) * chartH;
+<div id="current-temp" class="big-temp">
+74.2°
+</div>
 
-    const stops1 = tempGradientStops(t1);
-    const stops2 = tempGradientStops(t2);
+</div>
 
-    const grad = ctx.createLinearGradient(x1, y1, x2, y2);
-    grad.addColorStop(0, stops1.top);
-    grad.addColorStop(1, stops2.bottom);
+</div>
 
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
 
-  ctx.beginPath();
-  ctx.moveTo(padding.left, height - padding.bottom);
+<div class="current-stats">
 
-  temps.forEach((t, i) => {
-    const x = padding.left + (chartW / (temps.length - 1)) * i;
-    const y = padding.top + chartH - ((t - minT) / (maxT - minT || 1)) * chartH;
-    ctx.lineTo(x, y);
-  });
+<div class="stat">
 
-  ctx.lineTo(width - padding.right, height - padding.bottom);
-  ctx.closePath();
+<div class="stat-label">
+Dew Point
+</div>
 
-  const fill = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
-  fill.addColorStop(0, "rgba(255,208,128,0.28)");
-  fill.addColorStop(0.5, "rgba(255,176,96,0.14)");
-  fill.addColorStop(1, "rgba(255,255,255,0.04)");
-  ctx.fillStyle = fill;
-  ctx.fill();
-}
+<div id="current-dew" class="stat-value">
+65°
+</div>
 
-function renderAll() {
-  setText("current-condition", data.current.condition);
-  setText("current-temp", `${data.current.temp.toFixed(1)}°`);
-  setText("current-dew", `${data.current.dew}°`);
-  setText("current-humidity", `${data.current.humidity}%`);
-  setText("current-pressure", `${data.current.pressureIn.toFixed(2)}" / ${pressureMb(data.current.pressureIn)} MB`);
+</div>
 
-  applyTempGradient(document.getElementById("current-temp"), data.current.temp);
-  applyTempGradient(document.getElementById("current-dew"), data.current.dew);
-  applyTempGradient(document.getElementById("current-humidity"), data.current.humidity);
-  applyTempGradient(document.getElementById("current-pressure"), data.current.pressureIn);
 
-  setText("wind-speed", `${data.wind.speed} mph`);
-  setText("wind-gust", `${data.wind.gust} mph`);
-  setText("wind-dir-text", degToCompass(data.wind.directionDeg));
-  applyTempGradient(document.getElementById("wind-speed"), data.wind.speed);
-  applyTempGradient(document.getElementById("wind-gust"), data.wind.gust);
-  applyTempGradient(document.getElementById("wind-dir-text"), 60);
-  renderWindArrow();
+<div class="stat">
 
-  setText("indoor-temp", `${data.indoor.temp}°`);
-  setText("indoor-humidity", `${data.indoor.humidity}%`);
-  setText("indoor-dew", `${data.indoor.dew}°`);
-  applyTempGradient(document.getElementById("indoor-temp"), data.indoor.temp);
-  applyTempGradient(document.getElementById("indoor-humidity"), data.indoor.humidity);
-  applyTempGradient(document.getElementById("indoor-dew"), data.indoor.dew);
+<div class="stat-label">
+Humidity
+</div>
 
-  setText("rain-daily", `${data.rainfall.daily.toFixed(2)}"`);
-  setText("rain-rate", `${data.rainfall.rate.toFixed(2)}"/hr`);
-  applyTempGradient(document.getElementById("rain-daily"), data.rainfall.daily * 100);
-  applyTempGradient(document.getElementById("rain-rate"), data.rainfall.rate * 100);
+<div id="current-humidity" class="stat-value">
+57%
+</div>
 
-  setText("lt-last", formatStrikeTime(data.lightning.last));
-  setText("lt-distance", `${data.lightning.distance} mi`);
-  setText("lt-direction", data.lightning.direction);
-  setText("lt-minute", String(data.lightning.minute));
-  setText("lt-fifteen", String(data.lightning.fifteen));
-  setText("lt-hour", String(data.lightning.hour));
-  setText("lt-midnight", String(data.lightning.midnight));
-  applyTempGradient(document.getElementById("lt-last"), 70);
-  applyTempGradient(document.getElementById("lt-distance"), 45);
-  applyTempGradient(document.getElementById("lt-direction"), 60);
-  applyTempGradient(document.getElementById("lt-minute"), 40);
-  applyTempGradient(document.getElementById("lt-fifteen"), 50);
-  applyTempGradient(document.getElementById("lt-hour"), 60);
-  applyTempGradient(document.getElementById("lt-midnight"), 70);
+</div>
 
-  setText("today-high", `${data.today.high}°`);
-  setText("today-low", `${data.today.low}°`);
-  setText("today-sunrise", data.today.sunrise);
-  setText("today-sunset", data.today.sunset);
-  setText("today-moon", data.today.moon);
-  setText("graph-max", `${data.today.high}°`);
-  setText("graph-min", `${data.today.low}°`);
-  applyTempGradient(document.getElementById("today-high"), data.today.high);
-  applyTempGradient(document.getElementById("today-low"), data.today.low);
-  renderTodayGraph();
 
-  renderForecast();
-  renderWarnings();
-  updateClock();
-}
+<div class="stat">
 
-renderAll();
-setInterval(updateClock, 1000);
+<div class="stat-label">
+Pressure
+</div>
+
+<div id="current-pressure" class="stat-value">
+28.97" / 981 MB
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- WIND -->
+
+<section class="panel">
+
+<h2>Wind</h2>
+
+<div class="wind-section">
+
+<div class="wind-stats">
+
+<div class="stat">
+
+<div class="stat-label">
+Speed
+</div>
+
+<div id="wind-speed" class="stat-value">
+12 mph
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-label">
+Gust
+</div>
+
+<div id="wind-gust" class="stat-value">
+18 mph
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-label">
+Direction
+</div>
+
+<div id="wind-dir-text" class="stat-value">
+SE
+</div>
+
+</div>
+
+</div>
+
+
+<div class="wind-vane">
+
+<div class="compass">
+
+<span class="north">N</span>
+<span class="south">S</span>
+<span class="east">E</span>
+<span class="west">W</span>
+
+<div id="wind-arrow"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- THREE DAY -->
+
+<section class="panel">
+
+<h2>Three Day Forecast</h2>
+
+<div class="forecast">
+
+<div class="forecast-day">
+
+<div id="f0-label">
+Today
+</div>
+
+<div id="f0-high" class="forecast-high">
+70°
+</div>
+
+<img src="images/storm.svg" class="forecast-icon">
+
+<div id="f0-cond">
+Storm
+</div>
+
+<div id="f0-low" class="forecast-low">
+44°
+</div>
+
+</div>
+
+
+<div class="forecast-day">
+
+<div id="f1-label">
+Mon
+</div>
+
+<div id="f1-high" class="forecast-high">
+62°
+</div>
+
+<img src="images/storm.svg" class="forecast-icon">
+
+<div id="f1-cond">
+Storm
+</div>
+
+<div id="f1-low" class="forecast-low">
+45°
+</div>
+
+</div>
+
+
+<div class="forecast-day">
+
+<div id="f2-label">
+Tue
+</div>
+
+<div id="f2-high" class="forecast-high">
+68°
+</div>
+
+<img src="images/storm.svg" class="forecast-icon">
+
+<div id="f2-cond">
+Storm
+</div>
+
+<div id="f2-low" class="forecast-low">
+50°
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- RAINFALL -->
+
+<section class="panel">
+
+<h2>Rainfall</h2>
+
+<div class="rain-panel">
+
+<div class="stat">
+
+<div class="stat-label">
+Daily Total
+</div>
+
+<div id="rain-daily" class="stat-value">
+0.30"
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Rain Rate
+</div>
+
+<div id="rain-rate" class="stat-value">
+0.05"/hr
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Intensity
+</div>
+
+<div id="rain-intensity" class="stat-value">
+Light Rain
+</div>
+
+</div>
+
+
+<div class="rain-meter">
+
+<div class="meter-labels">
+<span>0</span>
+<span>0.25</span>
+<span>0.50+</span>
+</div>
+
+<div class="meter-track">
+
+<div id="rain-meter-fill"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- RADAR -->
+
+<section class="panel">
+
+<h2>Radar</h2>
+
+<div class="radar">
+Radar Image Here
+</div>
+
+</section>
+
+
+
+<!-- LIGHTNING -->
+
+<section class="panel">
+
+<h2>Lightning</h2>
+
+<div class="lightning-top">
+
+<div class="stat">
+
+<div class="stat-label">
+Last Strike
+</div>
+
+<div id="lt-last" class="stat-value">
+3/8 2:15 PM
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Distance
+</div>
+
+<div id="lt-distance" class="stat-value">
+2.5 mi
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Direction
+</div>
+
+<div id="lt-direction" class="stat-value">
+↗
+</div>
+
+</div>
+
+</div>
+
+
+<div class="lightning-history">
+
+<div class="history-box">
+
+<div class="history-label">
+1 Min
+</div>
+
+<div id="lt-minute" class="history-value">
+0
+</div>
+
+</div>
+
+
+<div class="history-box">
+
+<div class="history-label">
+15 Min
+</div>
+
+<div id="lt-fifteen" class="history-value">
+1
+</div>
+
+</div>
+
+
+<div class="history-box">
+
+<div class="history-label">
+1 Hour
+</div>
+
+<div id="lt-hour" class="history-value">
+3
+</div>
+
+</div>
+
+
+<div class="history-box">
+
+<div class="history-label">
+Today
+</div>
+
+<div id="lt-midnight" class="history-value">
+8
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- TODAY -->
+
+<section class="panel">
+
+<h2>Today</h2>
+
+<div class="today-grid">
+
+<div class="today-stats">
+
+<div class="stat">
+
+<div class="stat-label">
+High
+</div>
+
+<div id="today-high" class="stat-value">
+75°
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Low
+</div>
+
+<div id="today-low" class="stat-value">
+51°
+</div>
+
+</div>
+
+</div>
+
+
+<div class="temp-graph">
+
+<div class="y-scale">
+
+<span id="graph-max">
+75°
+</span>
+
+<span id="graph-min">
+51°
+</span>
+
+</div>
+
+<canvas id="today-graph"></canvas>
+
+<div class="x-scale">
+
+<span>12a</span>
+<span>4a</span>
+<span>8a</span>
+<span>12p</span>
+<span>4p</span>
+<span>8p</span>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- SUN MOON -->
+
+<section class="panel">
+
+<h2>Sun & Moon</h2>
+
+<div class="sunmoon">
+
+<div class="sunmoon-stats">
+
+<div class="stat">
+
+<div class="stat-label">
+Sunrise
+</div>
+
+<div id="today-sunrise" class="stat-value">
+8:04 AM
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Sunset
+</div>
+
+<div id="today-sunset" class="stat-value">
+7:41 PM
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Moon Phase
+</div>
+
+<div id="today-moon" class="stat-value">
+Waning Gibbous
+</div>
+
+</div>
+
+</div>
+
+<div class="moon-placeholder">
+Moon Icon
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- INDOOR -->
+
+<section class="panel">
+
+<h2>Indoor</h2>
+
+<div class="indoor">
+
+<div class="stat">
+
+<div class="stat-label">
+Temp
+</div>
+
+<div id="indoor-temp" class="stat-value">
+67°
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Humidity
+</div>
+
+<div id="indoor-humidity" class="stat-value">
+55%
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Dew Point
+</div>
+
+<div id="indoor-dew" class="stat-value">
+60°
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+</main>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
