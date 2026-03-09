@@ -1,9 +1,9 @@
 const canvas = document.getElementById("dashboard");
 const ctx = canvas.getContext("2d");
 
-// Canvas size for scrolling
+// Canvas size
 canvas.width = 1920;
-canvas.height = 3500; // tall enough for all 9 sections
+canvas.height = 4000; // tall enough for all panels
 
 // Load icons
 const stormIcon = new Image();
@@ -36,8 +36,8 @@ const forecast = [
 ];
 const todayStats = { high: 75, low: 51, sunrise: "8:04 AM", sunset: "7:41 PM", moon: "Waning Gibbous" };
 
-// Panels
-function panel(x, y, w, h, title) {
+// Panel drawing
+function panel(x, y, w, h, title){
     ctx.fillStyle = "rgba(120,140,180,0.25)";
     ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = "rgba(110,232,255,0.8)";
@@ -86,15 +86,14 @@ function getNextThreeDayLabels(){
     return ["Today",days[(today.getDay()+1)%7],days[(today.getDay()+2)%7]];
 }
 
-// Format lightning
+// Lightning time format
 function formatStrikeTime(date){
     let month=date.getMonth()+1;
     let day=date.getDate();
     let hours=date.getHours();
     let minutes=date.getMinutes().toString().padStart(2,"0");
-    let suffix=hours>=12?"PM":"AM";
-    hours=hours%12;
-    if(hours===0) hours=12;
+    let suffix = hours>=12?"PM":"AM";
+    hours=hours%12; if(hours===0) hours=12;
     return `${month}/${day} ${hours}:${minutes} ${suffix}`;
 }
 
@@ -111,7 +110,7 @@ function degToCompass(num){
     return arr[(val%16)];
 }
 
-// DRAW
+// Draw all sections
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -170,8 +169,81 @@ function draw(){
     gradientText(indoor.humidity,col3+160,row1+140,indoor.humidity+"%",32);
     gradientText(indoor.dew,col3+320,row1+140,indoor.dew+"°",32);
 
-    // TODO: Draw remaining 6 sections (Rainfall, Lightning, High/Low, Radar, 3-Day, Temp Graph)
-    // Each panel can use panel() + gradientText() logic with proper coordinates
+    // --- RAINFALL ---
+    panel(col1,row2,colWidth,300,"RAINFALL");
+    ctx.fillStyle="#FFF";
+    ctx.font="22px Arial";
+    ctx.fillText("Daily Total",col1+20,row2+60);
+    ctx.fillText("Current Rate",col1+20,row2+90);
+    gradientText(rainfall.daily,col1+150,row2+60,rainfall.daily+"\"",28);
+    gradientText(rainfall.rate,col1+150,row2+90,rainfall.rate+"\"/hr",28);
+
+    // --- LIGHTNING ---
+    panel(col2,row2,colWidth,300,"LIGHTNING");
+    ctx.fillStyle="#FFF";
+    ctx.font="22px Arial";
+    ctx.fillText("Last Strike",col2+20,row2+60);
+    ctx.fillText("Distance",col2+20,row2+90);
+    ctx.fillText("Direction",col2+20,row2+120);
+    gradientText(formatStrikeTime(lightning.last),col2+160,row2+60,formatStrikeTime(lightning.last),22);
+    gradientText(lightning.distance,col2+160,row2+90,lightning.distance+" mi",28);
+    gradientText(lightning.direction,col2+160,row2+120,lightning.direction,28);
+    ctx.fillText("Strikes (min/15/1h/since)",col2+20,row2+150);
+    gradientText(`${lightning.minute}/${lightning.fifteen}/${lightning.hour}/${lightning.midnight}`,col2+320,row2+150,`${lightning.minute}/${lightning.fifteen}/${lightning.hour}/${lightning.midnight}`,28);
+
+    // --- TODAY STATS ---
+    panel(col3,row2,colWidth,300,"TODAY STATS");
+    ctx.fillStyle="#FFF";
+    ctx.fillText("High",col3+20,row2+60);
+    ctx.fillText("Low",col3+20,row2+90);
+    ctx.fillText("Sunrise",col3+20,row2+120);
+    ctx.fillText("Sunset",col3+20,row2+150);
+    ctx.fillText("Moon",col3+20,row2+180);
+    gradientText(todayStats.high,col3+120,row2+60,todayStats.high+"°",28);
+    gradientText(todayStats.low,col3+120,row2+90,todayStats.low+"°",28);
+    ctx.fillText(todayStats.sunrise,col3+120,row2+120);
+    ctx.fillText(todayStats.sunset,col3+120,row2+150);
+    ctx.fillText(todayStats.moon,col3+120,row2+180);
+
+    // --- RADAR ---
+    panel(col1,row3,colWidth*3+gap*2,300,"RADAR");
+    ctx.fillStyle="#FFF";
+    ctx.fillText("Radar Image Here",canvas.width/2-100,row3+150);
+
+    // --- THREE-DAY FORECAST ---
+    panel(col1,row4,colWidth*3+gap*2,300,"THREE-DAY FORECAST");
+    const labels=getNextThreeDayLabels();
+    for(let i=0;i<3;i++){
+        const x=col1 + i*(colWidth + gap);
+        ctx.drawImage(stormIcon,x+50,row4+50,100,100);
+        ctx.fillStyle="#FFF";
+        ctx.font="22px Arial";
+        ctx.fillText(labels[i],x+60,row4+170);
+        gradientText(forecast[i].high,x+60,row4+200,forecast[i].high+"°",28);
+        gradientText(forecast[i].low,x+60,row4+230,forecast[i].low+"°",28);
+        ctx.fillText(forecast[i].cond,x+60,row4+260);
+    }
+
+    // --- TEMP GRAPH SINCE MIDNIGHT ---
+    panel(col1,row5,colWidth*3+gap*2,300,"TEMPERATURE SINCE MIDNIGHT");
+    ctx.strokeStyle="#6FE8FF";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    const tempData=[60,62,64,66,68,70,72,73,74,74.2]; // sample
+    const stepX=(colWidth*3+gap*2-40)/(tempData.length-1);
+    const maxTemp=Math.max(...tempData);
+    const minTemp=Math.min(...tempData);
+    tempData.forEach((t,i)=>{
+        const x=col1+20+i*stepX;
+        const y=row5+280-(t-minTemp)/(maxTemp-minTemp)*200;
+        if(i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    ctx.fillStyle="#FFF";
+    ctx.font="18px Arial";
+    ctx.fillText(maxTemp+"°",col1+20,row5+60);
+    ctx.fillText(minTemp+"°",col1+20,row5+280);
 
     requestAnimationFrame(draw);
 }
