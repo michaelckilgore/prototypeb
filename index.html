@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <div class="stats-row stats-row--three">
+        <div class="stats-row stats-row--three stats-row--current">
           <div class="stat">
             <div class="stat__label">Dew Point</div>
             <div class="stat__value temp-value" id="current-dew">65°</div>
@@ -54,9 +54,9 @@
             <div class="stat__label">Humidity</div>
             <div class="stat__value temp-value" id="current-humidity">57%</div>
           </div>
-          <div class="stat">
+          <div class="stat stat--pressure">
             <div class="stat__label">Pressure</div>
-            <div class="stat__value temp-value" id="current-pressure">28.97" / 981 MB</div>
+            <div class="stat__value temp-value stat__value--nowrap" id="current-pressure">28.97" / 981 MB</div>
           </div>
         </div>
       </section>
@@ -94,19 +94,28 @@
       </section>
 
       <section class="panel">
-        <h2 class="panel__title">INDOOR</h2>
-        <div class="stats-row stats-row--three">
-          <div class="stat">
-            <div class="stat__label">Temp</div>
-            <div class="stat__value temp-value" id="indoor-temp">67°</div>
+        <h2 class="panel__title">THREE-DAY FORECAST</h2>
+        <div class="forecast">
+          <div class="forecast-day">
+            <div class="forecast-day__label" id="f0-label">Today</div>
+            <div class="forecast-day__high temp-value" id="f0-high">70°</div>
+            <img class="weather-icon weather-icon--md" src="images/storm.svg" alt="Storm icon" />
+            <div class="forecast-day__condition" id="f0-cond">Storm</div>
+            <div class="forecast-day__low temp-value" id="f0-low">44°</div>
           </div>
-          <div class="stat">
-            <div class="stat__label">Humidity</div>
-            <div class="stat__value temp-value" id="indoor-humidity">55%</div>
+          <div class="forecast-day">
+            <div class="forecast-day__label" id="f1-label">Mon</div>
+            <div class="forecast-day__high temp-value" id="f1-high">62°</div>
+            <img class="weather-icon weather-icon--md" src="images/storm.svg" alt="Storm icon" />
+            <div class="forecast-day__condition" id="f1-cond">Storm</div>
+            <div class="forecast-day__low temp-value" id="f1-low">45°</div>
           </div>
-          <div class="stat">
-            <div class="stat__label">Dew Point</div>
-            <div class="stat__value temp-value" id="indoor-dew">60°</div>
+          <div class="forecast-day">
+            <div class="forecast-day__label" id="f2-label">Tue</div>
+            <div class="forecast-day__high temp-value" id="f2-high">68°</div>
+            <img class="weather-icon weather-icon--md" src="images/storm.svg" alt="Storm icon" />
+            <div class="forecast-day__condition" id="f2-cond">Storm</div>
+            <div class="forecast-day__low temp-value" id="f2-low">50°</div>
           </div>
         </div>
       </section>
@@ -126,35 +135,45 @@
       </section>
 
       <section class="panel">
+        <h2 class="panel__title">RADAR</h2>
+        <div class="radar-placeholder">Radar Image Here</div>
+      </section>
+
+      <section class="panel">
         <h2 class="panel__title">LIGHTNING</h2>
-        <div class="lightning-grid">
-          <div class="stat">
-            <div class="stat__label">Last Strike</div>
-            <div class="stat__value temp-value" id="lt-last">3/8 2:15 PM</div>
+        <div class="lightning-redesign">
+          <div class="lightning-redesign__top">
+            <div class="stat">
+              <div class="stat__label">Last Strike</div>
+              <div class="stat__value temp-value" id="lt-last">3/8 2:15 PM</div>
+            </div>
+            <div class="stat">
+              <div class="stat__label">Distance</div>
+              <div class="stat__value temp-value" id="lt-distance">2.5 mi</div>
+            </div>
+            <div class="stat">
+              <div class="stat__label">Direction</div>
+              <div class="stat__value temp-value" id="lt-direction">↗</div>
+            </div>
           </div>
-          <div class="stat">
-            <div class="stat__label">Distance</div>
-            <div class="stat__value temp-value" id="lt-distance">2.5 mi</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Direction</div>
-            <div class="stat__value temp-value" id="lt-direction">↗</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Last Minute</div>
-            <div class="stat__value temp-value" id="lt-minute">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Last 15 Min</div>
-            <div class="stat__value temp-value" id="lt-fifteen">1</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Last Hour</div>
-            <div class="stat__value temp-value" id="lt-hour">3</div>
-          </div>
-          <div class="stat">
-            <div class="stat__label">Since Midnight</div>
-            <div class="stat__value temp-value" id="lt-midnight">8</div>
+
+          <div class="lightning-redesign__history">
+            <div class="history-card">
+              <div class="history-card__label">1 Min</div>
+              <div class="history-card__value temp-value" id="lt-minute">0</div>
+            </div>
+            <div class="history-card">
+              <div class="history-card__label">15 Min</div>
+              <div class="history-card__value temp-value" id="lt-fifteen">1</div>
+            </div>
+            <div class="history-card">
+              <div class="history-card__label">1 Hour</div>
+              <div class="history-card__value temp-value" id="lt-hour">3</div>
+            </div>
+            <div class="history-card">
+              <div class="history-card__label">Since Midnight</div>
+              <div class="history-card__value temp-value" id="lt-midnight">8</div>
+            </div>
           </div>
         </div>
       </section>
@@ -174,11 +193,22 @@
           </div>
 
           <div class="today-box__graph">
-            <div class="graph-scale">
+            <div class="graph-scale graph-scale--y">
               <span id="graph-max">75°</span>
               <span id="graph-min">51°</span>
             </div>
-            <canvas id="today-graph" width="420" height="150"></canvas>
+
+            <div class="graph-wrap">
+              <canvas id="today-graph" width="420" height="150"></canvas>
+              <div class="graph-scale-x" id="graph-times">
+                <span>12a</span>
+                <span>4a</span>
+                <span>8a</span>
+                <span>12p</span>
+                <span>4p</span>
+                <span>8p</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -206,33 +236,19 @@
       </section>
 
       <section class="panel">
-        <h2 class="panel__title">RADAR</h2>
-        <div class="radar-placeholder">Radar Image Here</div>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">THREE-DAY FORECAST</h2>
-        <div class="forecast">
-          <div class="forecast-day">
-            <div class="forecast-day__label" id="f0-label">Today</div>
-            <div class="forecast-day__high temp-value" id="f0-high">70°</div>
-            <img class="weather-icon weather-icon--md" src="images/storm.svg" alt="Storm icon" />
-            <div class="forecast-day__condition" id="f0-cond">Storm</div>
-            <div class="forecast-day__low temp-value" id="f0-low">44°</div>
+        <h2 class="panel__title">INDOOR</h2>
+        <div class="stats-row stats-row--three">
+          <div class="stat">
+            <div class="stat__label">Temp</div>
+            <div class="stat__value temp-value" id="indoor-temp">67°</div>
           </div>
-          <div class="forecast-day">
-            <div class="forecast-day__label" id="f1-label">Mon</div>
-            <div class="forecast-day__high temp-value" id="f1-high">62°</div>
-            <img class="weather-icon weather-icon--md" src="images/storm.svg" alt="Storm icon" />
-            <div class="forecast-day__condition" id="f1-cond">Storm</div>
-            <div class="forecast-day__low temp-value" id="f1-low">45°</div>
+          <div class="stat">
+            <div class="stat__label">Humidity</div>
+            <div class="stat__value temp-value" id="indoor-humidity">55%</div>
           </div>
-          <div class="forecast-day">
-            <div class="forecast-day__label" id="f2-label">Tue</div>
-            <div class="forecast-day__high temp-value" id="f2-high">68°</div>
-            <img class="weather-icon weather-icon--md" src="images/storm.svg" alt="Storm icon" />
-            <div class="forecast-day__condition" id="f2-cond">Storm</div>
-            <div class="forecast-day__low temp-value" id="f2-low">50°</div>
+          <div class="stat">
+            <div class="stat__label">Dew Point</div>
+            <div class="stat__value temp-value" id="indoor-dew">60°</div>
           </div>
         </div>
       </section>
