@@ -1,344 +1,370 @@
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
+const data = {
+  current: {
+    temp: 74.2,
+    condition: "Storm",
+    dew: 65,
+    humidity: 57,
+    pressureIn: 28.97
+  },
+  wind: {
+    speed: 12,
+    gust: 18,
+    directionDeg: 135
+  },
+  indoor: {
+    temp: 67,
+    humidity: 55,
+    dew: 60
+  },
+  rainfall: {
+    daily: 0.30,
+    rate: 0.05
+  },
+  lightning: {
+    last: new Date(2026, 2, 8, 14, 15),
+    distance: 2.5,
+    direction: "↗",
+    minute: 0,
+    fifteen: 1,
+    hour: 3,
+    midnight: 8
+  },
+  today: {
+    high: 75,
+    low: 51,
+    sunrise: "8:04 AM",
+    sunset: "7:41 PM",
+    moon: "Waning Gibbous",
+    tempsSinceMidnight: [51, 52, 53, 55, 57, 60, 63, 68, 72, 74, 75, 74]
+  },
+  forecast: [
+    { high: 70, low: 44, cond: "Storm" },
+    { high: 62, low: 45, cond: "Storm" },
+    { high: 68, low: 50, cond: "Storm" }
+  ],
+  alerts: [
+    {
+      type: "Severe Thunderstorm Warning",
+      text: "Severe Thunderstorm Warning for Rush County until 1:30 PM EDT. At 12:45 PM EDT, National Weather Service Doppler Radar indicated a severe thunderstorm near Homer moving east at 30 mph. The storm will be near Rushville around 1:05 PM."
+    }
+  ]
+};
+
+function tempColor(temp) {
+  if (temp <= 30) return "#70C0FF";
+  if (temp <= 40) return "#60B0FF";
+  if (temp <= 50) return "#50A0FF";
+  if (temp <= 60) return "#70D0A0";
+  if (temp <= 70) return "#FFC8C8";
+  if (temp <= 80) return "#FFB060";
+  if (temp <= 90) return "#FF9040";
+  if (temp <= 100) return "#FF7040";
+  return "#FF5030";
 }
 
-body{
-background:#121827;
-color:white;
-font-family:Arial, Helvetica, sans-serif;
+function applyTempColor(el, temp) {
+  if (!el) return;
+  el.style.backgroundImage = "none";
+  el.style.webkitBackgroundClip = "border-box";
+  el.style.backgroundClip = "border-box";
+  el.style.webkitTextFillColor = "";
+  el.style.color = tempColor(temp);
 }
 
-.header{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-align-items:center;
-padding:20px;
-border-bottom:2px solid #6fe8ff;
-background:#1c2336;
+function formatStrikeTime(date) {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const suffix = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  return `${month}/${day} ${hours}:${minutes} ${suffix}`;
 }
 
-.station{
-text-align:center;
-font-size:28px;
-font-weight:bold;
+function degToCompass(num) {
+  const val = Math.floor((num / 22.5) + 0.5);
+  const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+  return arr[val % 16];
 }
 
-.location{
-text-align:center;
-font-size:14px;
-color:#9de0ff;
+function getNextThreeDayLabels() {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const today = new Date();
+  return [
+    "Today",
+    days[(today.getDay() + 1) % 7],
+    days[(today.getDay() + 2) % 7]
+  ];
 }
 
-.clock{
-text-align:right;
-font-size:20px;
+function updateClock() {
+  const now = new Date();
+  const str = now.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short"
+  });
+  const clock = document.getElementById("clock");
+  if (clock) clock.textContent = str;
 }
 
-.alerts{
-padding:10px 20px;
-display:grid;
-gap:10px;
+function pressureMb(inches) {
+  return Math.round(inches * 33.8639);
 }
 
-.alert-bar{
-display:grid;
-grid-template-columns:180px 1fr;
-border:2px solid #ff7a9e;
-background:#3d1d2a;
-border-radius:8px;
-overflow:hidden;
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
 }
 
-.alert-title{
-background:#7c2b45;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
+function getRainIntensity(rate) {
+  if (rate <= 0) return "No Rain";
+  if (rate <= 0.03) return "Drizzle";
+  if (rate <= 0.10) return "Light Rain";
+  if (rate <= 0.30) return "Moderate Rain";
+  if (rate <= 0.50) return "Heavy Rain";
+  return "Downpour";
 }
 
-.alert-text{
-padding:10px;
+function getRainIntensityColor(rate) {
+  if (rate <= 0) return "#aeb8c7";
+  if (rate <= 0.03) return "#b9dcff";
+  if (rate <= 0.10) return "#8fd0ff";
+  if (rate <= 0.30) return "#74efff";
+  if (rate <= 0.50) return "#5cb8ff";
+  return "#7f8cff";
 }
 
-.ticker{
-overflow:hidden;
-white-space:nowrap;
+function updateRainfallPanel() {
+  const dailyEl = document.getElementById("rain-daily");
+  const rateEl = document.getElementById("rain-rate");
+  const intensityEl = document.getElementById("rain-intensity");
+  const fillEl = document.getElementById("rain-meter-fill");
+
+  if (dailyEl) dailyEl.textContent = `${data.rainfall.daily.toFixed(2)}"`;
+  if (rateEl) rateEl.textContent = `${data.rainfall.rate.toFixed(2)}"/hr`;
+
+  applyTempColor(dailyEl, data.rainfall.daily * 100);
+  applyTempColor(rateEl, data.rainfall.rate * 100);
+
+  if (intensityEl) {
+    intensityEl.textContent = getRainIntensity(data.rainfall.rate);
+    intensityEl.style.color = getRainIntensityColor(data.rainfall.rate);
+  }
+
+  if (fillEl) {
+    const maxRate = 0.5;
+    const pct = Math.max(0, Math.min(data.rainfall.rate / maxRate, 1)) * 100;
+    fillEl.style.width = `${pct}%`;
+  }
 }
 
-#priority-alerts-track{
-display:inline-block;
-padding-left:100%;
-animation:ticker 25s linear infinite;
+function renderWarnings() {
+  const alerts = data.alerts || [];
+  const activeBar = document.getElementById("active-alerts-bar");
+  const activeList = document.getElementById("active-alerts-list");
+  const priorityBar = document.getElementById("priority-alerts-bar");
+  const priorityTrack = document.getElementById("priority-alerts-track");
+
+  if (!activeBar || !activeList || !priorityBar || !priorityTrack) return;
+
+  if (alerts.length === 0) {
+    activeBar.style.display = "none";
+    priorityBar.style.display = "none";
+    return;
+  }
+
+  activeBar.style.display = "grid";
+  activeList.innerHTML = "";
+
+  const list = document.createElement("div");
+  list.className = "alert-list";
+
+  alerts.forEach(alert => {
+    const chip = document.createElement("div");
+    chip.className = "alert-chip";
+    chip.textContent = alert.type;
+    list.appendChild(chip);
+  });
+
+  activeList.appendChild(list);
+
+  const priorityTypes = new Set([
+    "Tornado Warning",
+    "Tornado Emergency",
+    "Severe Thunderstorm Warning"
+  ]);
+
+  const priorityAlerts = alerts.filter(a => priorityTypes.has(a.type));
+
+  if (priorityAlerts.length === 0) {
+    priorityBar.style.display = "none";
+    return;
+  }
+
+  priorityBar.style.display = "grid";
+  priorityTrack.textContent = priorityAlerts.map(a => a.text).join("   •   ");
 }
 
-@keyframes ticker{
-0%{transform:translateX(0)}
-100%{transform:translateX(-100%)}
+function renderForecast() {
+  const labels = getNextThreeDayLabels();
+
+  for (let i = 0; i < 3; i++) {
+    const item = data.forecast[i];
+
+    setText(`f${i}-label`, labels[i]);
+    setText(`f${i}-high`, `${item.high}°`);
+    setText(`f${i}-low`, `${item.low}°`);
+    setText(`f${i}-cond`, item.cond);
+
+    applyTempColor(document.getElementById(`f${i}-high`), item.high);
+    applyTempColor(document.getElementById(`f${i}-low`), item.low);
+  }
 }
 
-.dashboard{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:20px;
-padding:20px;
+function renderWindArrow() {
+  const arrow = document.getElementById("wind-arrow");
+  if (!arrow) return;
+  const deg = data.wind.directionDeg;
+  arrow.style.transform = `rotate(${deg - 90}deg)`;
 }
 
-.panel{
-background:#1c2336;
-border:2px solid #6fe8ff;
-border-radius:12px;
-padding:15px;
+function renderTodayGraph() {
+  const canvas = document.getElementById("today-graph");
+  if (!canvas) return;
+
+  canvas.width = 420;
+  canvas.height = 150;
+
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const padding = { top: 12, right: 10, bottom: 16, left: 8 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const temps = data.today.tempsSinceMidnight;
+  const minT = data.today.low;
+  const maxT = data.today.high;
+
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartH / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(width - padding.right, y);
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < temps.length - 1; i++) {
+    const t1 = temps[i];
+    const t2 = temps[i + 1];
+
+    const x1 = padding.left + (chartW / (temps.length - 1)) * i;
+    const x2 = padding.left + (chartW / (temps.length - 1)) * (i + 1);
+
+    const y1 = padding.top + chartH - ((t1 - minT) / (maxT - minT || 1)) * chartH;
+    const y2 = padding.top + chartH - ((t2 - minT) / (maxT - minT || 1)) * chartH;
+
+    const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+    grad.addColorStop(0, tempColor(t1));
+    grad.addColorStop(1, tempColor(t2));
+
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(padding.left, height - padding.bottom);
+
+  temps.forEach((t, i) => {
+    const x = padding.left + (chartW / (temps.length - 1)) * i;
+    const y = padding.top + chartH - ((t - minT) / (maxT - minT || 1)) * chartH;
+    ctx.lineTo(x, y);
+  });
+
+  ctx.lineTo(width - padding.right, height - padding.bottom);
+  ctx.closePath();
+
+  const fill = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+  fill.addColorStop(0, "rgba(255,208,128,0.28)");
+  fill.addColorStop(0.5, "rgba(255,176,96,0.14)");
+  fill.addColorStop(1, "rgba(255,255,255,0.04)");
+  ctx.fillStyle = fill;
+  ctx.fill();
 }
 
-.panel h2{
-margin-bottom:10px;
-font-size:20px;
+function renderAll() {
+  setText("current-condition", data.current.condition);
+  setText("current-temp", `${data.current.temp.toFixed(1)}°`);
+  setText("current-dew", `${data.current.dew}°`);
+  setText("current-humidity", `${data.current.humidity}%`);
+  setText("current-pressure", `${data.current.pressureIn.toFixed(2)}" / ${pressureMb(data.current.pressureIn)} MB`);
+
+  applyTempColor(document.getElementById("current-temp"), data.current.temp);
+  applyTempColor(document.getElementById("current-dew"), data.current.dew);
+  applyTempColor(document.getElementById("current-humidity"), data.current.humidity);
+  applyTempColor(document.getElementById("current-pressure"), data.current.pressureIn);
+
+  setText("wind-speed", `${data.wind.speed} mph`);
+  setText("wind-gust", `${data.wind.gust} mph`);
+  setText("wind-dir-text", degToCompass(data.wind.directionDeg));
+  applyTempColor(document.getElementById("wind-speed"), data.wind.speed);
+  applyTempColor(document.getElementById("wind-gust"), data.wind.gust);
+  applyTempColor(document.getElementById("wind-dir-text"), 60);
+  renderWindArrow();
+
+  setText("indoor-temp", `${data.indoor.temp}°`);
+  setText("indoor-humidity", `${data.indoor.humidity}%`);
+  setText("indoor-dew", `${data.indoor.dew}°`);
+  applyTempColor(document.getElementById("indoor-temp"), data.indoor.temp);
+  applyTempColor(document.getElementById("indoor-humidity"), data.indoor.humidity);
+  applyTempColor(document.getElementById("indoor-dew"), data.indoor.dew);
+
+  updateRainfallPanel();
+
+  setText("lt-last", formatStrikeTime(data.lightning.last));
+  setText("lt-distance", `${data.lightning.distance} mi`);
+  setText("lt-direction", data.lightning.direction);
+  setText("lt-minute", String(data.lightning.minute));
+  setText("lt-fifteen", String(data.lightning.fifteen));
+  setText("lt-hour", String(data.lightning.hour));
+  setText("lt-midnight", String(data.lightning.midnight));
+
+  applyTempColor(document.getElementById("lt-last"), 70);
+  applyTempColor(document.getElementById("lt-distance"), 45);
+  applyTempColor(document.getElementById("lt-direction"), 60);
+  applyTempColor(document.getElementById("lt-minute"), 40);
+  applyTempColor(document.getElementById("lt-fifteen"), 50);
+  applyTempColor(document.getElementById("lt-hour"), 60);
+  applyTempColor(document.getElementById("lt-midnight"), 70);
+
+  setText("today-high", `${data.today.high}°`);
+  setText("today-low", `${data.today.low}°`);
+  setText("today-sunrise", data.today.sunrise);
+  setText("today-sunset", data.today.sunset);
+  setText("today-moon", data.today.moon);
+  setText("graph-max", `${data.today.high}°`);
+  setText("graph-min", `${data.today.low}°`);
+
+  applyTempColor(document.getElementById("today-high"), data.today.high);
+  applyTempColor(document.getElementById("today-low"), data.today.low);
+
+  renderTodayGraph();
+  renderForecast();
+  renderWarnings();
+  updateClock();
 }
 
-.current{
-display:grid;
-grid-template-columns:120px 1fr;
-gap:10px;
-}
-
-.current-icon{
-width:90px;
-height:90px;
-display:block;
-margin:auto;
-}
-
-.current-left{
-text-align:center;
-}
-
-.big-temp{
-font-size:90px;
-font-weight:bold;
-}
-
-.current-stats{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-margin-top:15px;
-text-align:center;
-}
-
-.stat{
-margin-bottom:10px;
-}
-
-.stat-label{
-font-size:13px;
-color:#a9c7ff;
-}
-
-.stat-value{
-font-size:22px;
-font-weight:bold;
-}
-
-.wind-section{
-display:grid;
-grid-template-columns:1fr 160px;
-}
-
-.wind-stats{
-display:grid;
-gap:10px;
-}
-
-.compass{
-width:140px;
-height:140px;
-border:2px solid #6fe8ff;
-border-radius:50%;
-position:relative;
-margin:auto;
-}
-
-.compass span{
-position:absolute;
-font-size:12px;
-}
-
-.north{
-top:5px;
-left:50%;
-transform:translateX(-50%);
-}
-
-.south{
-bottom:5px;
-left:50%;
-transform:translateX(-50%);
-}
-
-.east{
-right:5px;
-top:50%;
-transform:translateY(-50%);
-}
-
-.west{
-left:5px;
-top:50%;
-transform:translateY(-50%);
-}
-
-#wind-arrow{
-width:60px;
-height:4px;
-background:white;
-position:absolute;
-top:50%;
-left:50%;
-transform-origin:left center;
-}
-
-.forecast{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-text-align:center;
-}
-
-.forecast-icon{
-width:50px;
-height:50px;
-}
-
-.forecast-high{
-font-size:24px;
-font-weight:bold;
-}
-
-.forecast-low{
-font-size:20px;
-}
-
-.rain-panel{
-display:grid;
-gap:10px;
-}
-
-.rain-meter{
-margin-top:10px;
-}
-
-.meter-labels{
-display:flex;
-justify-content:space-between;
-font-size:11px;
-color:#c0c0c0;
-}
-
-.meter-track{
-height:16px;
-background:#111;
-border:1px solid #6fe8ff;
-border-radius:8px;
-overflow:hidden;
-}
-
-#rain-meter-fill{
-height:100%;
-background:linear-gradient(90deg,#9ed8ff,#5cb8ff);
-width:0%;
-}
-
-.radar{
-height:180px;
-display:flex;
-align-items:center;
-justify-content:center;
-border:2px dashed #aaa;
-border-radius:10px;
-}
-
-.lightning-top{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-}
-
-.lightning-history{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:10px;
-margin-top:10px;
-}
-
-.history-box{
-background:#151b2c;
-border:1px solid #6fe8ff;
-border-radius:8px;
-text-align:center;
-padding:8px;
-}
-
-.history-label{
-font-size:12px;
-}
-
-.history-value{
-font-size:22px;
-font-weight:bold;
-}
-
-.today-grid{
-display:grid;
-grid-template-columns:160px 1fr;
-gap:10px;
-}
-
-.temp-graph{
-display:grid;
-grid-template-columns:40px 1fr;
-}
-
-#today-graph{
-width:100%;
-height:120px;
-background:#111;
-border:1px solid #6fe8ff;
-border-radius:8px;
-}
-
-.y-scale{
-display:flex;
-flex-direction:column;
-justify-content:space-between;
-font-size:12px;
-}
-
-.x-scale{
-display:grid;
-grid-template-columns:repeat(6,1fr);
-font-size:11px;
-text-align:center;
-margin-top:5px;
-}
-
-.sunmoon{
-display:grid;
-grid-template-columns:1fr 120px;
-gap:10px;
-}
-
-.moon-placeholder{
-border:2px dashed #aaa;
-height:100px;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-
-.indoor{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-text-align:center;
-}
+renderAll();
+setInterval(updateClock, 1000);
