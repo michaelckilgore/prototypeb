@@ -1,251 +1,273 @@
-const canvas = document.getElementById("dashboard");
-const ctx = canvas.getContext("2d");
-
-// Canvas size
-canvas.width = 1920;
-canvas.height = 4000; // tall enough for all panels
-
-// Load icons
-const stormIcon = new Image();
-stormIcon.src = "images/storm.svg";
-
-// Layout
-const margin = 60;
-const gap = 30;
-const colWidth = (canvas.width - margin*2 - gap*2)/3;
-const col1 = margin;
-const col2 = margin + colWidth + gap;
-const col3 = margin + (colWidth+gap)*2;
-const headerHeight = 100;
-const row1 = headerHeight + 40;
-const row2 = row1 + 340 + gap;
-const row3 = row2 + 300 + gap;
-const row4 = row3 + 300 + gap;
-const row5 = row4 + 300 + gap;
-
-// Fake data
-const current = { temp: 74.2, condition: "Storm", dew: 65, humidity: 57, pressure: 28.97 };
-const rainfall = { daily: 0.30, rate: 0.05 };
-const wind = { speed: 12, gust: 18, direction: 135 };
-const indoor = { temp: 67, humidity: 55, dew: 60 };
-const lightning = { last: new Date(2026,2,8,14,15), distance: 2.5, direction: "↗", minute: 0, fifteen: 1, hour: 3, midnight: 8 };
-const forecast = [
+const data = {
+  current: {
+    temp: 74.2,
+    condition: "Storm",
+    dew: 65,
+    humidity: 57,
+    pressureIn: 28.97
+  },
+  wind: {
+    speed: 12,
+    gust: 18,
+    directionDeg: 135
+  },
+  indoor: {
+    temp: 67,
+    humidity: 55,
+    dew: 60
+  },
+  rainfall: {
+    daily: 0.30,
+    rate: 0.05
+  },
+  lightning: {
+    last: new Date(2026, 2, 8, 14, 15),
+    distance: 2.5,
+    direction: "↗",
+    minute: 0,
+    fifteen: 1,
+    hour: 3,
+    midnight: 8
+  },
+  today: {
+    high: 75,
+    low: 51,
+    sunrise: "8:04 AM",
+    sunset: "7:41 PM",
+    moon: "Waning Gibbous",
+    tempsSinceMidnight: [51, 52, 53, 55, 57, 60, 63, 68, 72, 74, 75, 74]
+  },
+  forecast: [
     { high: 70, low: 44, cond: "Storm" },
     { high: 62, low: 45, cond: "Storm" },
     { high: 68, low: 50, cond: "Storm" }
-];
-const todayStats = { high: 75, low: 51, sunrise: "8:04 AM", sunset: "7:41 PM", moon: "Waning Gibbous" };
+  ]
+};
 
-// Panel drawing
-function panel(x, y, w, h, title){
-    ctx.fillStyle = "rgba(120,140,180,0.25)";
-    ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = "rgba(110,232,255,0.8)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, w, h);
-    ctx.fillStyle = "#FFF";
-    ctx.font = "bold 28px Arial";
-    ctx.fillText(title, x+20, y+36);
+function tempGradientStops(temp) {
+  const intervals = [
+    { max: 30, top: "#A0E0FF", bottom: "#70C0FF" },
+    { max: 40, top: "#90D4FF", bottom: "#60B0FF" },
+    { max: 50, top: "#80C8FF", bottom: "#50A0FF" },
+    { max: 60, top: "#A0FFD0", bottom: "#70D0A0" },
+    { max: 70, top: "#FFE0E0", bottom: "#FFC8C8" },
+    { max: 80, top: "#FFD080", bottom: "#FFB060" },
+    { max: 90, top: "#FFC050", bottom: "#FF9040" },
+    { max: 100, top: "#FFA040", bottom: "#FF7040" },
+    { max: 110, top: "#FF8040", bottom: "#FF5030" },
+    { max: 120, top: "#FF6040", bottom: "#FF3020" }
+  ];
+  for (const item of intervals) {
+    if (temp <= item.max) return item;
+  }
+  return intervals[intervals.length - 1];
 }
 
-// Temperature gradient
-function tempGradientColor(temp){
-    const intervals=[
-        {max:30,top:"#A0E0FF",bottom:"#70C0FF"},
-        {max:40,top:"#90D4FF",bottom:"#60B0FF"},
-        {max:50,top:"#80C8FF",bottom:"#50A0FF"},
-        {max:60,top:"#A0FFD0",bottom:"#70D0A0"},
-        {max:70,top:"#FFE0E0",bottom:"#FFC8C8"},
-        {max:80,top:"#FFD080",bottom:"#FFB060"},
-        {max:90,top:"#FFC050",bottom:"#FF9040"},
-        {max:100,top:"#FFA040",bottom:"#FF7040"},
-        {max:110,top:"#FF8040",bottom:"#FF5030"},
-        {max:120,top:"#FF6040",bottom:"#FF3020"}
-    ];
-    for(let i=0;i<intervals.length;i++){
-        if(temp<=intervals[i].max) return intervals[i];
-    }
-    return intervals[intervals.length-1];
+function applyTempGradient(el, temp) {
+  const colors = tempGradientStops(temp);
+  el.style.backgroundImage = `linear-gradient(180deg, ${colors.top} 0%, ${colors.bottom} 100%)`;
 }
 
-// Gradient text
-function gradientText(temp, x, y, text, size){
-    const colors=tempGradientColor(temp);
-    const g=ctx.createLinearGradient(0, y-size, 0, y);
-    g.addColorStop(0, colors.top);
-    g.addColorStop(1, colors.bottom);
-    ctx.fillStyle=g;
-    ctx.font="bold "+size+"px Arial";
-    ctx.fillText(text, x, y);
+function formatStrikeTime(date) {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const suffix = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  return `${month}/${day} ${hours}:${minutes} ${suffix}`;
 }
 
-// Next 3 days labels
-function getNextThreeDayLabels(){
-    const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-    const today=new Date();
-    return ["Today",days[(today.getDay()+1)%7],days[(today.getDay()+2)%7]];
+function degToCompass(num) {
+  const val = Math.floor((num / 22.5) + 0.5);
+  const arr = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+  return arr[val % 16];
 }
 
-// Lightning time format
-function formatStrikeTime(date){
-    let month=date.getMonth()+1;
-    let day=date.getDate();
-    let hours=date.getHours();
-    let minutes=date.getMinutes().toString().padStart(2,"0");
-    let suffix = hours>=12?"PM":"AM";
-    hours=hours%12; if(hours===0) hours=12;
-    return `${month}/${day} ${hours}:${minutes} ${suffix}`;
+function getNextThreeDayLabels() {
+  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const today = new Date();
+  return [
+    "Today",
+    days[(today.getDay() + 1) % 7],
+    days[(today.getDay() + 2) % 7]
+  ];
 }
 
-// Clock
-function getClock(){
-    const now=new Date();
-    return now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",hour12:true,timeZoneName:"short"});
+function updateClock() {
+  const now = new Date();
+  const str = now.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short"
+  });
+  document.getElementById("clock").textContent = str;
 }
 
-// Wind degrees to compass
-function degToCompass(num){
-    const val=Math.floor((num/22.5)+0.5);
-    const arr=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
-    return arr[(val%16)];
+function pressureMb(inches) {
+  return Math.round(inches * 33.8639);
 }
 
-// Draw all sections
-function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
 
-    // HEADER
-    ctx.fillStyle="rgba(30,40,70,0.5)";
-    ctx.fillRect(0,0,canvas.width,headerHeight);
-    const title="SUGAR HILL REPORTING STATION";
-    ctx.font="bold 44px Arial";
-    ctx.fillStyle="#FFF";
-    ctx.shadowColor="#6FE8FF";
-    ctx.shadowBlur=15;
-    ctx.fillText(title,(canvas.width-ctx.measureText(title).width)/2,55);
-    ctx.shadowBlur=0;
-    ctx.font="22px Arial";
-    ctx.fillStyle="#A0FFE0";
-    ctx.fillText("RUSHVILLE INDIANA",(canvas.width-230)/2,85);
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFF";
-    ctx.fillText(getClock(), canvas.width-220,60);
+function renderForecast() {
+  const labels = getNextThreeDayLabels();
 
-    // --- CURRENT CONDITIONS ---
-    panel(col1,row1,colWidth,320,"CURRENT CONDITIONS");
-    ctx.drawImage(stormIcon,col1+20,row1+40,110,110);
-    ctx.font="28px Arial";
-    ctx.fillStyle="#FFF";
-    ctx.fillText(current.condition,col1+40,row1+170);
-    gradientText(current.temp,col1+150,row1+210,current.temp.toFixed(1)+"°",150);
-    ctx.font="22px Arial";
-    ctx.fillText("Dew Point",col1+20,row1+280);
-    ctx.fillText("Humidity",col1+150,row1+280);
-    ctx.fillText("Pressure",col1+340,row1+280);
-    gradientText(current.dew,col1+20,row1+310,current.dew+"°",28);
-    gradientText(current.humidity,col1+150,row1+310,current.humidity+"%",28);
-    let mb=Math.round(current.pressure*33.8639);
-    gradientText(current.pressure,col1+340,row1+310,`${current.pressure.toFixed(2)}" / ${mb} MB`,28);
+  for (let i = 0; i < 3; i++) {
+    const item = data.forecast[i];
+    setText(`f${i}-label`, labels[i]);
+    setText(`f${i}-high`, `${item.high}°`);
+    setText(`f${i}-low`, `${item.low}°`);
+    setText(`f${i}-cond`, item.cond);
 
-    // --- WIND ---
-    panel(col2,row1,colWidth,320,"WIND");
-    ctx.font="24px Arial";
-    ctx.fillStyle="#FFF";
-    ctx.fillText("Speed",col2+20,row1+110);
-    ctx.fillText("Gust",col2+20,row1+140);
-    ctx.fillText("Direction",col2+20,row1+170);
-    gradientText(wind.speed,col2+120,row1+110,wind.speed+" mph",30);
-    gradientText(wind.gust,col2+120,row1+140,wind.gust+" mph",30);
-    gradientText(degToCompass(wind.direction),col2+120,row1+170,degToCompass(wind.direction),30);
+    applyTempGradient(document.getElementById(`f${i}-high`), item.high);
+    applyTempGradient(document.getElementById(`f${i}-low`), item.low);
+  }
+}
 
-    // --- INDOOR ---
-    panel(col3,row1,colWidth,320,"INDOOR");
-    ctx.font="22px Arial";
-    ctx.fillStyle="#FFF";
-    ctx.fillText("Temp",col3+20,row1+100);
-    ctx.fillText("Humidity",col3+160,row1+100);
-    ctx.fillText("Dew Point",col3+320,row1+100);
-    gradientText(indoor.temp,col3+20,row1+140,indoor.temp+"°",32);
-    gradientText(indoor.humidity,col3+160,row1+140,indoor.humidity+"%",32);
-    gradientText(indoor.dew,col3+320,row1+140,indoor.dew+"°",32);
+function renderWindArrow() {
+  const arrow = document.getElementById("wind-arrow");
+  const deg = data.wind.directionDeg;
+  arrow.style.transform = `rotate(${deg - 90}deg)`;
+}
 
-    // --- RAINFALL ---
-    panel(col1,row2,colWidth,300,"RAINFALL");
-    ctx.fillStyle="#FFF";
-    ctx.font="22px Arial";
-    ctx.fillText("Daily Total",col1+20,row2+60);
-    ctx.fillText("Current Rate",col1+20,row2+90);
-    gradientText(rainfall.daily,col1+150,row2+60,rainfall.daily+"\"",28);
-    gradientText(rainfall.rate,col1+150,row2+90,rainfall.rate+"\"/hr",28);
+function renderTodayGraph() {
+  const canvas = document.getElementById("today-graph");
+  const ctx = canvas.getContext("2d");
 
-    // --- LIGHTNING ---
-    panel(col2,row2,colWidth,300,"LIGHTNING");
-    ctx.fillStyle="#FFF";
-    ctx.font="22px Arial";
-    ctx.fillText("Last Strike",col2+20,row2+60);
-    ctx.fillText("Distance",col2+20,row2+90);
-    ctx.fillText("Direction",col2+20,row2+120);
-    gradientText(formatStrikeTime(lightning.last),col2+160,row2+60,formatStrikeTime(lightning.last),22);
-    gradientText(lightning.distance,col2+160,row2+90,lightning.distance+" mi",28);
-    gradientText(lightning.direction,col2+160,row2+120,lightning.direction,28);
-    ctx.fillText("Strikes (min/15/1h/since)",col2+20,row2+150);
-    gradientText(`${lightning.minute}/${lightning.fifteen}/${lightning.hour}/${lightning.midnight}`,col2+320,row2+150,`${lightning.minute}/${lightning.fifteen}/${lightning.hour}/${lightning.midnight}`,28);
+  const width = canvas.width;
+  const height = canvas.height;
+  ctx.clearRect(0, 0, width, height);
 
-    // --- TODAY STATS ---
-    panel(col3,row2,colWidth,300,"TODAY STATS");
-    ctx.fillStyle="#FFF";
-    ctx.fillText("High",col3+20,row2+60);
-    ctx.fillText("Low",col3+20,row2+90);
-    ctx.fillText("Sunrise",col3+20,row2+120);
-    ctx.fillText("Sunset",col3+20,row2+150);
-    ctx.fillText("Moon",col3+20,row2+180);
-    gradientText(todayStats.high,col3+120,row2+60,todayStats.high+"°",28);
-    gradientText(todayStats.low,col3+120,row2+90,todayStats.low+"°",28);
-    ctx.fillText(todayStats.sunrise,col3+120,row2+120);
-    ctx.fillText(todayStats.sunset,col3+120,row2+150);
-    ctx.fillText(todayStats.moon,col3+120,row2+180);
+  const padding = { top: 16, right: 12, bottom: 18, left: 8 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
 
-    // --- RADAR ---
-    panel(col1,row3,colWidth*3+gap*2,300,"RADAR");
-    ctx.fillStyle="#FFF";
-    ctx.fillText("Radar Image Here",canvas.width/2-100,row3+150);
+  const temps = data.today.tempsSinceMidnight;
+  const minT = data.today.low;
+  const maxT = data.today.high;
 
-    // --- THREE-DAY FORECAST ---
-    panel(col1,row4,colWidth*3+gap*2,300,"THREE-DAY FORECAST");
-    const labels=getNextThreeDayLabels();
-    for(let i=0;i<3;i++){
-        const x=col1 + i*(colWidth + gap);
-        ctx.drawImage(stormIcon,x+50,row4+50,100,100);
-        ctx.fillStyle="#FFF";
-        ctx.font="22px Arial";
-        ctx.fillText(labels[i],x+60,row4+170);
-        gradientText(forecast[i].high,x+60,row4+200,forecast[i].high+"°",28);
-        gradientText(forecast[i].low,x+60,row4+230,forecast[i].low+"°",28);
-        ctx.fillText(forecast[i].cond,x+60,row4+260);
-    }
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
 
-    // --- TEMP GRAPH SINCE MIDNIGHT ---
-    panel(col1,row5,colWidth*3+gap*2,300,"TEMPERATURE SINCE MIDNIGHT");
-    ctx.strokeStyle="#6FE8FF";
-    ctx.lineWidth=3;
+  for (let i = 0; i <= 4; i++) {
+    const y = padding.top + (chartH / 4) * i;
     ctx.beginPath();
-    const tempData=[60,62,64,66,68,70,72,73,74,74.2]; // sample
-    const stepX=(colWidth*3+gap*2-40)/(tempData.length-1);
-    const maxTemp=Math.max(...tempData);
-    const minTemp=Math.min(...tempData);
-    tempData.forEach((t,i)=>{
-        const x=col1+20+i*stepX;
-        const y=row5+280-(t-minTemp)/(maxTemp-minTemp)*200;
-        if(i===0) ctx.moveTo(x,y);
-        else ctx.lineTo(x,y);
-    });
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(width - padding.right, y);
     ctx.stroke();
-    ctx.fillStyle="#FFF";
-    ctx.font="18px Arial";
-    ctx.fillText(maxTemp+"°",col1+20,row5+60);
-    ctx.fillText(minTemp+"°",col1+20,row5+280);
+  }
 
-    requestAnimationFrame(draw);
+  for (let i = 0; i < temps.length - 1; i++) {
+    const t1 = temps[i];
+    const t2 = temps[i + 1];
+
+    const x1 = padding.left + (chartW / (temps.length - 1)) * i;
+    const x2 = padding.left + (chartW / (temps.length - 1)) * (i + 1);
+
+    const y1 = padding.top + chartH - ((t1 - minT) / (maxT - minT || 1)) * chartH;
+    const y2 = padding.top + chartH - ((t2 - minT) / (maxT - minT || 1)) * chartH;
+
+    const stops1 = tempGradientStops(t1);
+    const stops2 = tempGradientStops(t2);
+
+    const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+    grad.addColorStop(0, stops1.top);
+    grad.addColorStop(1, stops2.bottom);
+
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(padding.left, height - padding.bottom);
+
+  temps.forEach((t, i) => {
+    const x = padding.left + (chartW / (temps.length - 1)) * i;
+    const y = padding.top + chartH - ((t - minT) / (maxT - minT || 1)) * chartH;
+    ctx.lineTo(x, y);
+  });
+
+  ctx.lineTo(width - padding.right, height - padding.bottom);
+  ctx.closePath();
+
+  const fill = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+  fill.addColorStop(0, "rgba(255,208,128,0.28)");
+  fill.addColorStop(0.5, "rgba(255,176,96,0.14)");
+  fill.addColorStop(1, "rgba(255,255,255,0.04)");
+  ctx.fillStyle = fill;
+  ctx.fill();
 }
 
-draw();
+function renderAll() {
+  setText("current-condition", data.current.condition);
+  setText("current-temp", `${data.current.temp.toFixed(1)}°`);
+  setText("current-dew", `${data.current.dew}°`);
+  setText("current-humidity", `${data.current.humidity}%`);
+  setText("current-pressure", `${data.current.pressureIn.toFixed(2)}" / ${pressureMb(data.current.pressureIn)} MB`);
+
+  applyTempGradient(document.getElementById("current-temp"), data.current.temp);
+  applyTempGradient(document.getElementById("current-dew"), data.current.dew);
+  applyTempGradient(document.getElementById("current-humidity"), data.current.humidity);
+  applyTempGradient(document.getElementById("current-pressure"), data.current.pressureIn);
+
+  setText("wind-speed", `${data.wind.speed} mph`);
+  setText("wind-gust", `${data.wind.gust} mph`);
+  setText("wind-dir-text", degToCompass(data.wind.directionDeg));
+  applyTempGradient(document.getElementById("wind-speed"), data.wind.speed);
+  applyTempGradient(document.getElementById("wind-gust"), data.wind.gust);
+  applyTempGradient(document.getElementById("wind-dir-text"), data.wind.speed);
+  renderWindArrow();
+
+  setText("indoor-temp", `${data.indoor.temp}°`);
+  setText("indoor-humidity", `${data.indoor.humidity}%`);
+  setText("indoor-dew", `${data.indoor.dew}°`);
+  applyTempGradient(document.getElementById("indoor-temp"), data.indoor.temp);
+  applyTempGradient(document.getElementById("indoor-humidity"), data.indoor.humidity);
+  applyTempGradient(document.getElementById("indoor-dew"), data.indoor.dew);
+
+  setText("rain-daily", `${data.rainfall.daily.toFixed(2)}"`);
+  setText("rain-rate", `${data.rainfall.rate.toFixed(2)}"/hr`);
+  applyTempGradient(document.getElementById("rain-daily"), data.rainfall.daily * 100);
+  applyTempGradient(document.getElementById("rain-rate"), data.rainfall.rate * 100);
+
+  setText("lt-last", formatStrikeTime(data.lightning.last));
+  setText("lt-distance", `${data.lightning.distance} mi`);
+  setText("lt-direction", data.lightning.direction);
+  setText("lt-minute", String(data.lightning.minute));
+  setText("lt-fifteen", String(data.lightning.fifteen));
+  setText("lt-hour", String(data.lightning.hour));
+  setText("lt-midnight", String(data.lightning.midnight));
+  applyTempGradient(document.getElementById("lt-last"), 70);
+  applyTempGradient(document.getElementById("lt-distance"), 45);
+  applyTempGradient(document.getElementById("lt-direction"), 60);
+  applyTempGradient(document.getElementById("lt-minute"), 40);
+  applyTempGradient(document.getElementById("lt-fifteen"), 50);
+  applyTempGradient(document.getElementById("lt-hour"), 60);
+  applyTempGradient(document.getElementById("lt-midnight"), 70);
+
+  setText("today-high", `${data.today.high}°`);
+  setText("today-low", `${data.today.low}°`);
+  setText("today-sunrise", data.today.sunrise);
+  setText("today-sunset", data.today.sunset);
+  setText("today-moon", data.today.moon);
+  setText("graph-max", `${data.today.high}°`);
+  setText("graph-min", `${data.today.low}°`);
+  applyTempGradient(document.getElementById("today-high"), data.today.high);
+  applyTempGradient(document.getElementById("today-low"), data.today.low);
+  renderTodayGraph();
+
+  renderForecast();
+  updateClock();
+}
+
+renderAll();
+setInterval(updateClock, 1000);
