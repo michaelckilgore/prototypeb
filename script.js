@@ -20,10 +20,10 @@ const row1 = headerHeight + 40;
 const row2 = row1 + 320 + gap;
 const row3 = row2 + 260 + gap;
 
-// SAMPLE DATA (fake)
+// SAMPLE DATA (FAKE)
 const current = { temp: 74.2, condition: "Storm", dew: 65, humidity: 57, pressure: 28.97 };
 const rainfall = { daily: 0.30, rate: 0.05 };
-const wind = { speed: 12, gust: 18, direction: 135 };
+const wind = { speed: 12, gust: 18, direction: 135 }; // degrees
 const indoor = { temp: 67, humidity: 55, dew: 60 };
 const lightning = { last: new Date(2026, 2, 8, 14, 15), distance: 2.5, direction: "↗", minute: 0, fifteen: 1, hour: 3, midnight: 8 };
 const forecast = [
@@ -109,6 +109,13 @@ function getClock() {
     return now.toLocaleTimeString([], options) + " " + abbrev;
 }
 
+// DEGREES TO COMPASS
+function degToCompass(num) {
+    const val = Math.floor((num / 22.5) + 0.5);
+    const arr = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+    return arr[(val % 16)];
+}
+
 // DRAW LOOP
 function draw() {
     ctx.clearRect(0, 0, 1920, 1080);
@@ -156,27 +163,7 @@ function draw() {
     ctx.fillText("Direction", col2 + 20, row1 + 170);
     gradientText(wind.speed, col2 + 120, row1 + 110, wind.speed + " mph", 30);
     gradientText(wind.gust, col2 + 120, row1 + 140, wind.gust + " mph", 30);
-    gradientText(wind.speed, col2 + 120, row1 + 170, wind.direction + "°", 30);
-
-    const cx = col2 + 350, cy = row1 + 140;
-    const angle = (wind.direction - 90) * Math.PI / 180;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(angle);
-    ctx.strokeStyle = "#FFF";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(70, 0);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(70, 0);
-    ctx.lineTo(55, 8);
-    ctx.lineTo(55, -8);
-    ctx.closePath();
-    ctx.fillStyle = "#FFEEAA";
-    ctx.fill();
-    ctx.restore();
+    gradientText(degToCompass(wind.direction), col2 + 120, row1 + 170, degToCompass(wind.direction), 30);
 
     /* INDOOR */
     panel(col3, row1, colWidth, 320, "INDOOR");
@@ -189,7 +176,59 @@ function draw() {
     gradientText(indoor.humidity, col3 + 160, row1 + 140, indoor.humidity + "%", 32);
     gradientText(indoor.dew, col3 + 320, row1 + 140, indoor.dew + "°", 32);
 
-    /* TODO: Add remaining sections (Rainfall, Lightning, High/Low Graph, Radar, 3-day forecast) in the same style */
+    /* RAINFALL */
+    panel(col1, row2, colWidth, 260, "RAINFALL");
+    ctx.font = "22px Arial";
+    ctx.fillStyle = "#FFF";
+    ctx.fillText("Daily Total", col1 + 20, row2 + 100);
+    ctx.fillText("Current Rate", col1 + 20, row2 + 140);
+    gradientText(rainfall.daily, col1 + 180, row2 + 100, rainfall.daily + '"', 28);
+    gradientText(rainfall.rate, col1 + 180, row2 + 140, rainfall.rate + '" / hr', 28);
+
+    /* LIGHTNING */
+    panel(col2, row2, colWidth, 260, "LIGHTNING");
+    ctx.font = "22px Arial";
+    ctx.fillStyle = "#FFF";
+    ctx.fillText("Last Strike", col2 + 20, row2 + 100);
+    ctx.fillText("Distance", col2 + 20, row2 + 140);
+    ctx.fillText("Direction", col2 + 20, row2 + 180);
+    ctx.fillText("Strikes Min / 15 / Hr / Since", col2 + 20, row2 + 220);
+    gradientText(formatStrikeTime(lightning.last), col2 + 180, row2 + 100, formatStrikeTime(lightning.last), 22);
+    gradientText(lightning.distance + " mi", col2 + 180, row2 + 140, lightning.distance + " mi", 22);
+    gradientText(lightning.direction, col2 + 180, row2 + 180, lightning.direction, 22);
+    gradientText(`${lightning.minute} / ${lightning.fifteen} / ${lightning.hour} / ${lightning.midnight}`, col2 + 380, row2 + 220, `${lightning.minute} / ${lightning.fifteen} / ${lightning.hour} / ${lightning.midnight}`, 22);
+
+    /* TODAY HIGH/LOW GRAPH */
+    panel(col3, row2, colWidth, 260, "TODAY HIGH/LOW");
+    ctx.fillStyle = "#FFF";
+    ctx.font = "22px Arial";
+    ctx.fillText("High", col3 + 20, row2 + 100);
+    ctx.fillText("Low", col3 + 20, row2 + 140);
+    gradientText(todayStats.high, col3 + 80, row2 + 100, todayStats.high + "°", 28);
+    gradientText(todayStats.low, col3 + 80, row2 + 140, todayStats.low + "°", 28);
+    ctx.fillText("Sunrise: " + todayStats.sunrise, col3 + 20, row2 + 180);
+    ctx.fillText("Sunset: " + todayStats.sunset, col3 + 20, row2 + 210);
+    ctx.fillText("Moon: " + todayStats.moon, col3 + 20, row2 + 240);
+
+    /* RADAR */
+    panel(col1, row3, colWidth, 260, "RADAR");
+    ctx.font = "28px Arial";
+    ctx.fillStyle = "#FFF";
+    ctx.fillText("Radar Image Here", col1 + 40, row3 + 140);
+
+    /* THREE-DAY FORECAST */
+    const labels = getNextThreeDayLabels();
+    panel(col2, row3, colWidth, 260, "THREE-DAY FORECAST");
+    forecast.forEach((f, i) => {
+        const x = col2 + 40 + i * (colWidth / 3);
+        const y = row3 + 80;
+        ctx.drawImage(stormIcon, x, y, 60, 60);
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "#FFF";
+        ctx.fillText(labels[i], x, y + 80);
+        gradientText(f.high, x, y + 110, f.high + "°", 28);
+        gradientText(f.low, x, y + 140, f.low + "°", 28);
+    });
 
     requestAnimationFrame(draw);
 }
