@@ -41,6 +41,12 @@ const data = {
     { high: 70, low: 44, cond: "Storm" },
     { high: 62, low: 45, cond: "Storm" },
     { high: 68, low: 50, cond: "Storm" }
+  ],
+  alerts: [
+    {
+      type: "Severe Thunderstorm Warning",
+      text: "Severe Thunderstorm Warning for Rush County until 1:30 PM EDT. At 12:45 PM EDT, National Weather Service Doppler Radar indicated a severe thunderstorm near Homer moving east at 30 mph. The storm will be near Rushville around 1:05 PM."
+    }
   ]
 };
 
@@ -112,6 +118,51 @@ function pressureMb(inches) {
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
+}
+
+function renderWarnings() {
+  const alerts = data.alerts || [];
+  const activeBar = document.getElementById("active-alerts-bar");
+  const activeList = document.getElementById("active-alerts-list");
+  const priorityBar = document.getElementById("priority-alerts-bar");
+  const priorityTrack = document.getElementById("priority-alerts-track");
+
+  if (alerts.length === 0) {
+    activeBar.hidden = true;
+    priorityBar.hidden = true;
+    return;
+  }
+
+  activeBar.hidden = false;
+  activeList.innerHTML = "";
+
+  const list = document.createElement("div");
+  list.className = "alert-list";
+
+  alerts.forEach(alert => {
+    const chip = document.createElement("div");
+    chip.className = "alert-chip";
+    chip.textContent = alert.type;
+    list.appendChild(chip);
+  });
+
+  activeList.appendChild(list);
+
+  const priorityTypes = new Set([
+    "Tornado Warning",
+    "Tornado Emergency",
+    "Severe Thunderstorm Warning"
+  ]);
+
+  const priorityAlerts = alerts.filter(a => priorityTypes.has(a.type));
+
+  if (priorityAlerts.length === 0) {
+    priorityBar.hidden = true;
+    return;
+  }
+
+  priorityBar.hidden = false;
+  priorityTrack.textContent = priorityAlerts.map(a => a.text).join("   •   ");
 }
 
 function renderForecast() {
@@ -224,7 +275,7 @@ function renderAll() {
   setText("wind-dir-text", degToCompass(data.wind.directionDeg));
   applyTempGradient(document.getElementById("wind-speed"), data.wind.speed);
   applyTempGradient(document.getElementById("wind-gust"), data.wind.gust);
-  applyTempGradient(document.getElementById("wind-dir-text"), data.wind.speed);
+  applyTempGradient(document.getElementById("wind-dir-text"), 60);
   renderWindArrow();
 
   setText("indoor-temp", `${data.indoor.temp}°`);
@@ -266,6 +317,7 @@ function renderAll() {
   renderTodayGraph();
 
   renderForecast();
+  renderWarnings();
   updateClock();
 }
 
