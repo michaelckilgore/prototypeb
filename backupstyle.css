@@ -5,7 +5,10 @@ padding:0;
 }
 
 body{
-background:#121827;
+background:
+radial-gradient(circle at 20% 10%, rgba(34, 65, 123, 0.55) 0%, transparent 34%),
+radial-gradient(circle at 82% 18%, rgba(26, 83, 132, 0.45) 0%, transparent 30%),
+linear-gradient(180deg, #0a1020 0%, #121827 55%, #0a0f1b 100%);
 color:white;
 font-family:Arial, Helvetica, sans-serif;
 }
@@ -21,8 +24,10 @@ background:#1c2336;
 
 .station{
 text-align:center;
-font-size:28px;
+font-size:24px;
 font-weight:bold;
+letter-spacing:1px;
+line-height:1.05;
 }
 
 .location{
