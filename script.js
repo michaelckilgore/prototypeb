@@ -210,24 +210,21 @@ function renderWarnings() {
   priorityTrack.textContent = priorityAlerts.map(a => a.text).join("   •   ");
 }
 
-function renderLightningAlert() {
-  const bar = document.getElementById("lightning-alert-bar");
-  const text = document.getElementById("lightning-alert-text");
-  if (!bar || !text) return;
+function renderLightningWarning() {
+  const warn = document.getElementById("lightning-warning");
+  if (!warn) return;
 
-  const lastStrike = data.lightning.last;
+  const strike = data.lightning.last;
   const distance = Number(data.lightning.distance);
-  const now = new Date();
-  const ageMs = now.getTime() - lastStrike.getTime();
-  const withinFiveMinutes = ageMs >= 0 && ageMs <= 5 * 60 * 1000;
-  const withinThreeMiles = distance <= 3;
+  const ageMinutes = (Date.now() - strike.getTime()) / 60000;
 
-  if (withinFiveMinutes && withinThreeMiles) {
-    text.textContent = `Recent lightning strike at ${formatStrikeTime(lastStrike)} at a distance of ${distance.toFixed(1)} mi ${data.lightning.direction} from west side of Rushville. Use caution.`;
-    bar.style.display = "grid";
+  if (ageMinutes <= 5 && distance <= 3) {
+    warn.style.display = "block";
+    const time = formatStrikeTime(strike);
+    warn.textContent = `Recent lightning strike at ${time} at a distance of ${distance} mi ${data.lightning.direction} from west side of Rushville. Use caution.`;
   } else {
-    bar.style.display = "none";
-    text.textContent = "";
+    warn.style.display = "none";
+    warn.textContent = "";
   }
 }
 
@@ -310,7 +307,7 @@ function renderAll() {
 
   renderForecast();
   renderWarnings();
-  renderLightningAlert();
+  renderLightningWarning();
   updateClock();
 }
 
