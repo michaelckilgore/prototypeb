@@ -21,13 +21,13 @@ const data = {
     rate: 0.05
   },
   lightning: {
-    last: new Date(2026, 2, 8, 14, 15),
+    last: new Date(Date.now() - 2 * 60 * 1000),
     distance: 2.5,
     direction: "↗",
-    minute: 0,
-    fifteen: 1,
-    hour: 3,
-    midnight: 8
+    minute: 1,
+    fifteen: 2,
+    hour: 4,
+    midnight: 9
   },
   today: {
     high: 75,
@@ -37,9 +37,9 @@ const data = {
     moon: "Waning Gibbous"
   },
   forecast: [
-    { high: 70, low: 44, cond: "Storm" },
-    { high: 62, low: 45, cond: "Storm" },
-    { high: 68, low: 50, cond: "Storm" }
+    { high: 70, low: 44, cond: "Storm", pop: 40 },
+    { high: 62, low: 45, cond: "Storm", pop: 30 },
+    { high: 68, low: 50, cond: "Storm", pop: 20 }
   ],
   alerts: [
     {
@@ -67,6 +67,14 @@ function applyTempColor(el, temp) {
 }
 
 function formatStrikeTime(date) {
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const suffix = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  return `${hours}:${minutes} ${suffix}`;
+}
+
+function formatStrikeTimePanel(date) {
   const month = date.getMonth() + 1;
   const day = date.getDate();
   let hours = date.getHours();
@@ -202,6 +210,27 @@ function renderWarnings() {
   priorityTrack.textContent = priorityAlerts.map(a => a.text).join("   •   ");
 }
 
+function renderLightningAlert() {
+  const bar = document.getElementById("lightning-alert-bar");
+  const text = document.getElementById("lightning-alert-text");
+  if (!bar || !text) return;
+
+  const lastStrike = data.lightning.last;
+  const distance = Number(data.lightning.distance);
+  const now = new Date();
+  const ageMs = now.getTime() - lastStrike.getTime();
+  const withinFiveMinutes = ageMs >= 0 && ageMs <= 5 * 60 * 1000;
+  const withinThreeMiles = distance <= 3;
+
+  if (withinFiveMinutes && withinThreeMiles) {
+    text.textContent = `Recent lightning strike at ${formatStrikeTime(lastStrike)} at a distance of ${distance.toFixed(1)} mi ${data.lightning.direction} from west side of Rushville. Use caution.`;
+    bar.style.display = "grid";
+  } else {
+    bar.style.display = "none";
+    text.textContent = "";
+  }
+}
+
 function renderForecast() {
   const labels = getNextThreeDayLabels();
 
@@ -211,6 +240,7 @@ function renderForecast() {
     setText(`f${i}-high`, `${item.high}°`);
     setText(`f${i}-low`, `${item.low}°`);
     setText(`f${i}-cond`, item.cond);
+    setText(`f${i}-pop`, `${item.pop}%`);
 
     applyTempColor(document.getElementById(`f${i}-high`), item.high);
     applyTempColor(document.getElementById(`f${i}-low`), item.low);
@@ -253,7 +283,7 @@ function renderAll() {
 
   updateRainfallPanel();
 
-  setText("lt-last", formatStrikeTime(data.lightning.last));
+  setText("lt-last", formatStrikeTimePanel(data.lightning.last));
   setText("lt-distance", `${data.lightning.distance} mi`);
   setText("lt-direction", data.lightning.direction);
   setText("lt-minute", String(data.lightning.minute));
@@ -280,6 +310,7 @@ function renderAll() {
 
   renderForecast();
   renderWarnings();
+  renderLightningAlert();
   updateClock();
 }
 
