@@ -1,409 +1,282 @@
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sugar Hill Reporting Station</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-body{
-background:#121827;
-color:white;
-font-family:Arial, Helvetica, sans-serif;
-}
+<header class="header">
+  <div class="station">SUGAR HILL REPORTING STATION</div>
+  <div class="location">Rushville, Indiana</div>
+  <div id="clock" class="clock">--:--</div>
+</header>
 
-.header{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-align-items:center;
-padding:10px 20px;
-border-bottom:2px solid #6fe8ff;
-background:#1c2336;
-}
+<section class="alerts">
+  <div id="active-alerts-bar" class="alert-bar">
+    <div class="alert-title">Active Warnings</div>
+    <div id="active-alerts-list" class="alert-text"></div>
+  </div>
 
-.station{
-text-align:left;
-font-size:22px;
-font-weight:bold;
-}
+  <div id="priority-alerts-bar" class="alert-bar">
+    <div class="alert-title">Warning Text</div>
+    <div class="ticker">
+      <div id="priority-alerts-track"></div>
+    </div>
+  </div>
 
-.location{
-text-align:center;
-font-size:14px;
-color:#9de0ff;
-}
+  <div id="lightning-alert-bar" class="lightning-alert-bar">
+    <div class="lightning-alert-title">Lightning Alert</div>
+    <div id="lightning-alert-text" class="lightning-alert-text"></div>
+  </div>
+</section>
 
-.clock{
-text-align:right;
-font-size:20px;
-}
+<main class="dashboard">
 
-.alerts{
-padding:10px 20px;
-display:grid;
-gap:8px;
-}
+  <section class="panel">
+    <h2>Current Conditions</h2>
 
-.alert-bar{
-display:grid;
-grid-template-columns:180px 1fr;
-border:2px solid #ff7a9e;
-background:#3d1d2a;
-border-radius:8px;
-overflow:hidden;
-min-height:32px;
-}
+    <div class="current">
+      <div class="current-left">
+        <img src="images/storm.svg" class="current-icon" alt="Storm icon">
+        <div id="current-condition">Storm</div>
+      </div>
 
-.alert-title{
-background:#7c2b45;
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:bold;
-font-size:14px;
-}
+      <div class="current-right">
+        <div id="current-temp" class="big-temp">74.2°</div>
+      </div>
+    </div>
 
-.alert-text{
-padding:6px 12px;
-display:flex;
-align-items:center;
-font-size:14px;
-}
+    <div class="current-stats">
+      <div class="stat">
+        <div class="stat-label">Dew Point</div>
+        <div id="current-dew" class="stat-value">65°</div>
+      </div>
 
-.alert-list{
-display:flex;
-flex-wrap:wrap;
-gap:8px;
-align-items:center;
-}
+      <div class="stat">
+        <div class="stat-label">Humidity</div>
+        <div id="current-humidity" class="stat-value">57%</div>
+      </div>
 
-.alert-chip{
-white-space:nowrap;
-}
+      <div class="stat">
+        <div class="stat-label">Pressure</div>
+        <div id="current-pressure" class="stat-value">28.97" / 981 MB</div>
+      </div>
+    </div>
+  </section>
 
-.ticker{
-overflow:hidden;
-white-space:nowrap;
-display:flex;
-align-items:center;
-padding:6px 0;
-}
+  <section class="panel">
+    <h2>Wind</h2>
 
-#priority-alerts-track{
-display:inline-block;
-padding-left:100%;
-animation:ticker 25s linear infinite;
-font-size:14px;
-}
+    <div class="wind-section">
+      <div class="wind-stats">
+        <div class="stat">
+          <div class="stat-label">Speed</div>
+          <div id="wind-speed" class="stat-value">12 mph</div>
+        </div>
 
-@keyframes ticker{
-0%{transform:translateX(0)}
-100%{transform:translateX(-100%)}
-}
+        <div class="stat">
+          <div class="stat-label">Gust</div>
+          <div id="wind-gust" class="stat-value">18 mph</div>
+        </div>
 
-.dashboard{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:16px;
-padding:20px;
-}
+        <div class="stat">
+          <div class="stat-label">Direction</div>
+          <div id="wind-dir-text" class="stat-value">SE</div>
+        </div>
+      </div>
 
-.panel{
-background:#1c2336;
-border:2px solid #6fe8ff;
-border-radius:12px;
-padding:14px;
-min-height:190px;
-}
+      <div class="wind-vane">
+        <div class="compass">
+          <span class="north">N</span>
+          <span class="south">S</span>
+          <span class="east">E</span>
+          <span class="west">W</span>
+          <div id="wind-arrow"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-.panel h2{
-margin-bottom:12px;
-font-size:18px;
-}
+  <section class="panel">
+    <h2>Three Day Forecast</h2>
 
-.current{
-display:grid;
-grid-template-columns:110px 1fr;
-gap:10px;
-align-items:center;
-}
+    <div class="forecast">
+      <div class="forecast-day">
+        <div id="f0-label">Today</div>
+        <div id="f0-high" class="forecast-high">70°</div>
+        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
+        <div id="f0-cond">Storm</div>
+        <div id="f0-low" class="forecast-low">44°</div>
+        <div id="f0-pop" class="forecast-pop">40%</div>
+      </div>
 
-.current-icon{
-width:78px;
-height:78px;
-display:block;
-margin:0 auto 8px auto;
-}
+      <div class="forecast-day">
+        <div id="f1-label">Mon</div>
+        <div id="f1-high" class="forecast-high">62°</div>
+        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
+        <div id="f1-cond">Storm</div>
+        <div id="f1-low" class="forecast-low">45°</div>
+        <div id="f1-pop" class="forecast-pop">30%</div>
+      </div>
 
-.current-left{
-text-align:center;
-}
+      <div class="forecast-day">
+        <div id="f2-label">Tue</div>
+        <div id="f2-high" class="forecast-high">68°</div>
+        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
+        <div id="f2-cond">Storm</div>
+        <div id="f2-low" class="forecast-low">50°</div>
+        <div id="f2-pop" class="forecast-pop">20%</div>
+      </div>
+    </div>
+  </section>
 
-.current-right{
-display:flex;
-align-items:center;
-justify-content:flex-start;
-}
+  <section class="panel">
+    <h2>Rainfall</h2>
 
-.big-temp{
-font-size:64px;
-font-weight:bold;
-line-height:1;
-}
+    <div class="rain-panel">
+      <div class="stat">
+        <div class="stat-label">Daily Total</div>
+        <div id="rain-daily" class="stat-value">0.30"</div>
+      </div>
 
-.current-stats{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-margin-top:14px;
-text-align:center;
-gap:6px;
-}
+      <div class="stat">
+        <div class="stat-label">Rain Rate</div>
+        <div id="rain-rate" class="stat-value">0.05"/hr</div>
+      </div>
 
-.stat{
-margin-bottom:8px;
-}
+      <div class="stat">
+        <div class="stat-label">Intensity</div>
+        <div id="rain-intensity" class="stat-value">Light Rain</div>
+      </div>
 
-.stat-label{
-font-size:13px;
-color:#a9c7ff;
-margin-bottom:2px;
-}
+      <div class="rain-meter">
+        <div class="meter-labels">
+          <span>0</span>
+          <span>0.25</span>
+          <span>0.50+</span>
+        </div>
+        <div class="meter-track">
+          <div id="rain-meter-fill"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-.stat-value{
-font-size:18px;
-font-weight:bold;
-}
+  <section class="panel">
+    <h2>Radar</h2>
+    <div class="radar">Radar Image Here</div>
+  </section>
 
-#current-pressure{
-white-space:nowrap;
-}
+  <section class="panel">
+    <h2>Lightning</h2>
 
-.wind-section{
-display:grid;
-grid-template-columns:1fr 160px;
-gap:8px;
-align-items:center;
-}
+    <div class="lightning-top">
+      <div class="stat">
+        <div class="stat-label">Last Strike</div>
+        <div id="lt-last" class="stat-value">--</div>
+      </div>
 
-.wind-stats{
-display:grid;
-gap:12px;
-}
+      <div class="stat">
+        <div class="stat-label">Distance</div>
+        <div id="lt-distance" class="stat-value">--</div>
+      </div>
 
-.compass{
-width:118px;
-height:118px;
-border:2px solid #6fe8ff;
-border-radius:50%;
-position:relative;
-margin:auto;
-}
+      <div class="stat">
+        <div class="stat-label">Direction</div>
+        <div id="lt-direction" class="stat-value">--</div>
+      </div>
+    </div>
 
-.compass span{
-position:absolute;
-font-size:12px;
-color:white;
-}
+    <div class="lightning-history">
+      <div class="history-box">
+        <div class="history-label">1 Min</div>
+        <div id="lt-minute" class="history-value">0</div>
+      </div>
 
-.north{
-top:5px;
-left:50%;
-transform:translateX(-50%);
-}
+      <div class="history-box">
+        <div class="history-label">15 Min</div>
+        <div id="lt-fifteen" class="history-value">0</div>
+      </div>
 
-.south{
-bottom:5px;
-left:50%;
-transform:translateX(-50%);
-}
+      <div class="history-box">
+        <div class="history-label">1 Hour</div>
+        <div id="lt-hour" class="history-value">0</div>
+      </div>
 
-.east{
-right:7px;
-top:50%;
-transform:translateY(-50%);
-}
+      <div class="history-box">
+        <div class="history-label">Today</div>
+        <div id="lt-midnight" class="history-value">0</div>
+      </div>
+    </div>
+  </section>
 
-.west{
-left:7px;
-top:50%;
-transform:translateY(-50%);
-}
+  <section class="panel">
+    <h2>Today's Observations</h2>
 
-#wind-arrow{
-width:44px;
-height:3px;
-background:white;
-position:absolute;
-top:50%;
-left:50%;
-transform-origin:left center;
-}
+    <div class="obs-grid">
+      <div class="stat">
+        <div class="stat-label">High</div>
+        <div id="today-high" class="stat-value">75°</div>
+      </div>
 
-.forecast{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-text-align:center;
-align-items:start;
-}
+      <div class="stat">
+        <div class="stat-label">Low</div>
+        <div id="today-low" class="stat-value">51°</div>
+      </div>
+    </div>
+  </section>
 
-.forecast-day{
-display:grid;
-justify-items:center;
-gap:3px;
-}
+  <section class="panel">
+    <h2>Indoor</h2>
 
-.forecast-icon{
-width:44px;
-height:44px;
-}
+    <div class="indoor">
+      <div class="stat">
+        <div class="stat-label">Temp</div>
+        <div id="indoor-temp" class="stat-value">67°</div>
+      </div>
 
-.forecast-high{
-font-size:18px;
-font-weight:bold;
-}
+      <div class="stat">
+        <div class="stat-label">Humidity</div>
+        <div id="indoor-humidity" class="stat-value">55%</div>
+      </div>
 
-.forecast-low{
-font-size:16px;
-}
+      <div class="stat">
+        <div class="stat-label">Dew Point</div>
+        <div id="indoor-dew" class="stat-value">60°</div>
+      </div>
+    </div>
+  </section>
 
-.rain-panel{
-display:grid;
-gap:12px;
-}
+  <section class="panel">
+    <h2>Sun &amp; Moon</h2>
 
-.rain-meter{
-margin-top:4px;
-}
+    <div class="sunmoon">
+      <div class="sunmoon-stats">
+        <div class="stat">
+          <div class="stat-label">Sunrise</div>
+          <div id="today-sunrise" class="stat-value">8:04 AM</div>
+        </div>
 
-.meter-labels{
-display:flex;
-justify-content:space-between;
-font-size:10px;
-color:#c0c0c0;
-margin-bottom:2px;
-}
+        <div class="stat">
+          <div class="stat-label">Sunset</div>
+          <div id="today-sunset" class="stat-value">7:41 PM</div>
+        </div>
 
-.meter-track{
-height:12px;
-background:#111;
-border:1px solid #6fe8ff;
-border-radius:8px;
-overflow:hidden;
-}
+        <div class="stat">
+          <div class="stat-label">Moon Phase</div>
+          <div id="today-moon" class="stat-value">Waning Gibbous</div>
+        </div>
+      </div>
 
-#rain-meter-fill{
-height:100%;
-background:linear-gradient(90deg,#9ed8ff,#5cb8ff);
-width:0%;
-}
+      <div class="moon-placeholder">Moon Icon</div>
+    </div>
+  </section>
 
-.radar{
-height:130px;
-display:flex;
-align-items:center;
-justify-content:center;
-border:2px dashed #aaa;
-border-radius:10px;
-color:white;
-}
+</main>
 
-.lightning-top{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-}
-
-.lightning-history{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:10px;
-margin-top:10px;
-}
-
-.history-box{
-background:#151b2c;
-border:1px solid #6fe8ff;
-border-radius:8px;
-text-align:center;
-padding:8px;
-}
-
-.history-label{
-font-size:12px;
-}
-
-.history-value{
-font-size:22px;
-font-weight:bold;
-}
-
-.obs-grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:12px;
-margin-top:10px;
-}
-
-.sunmoon{
-display:grid;
-grid-template-columns:1fr 120px;
-gap:10px;
-align-items:center;
-}
-
-.sunmoon-stats{
-display:grid;
-gap:10px;
-}
-
-.moon-placeholder{
-border:2px dashed #aaa;
-height:100px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:10px;
-}
-
-.indoor{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-text-align:center;
-gap:8px;
-}
-
-@media (max-width: 900px) {
-  .dashboard{
-    grid-template-columns:1fr;
-  }
-
-  .wind-section,
-  .sunmoon,
-  .indoor,
-  .forecast,
-  .lightning-top,
-  .current,
-  .current-stats,
-  .obs-grid{
-    grid-template-columns:1fr;
-  }
-
-  .lightning-history{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .header{
-    grid-template-columns:1fr;
-    gap:8px;
-    text-align:center;
-  }
-
-  .station,
-  .location,
-  .clock{
-    text-align:center;
-  }
-
-  .alert-bar{
-    grid-template-columns:1fr;
-  }
-}
+<script src="script.js"></script>
+</body>
+</html>
