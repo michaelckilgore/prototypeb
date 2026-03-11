@@ -8,9 +8,9 @@ const data = {
     pressureMb: null
   },
   wind: {
-    speed: 12,
-    gust: 18,
-    directionDeg: 135
+    speed: null,
+    gust: null,
+    directionDeg: null
   },
   indoor: {
     temp: 67,
@@ -90,6 +90,7 @@ function formatStrikeTime(date) {
 }
 
 function degToCompass(num) {
+  if (typeof num !== "number") return "N/A";
   const val = Math.floor((num / 22.5) + 0.5);
   const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
   return arr[val % 16];
@@ -267,10 +268,18 @@ function renderForecast() {
 function renderWindArrow() {
   const arrow = document.getElementById("wind-arrow");
   if (!arrow) return;
+
+  if (typeof data.wind.directionDeg !== "number") {
+    arrow.style.opacity = "0.25";
+    arrow.style.transform = "rotate(-90deg)";
+    return;
+  }
+
+  arrow.style.opacity = "1";
   arrow.style.transform = `rotate(${data.wind.directionDeg - 90}deg)`;
 }
 
-function renderAll() {
+function renderCurrentConditions() {
   setText("current-condition", data.current.condition || "N/A");
   setText("current-temp", formatFixed(data.current.temp, 1, "°"));
   setText("current-dew", formatValue(data.current.dew, "°"));
@@ -280,15 +289,23 @@ function renderAll() {
     (typeof data.current.pressureIn === "number" && typeof data.current.pressureMb === "number")
       ? `${data.current.pressureIn.toFixed(2)}" / ${data.current.pressureMb} MB`
       : "N/A";
+
   setText("current-pressure", pressureText);
 
   applyTempColor(document.getElementById("current-temp"), data.current.temp);
   applyTempColor(document.getElementById("current-dew"), data.current.dew);
+}
 
-  setText("wind-speed", `${data.wind.speed} mph`);
-  setText("wind-gust", `${data.wind.gust} mph`);
+function renderWindPanel() {
+  setText("wind-speed", formatValue(data.wind.speed, " mph"));
+  setText("wind-gust", formatValue(data.wind.gust, " mph"));
   setText("wind-dir-text", degToCompass(data.wind.directionDeg));
   renderWindArrow();
+}
+
+function renderAll() {
+  renderCurrentConditions();
+  renderWindPanel();
 
   setText("indoor-temp", `${data.indoor.temp}°`);
   setText("indoor-humidity", `${data.indoor.humidity}%`);
@@ -329,15 +346,27 @@ async function updateLiveTempestCurrent() {
     data.current.pressureIn = typeof live.pressureIn === "number" ? live.pressureIn : null;
     data.current.pressureMb = typeof live.pressureMb === "number" ? live.pressureMb : null;
 
-    renderAll();
+    data.wind.speed = typeof live.windSpeed === "number" ? live.windSpeed : null;
+    data.wind.gust = typeof live.windGust === "number" ? live.windGust : null;
+    data.wind.directionDeg = typeof live.windDir === "number" ? live.windDir : null;
+
+    renderCurrentConditions();
+    renderWindPanel();
   } catch (error) {
     console.error("Failed to load live Tempest current data:", error);
+
     data.current.temp = null;
     data.current.dew = null;
     data.current.humidity = null;
     data.current.pressureIn = null;
     data.current.pressureMb = null;
-    renderAll();
+
+    data.wind.speed = null;
+    data.wind.gust = null;
+    data.wind.directionDeg = null;
+
+    renderCurrentConditions();
+    renderWindPanel();
   }
 }
 
