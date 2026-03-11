@@ -41,12 +41,7 @@ const data = {
     { high: 62, low: 45, cond: "Storm", pop: 30 },
     { high: 68, low: 50, cond: "Storm", pop: 20 }
   ],
-  alerts: [
-    {
-      type: "Severe Thunderstorm Warning",
-      text: "Severe Thunderstorm Warning for Rush County until 1:30 PM EDT. At 12:45 PM EDT, National Weather Service Doppler Radar indicated a severe thunderstorm near Homer moving east at 30 mph. The storm will be near Rushville around 1:05 PM."
-    }
-  ]
+  alerts: []
 };
 
 function tempColor(temp) {
@@ -164,7 +159,7 @@ function updateRainfallPanel() {
 }
 
 function renderWarnings() {
-  const alerts = data.alerts || [];
+  const alerts = Array.isArray(data.alerts) ? data.alerts : [];
   const activeBar = document.getElementById("active-alerts-bar");
   const activeList = document.getElementById("active-alerts-list");
   const priorityBar = document.getElementById("priority-alerts-bar");
@@ -179,6 +174,7 @@ function renderWarnings() {
   }
 
   activeBar.style.display = "grid";
+  priorityBar.style.display = "grid";
   activeList.innerHTML = "";
 
   const list = document.createElement("div");
@@ -187,27 +183,38 @@ function renderWarnings() {
   alerts.forEach((alert) => {
     const chip = document.createElement("div");
     chip.className = "alert-chip";
-    chip.textContent = alert.type;
+    chip.textContent = alert.event || "Alert";
     list.appendChild(chip);
   });
 
   activeList.appendChild(list);
 
-  const priorityTypes = new Set([
-    "Tornado Warning",
+  const priorityOrder = [
     "Tornado Emergency",
-    "Severe Thunderstorm Warning"
-  ]);
+    "Tornado Warning",
+    "Severe Thunderstorm Warning",
+    "Flash Flood Warning",
+    "Flood Warning",
+    "Flash Flood Advisory",
+    "Flood Advisory",
+    "Wind Advisory"
+  ];
 
-  const priorityAlerts = alerts.filter((a) => priorityTypes.has(a.type));
+  const sortedAlerts = [...alerts].sort((a, b) => {
+    const ai = priorityOrder.indexOf(a.event || "");
+    const bi = priorityOrder.indexOf(b.event || "");
+    const aRank = ai === -1 ? 999 : ai;
+    const bRank = bi === -1 ? 999 : bi;
+    return aRank - bRank;
+  });
 
-  if (priorityAlerts.length === 0) {
-    priorityBar.style.display = "none";
-    return;
-  }
+  const tickerText = sortedAlerts.map((alert) => {
+    if (alert.headline && alert.headline.trim()) return alert.headline.trim();
+    if (alert.description && alert.description.trim()) return alert.description.trim().replace(/\s+/g, " ");
+    return alert.event || "Alert";
+  });
 
-  priorityBar.style.display = "grid";
-  priorityTrack.textContent = priorityAlerts.map((a) => a.text).join("   •   ");
+  priorityTrack.textContent = tickerText.join("   •   ");
 }
 
 function renderLightningWarning() {
@@ -328,15 +335,39 @@ async function updateLiveTemperatureOnly() {
       setText("current-temp", `${data.current.temp.toFixed(1)}°`);
       applyTempColor(document.getElementById("current-temp"), data.current.temp);
     }
-
-    console.log("Live Tempest temperature loaded:", live.roundedTempF);
   } catch (error) {
     console.error("Failed to load live temperature:", error);
   }
 }
 
+async function updateLiveNwsAlerts() {
+  try {
+    const response = await fetch("http://localhost:3000/api/nws-alerts");
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const live = await response.json();
+
+    if (Array.isArray(live.alerts)) {
+      data.alerts = live.alerts;
+      renderWarnings();
+    } else {
+      data.alerts = [];
+      renderWarnings();
+    }
+  } catch (error) {
+    console.error("Failed to load NWS alerts:", error);
+    data.alerts = [];
+    renderWarnings();
+  }
+}
+
 renderAll();
 updateLiveTemperatureOnly();
+updateLiveNwsAlerts();
 
 setInterval(updateClock, 1000);
 setInterval(updateLiveTemperatureOnly, 30000);
+setInterval(updateLiveNwsAlerts, 60000);
