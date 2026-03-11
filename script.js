@@ -184,7 +184,7 @@ function renderWarnings() {
   const list = document.createElement("div");
   list.className = "alert-list";
 
-  alerts.forEach(alert => {
+  alerts.forEach((alert) => {
     const chip = document.createElement("div");
     chip.className = "alert-chip";
     chip.textContent = alert.type;
@@ -199,7 +199,7 @@ function renderWarnings() {
     "Severe Thunderstorm Warning"
   ]);
 
-  const priorityAlerts = alerts.filter(a => priorityTypes.has(a.type));
+  const priorityAlerts = alerts.filter((a) => priorityTypes.has(a.type));
 
   if (priorityAlerts.length === 0) {
     priorityBar.style.display = "none";
@@ -207,7 +207,7 @@ function renderWarnings() {
   }
 
   priorityBar.style.display = "grid";
-  priorityTrack.textContent = priorityAlerts.map(a => a.text).join("   •   ");
+  priorityTrack.textContent = priorityAlerts.map((a) => a.text).join("   •   ");
 }
 
 function renderLightningWarning() {
@@ -233,6 +233,8 @@ function renderForecast() {
 
   for (let i = 0; i < 3; i++) {
     const item = data.forecast[i];
+    if (!item) continue;
+
     setText(`f${i}-label`, labels[i]);
     setText(`f${i}-high`, `${item.high}°`);
     setText(`f${i}-low`, `${item.low}°`);
@@ -311,5 +313,30 @@ function renderAll() {
   updateClock();
 }
 
+async function updateLiveTemperatureOnly() {
+  try {
+    const response = await fetch("http://localhost:3000/api/tempest/current-temp");
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const live = await response.json();
+
+    if (typeof live.roundedTempF === "number") {
+      data.current.temp = live.roundedTempF;
+      setText("current-temp", `${data.current.temp.toFixed(1)}°`);
+      applyTempColor(document.getElementById("current-temp"), data.current.temp);
+    }
+
+    console.log("Live Tempest temperature loaded:", live.roundedTempF);
+  } catch (error) {
+    console.error("Failed to load live temperature:", error);
+  }
+}
+
 renderAll();
+updateLiveTemperatureOnly();
+
 setInterval(updateClock, 1000);
+setInterval(updateLiveTemperatureOnly, 30000);
