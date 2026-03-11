@@ -18,8 +18,8 @@ const data = {
     dew: 60
   },
   rainfall: {
-    daily: 0.30,
-    rate: 0.05
+    daily: null,
+    rate: null
   },
   lightning: {
     lastStrikeEpoch: null,
@@ -134,6 +134,7 @@ function updateClock() {
 }
 
 function getRainIntensity(rate) {
+  if (typeof rate !== "number") return "N/A";
   if (rate <= 0) return "No Rain";
   if (rate <= 0.03) return "Drizzle";
   if (rate <= 0.10) return "Light Rain";
@@ -143,36 +144,13 @@ function getRainIntensity(rate) {
 }
 
 function getRainIntensityColor(rate) {
+  if (typeof rate !== "number") return "#aeb8c7";
   if (rate <= 0) return "#aeb8c7";
   if (rate <= 0.03) return "#b9dcff";
   if (rate <= 0.10) return "#8fd0ff";
   if (rate <= 0.30) return "#74efff";
   if (rate <= 0.50) return "#5cb8ff";
   return "#7f8cff";
-}
-
-function updateRainfallPanel() {
-  const dailyEl = document.getElementById("rain-daily");
-  const rateEl = document.getElementById("rain-rate");
-  const intensityEl = document.getElementById("rain-intensity");
-  const fillEl = document.getElementById("rain-meter-fill");
-
-  if (dailyEl) dailyEl.textContent = `${data.rainfall.daily.toFixed(2)}"`;
-  if (rateEl) rateEl.textContent = `${data.rainfall.rate.toFixed(2)}"/hr`;
-
-  applyTempColor(dailyEl, data.rainfall.daily * 100);
-  applyTempColor(rateEl, data.rainfall.rate * 100);
-
-  if (intensityEl) {
-    intensityEl.textContent = getRainIntensity(data.rainfall.rate);
-    intensityEl.style.color = getRainIntensityColor(data.rainfall.rate);
-  }
-
-  if (fillEl) {
-    const maxRate = 0.5;
-    const pct = Math.max(0, Math.min(data.rainfall.rate / maxRate, 1)) * 100;
-    fillEl.style.width = `${pct}%`;
-  }
 }
 
 function normalizeAlertText(text) {
@@ -813,15 +791,37 @@ function renderWindPanel() {
   renderWindArrow();
 }
 
+function renderRainPanel() {
+  setText("rain-daily", formatFixed(data.rainfall.daily, 2, "\""));
+  setText("rain-rate", formatFixed(data.rainfall.rate, 2, "\"/hr"));
+
+  const intensity = getRainIntensity(data.rainfall.rate);
+  const intensityEl = document.getElementById("rain-intensity");
+  if (intensityEl) {
+    intensityEl.textContent = intensity;
+    intensityEl.style.color = getRainIntensityColor(data.rainfall.rate);
+  }
+
+  const fillEl = document.getElementById("rain-meter-fill");
+  if (fillEl) {
+    if (typeof data.rainfall.rate === "number") {
+      const maxRate = 0.5;
+      const pct = Math.max(0, Math.min(data.rainfall.rate / maxRate, 1)) * 100;
+      fillEl.style.width = `${pct}%`;
+    } else {
+      fillEl.style.width = "0%";
+    }
+  }
+}
+
 function renderAll() {
   renderCurrentConditions();
   renderWindPanel();
+  renderRainPanel();
 
   setText("indoor-temp", `${data.indoor.temp}°`);
   setText("indoor-humidity", `${data.indoor.humidity}%`);
   setText("indoor-dew", `${data.indoor.dew}°`);
-
-  updateRainfallPanel();
 
   setText("today-high", `${data.today.high}°`);
   setText("today-low", `${data.today.low}°`);
@@ -852,8 +852,12 @@ async function updateLiveTempestCurrent() {
     data.wind.gust = typeof live.windGust === "number" ? live.windGust : null;
     data.wind.directionDeg = typeof live.windDir === "number" ? live.windDir : null;
 
+    data.rainfall.daily = typeof live.rainDailyIn === "number" ? live.rainDailyIn : null;
+    data.rainfall.rate = typeof live.rainRateInHr === "number" ? live.rainRateInHr : null;
+
     renderCurrentConditions();
     renderWindPanel();
+    renderRainPanel();
   } catch (error) {
     console.error("Failed to load live Tempest current data:", error);
 
@@ -867,8 +871,12 @@ async function updateLiveTempestCurrent() {
     data.wind.gust = null;
     data.wind.directionDeg = null;
 
+    data.rainfall.daily = null;
+    data.rainfall.rate = null;
+
     renderCurrentConditions();
     renderWindPanel();
+    renderRainPanel();
   }
 }
 
