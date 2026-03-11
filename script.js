@@ -134,8 +134,7 @@ function updateClock() {
 }
 
 function getRainIntensity(rate) {
-  if (typeof rate !== "number") return "N/A";
-  if (rate <= 0) return "No Rain";
+  if (typeof rate !== "number" || rate <= 0) return "None";
   if (rate <= 0.03) return "Drizzle";
   if (rate <= 0.10) return "Light Rain";
   if (rate <= 0.30) return "Moderate Rain";
@@ -144,8 +143,7 @@ function getRainIntensity(rate) {
 }
 
 function getRainIntensityColor(rate) {
-  if (typeof rate !== "number") return "#aeb8c7";
-  if (rate <= 0) return "#aeb8c7";
+  if (typeof rate !== "number" || rate <= 0) return "#aeb8c7";
   if (rate <= 0.03) return "#b9dcff";
   if (rate <= 0.10) return "#8fd0ff";
   if (rate <= 0.30) return "#74efff";
@@ -792,25 +790,24 @@ function renderWindPanel() {
 }
 
 function renderRainPanel() {
-  setText("rain-daily", formatFixed(data.rainfall.daily, 2, "\""));
-  setText("rain-rate", formatFixed(data.rainfall.rate, 2, "\"/hr"));
+  const dailyValue = typeof data.rainfall.daily === "number" ? data.rainfall.daily : 0;
+  const rateValue = typeof data.rainfall.rate === "number" ? data.rainfall.rate : 0;
 
-  const intensity = getRainIntensity(data.rainfall.rate);
+  setText("rain-daily", `${dailyValue.toFixed(2)}"`);
+  setText("rain-rate", `${rateValue.toFixed(2)}"/hr`);
+
+  const intensity = getRainIntensity(rateValue);
   const intensityEl = document.getElementById("rain-intensity");
   if (intensityEl) {
     intensityEl.textContent = intensity;
-    intensityEl.style.color = getRainIntensityColor(data.rainfall.rate);
+    intensityEl.style.color = getRainIntensityColor(rateValue);
   }
 
   const fillEl = document.getElementById("rain-meter-fill");
   if (fillEl) {
-    if (typeof data.rainfall.rate === "number") {
-      const maxRate = 0.5;
-      const pct = Math.max(0, Math.min(data.rainfall.rate / maxRate, 1)) * 100;
-      fillEl.style.width = `${pct}%`;
-    } else {
-      fillEl.style.width = "0%";
-    }
+    const maxRate = 0.5;
+    const pct = Math.max(0, Math.min(rateValue / maxRate, 1)) * 100;
+    fillEl.style.width = `${pct}%`;
   }
 }
 
