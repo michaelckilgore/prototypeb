@@ -22,13 +22,15 @@ const data = {
     rate: 0.05
   },
   lightning: {
-    last: new Date(Date.now() - 2 * 60 * 1000),
-    distance: 2.5,
-    direction: "↗",
-    minute: 1,
-    fifteen: 2,
-    hour: 4,
-    midnight: 9
+    lastStrikeEpoch: null,
+    lastStrikeDistanceMiles: null,
+    lastStrikeDirection: null,
+    minuteCount: null,
+    fifteenMinuteCount: null,
+    hourCount: null,
+    todayCount: null,
+    countsRadiusMiles: 10,
+    disclaimer: "Lightning data is subject to interference and detection limits."
   },
   today: {
     high: 75,
@@ -48,6 +50,7 @@ const data = {
 let tickerTimer = null;
 let tickerIndex = 0;
 let lastAlertSignature = "";
+let lightningTimer = null;
 
 function tempColor(temp) {
   if (typeof temp !== "number") return "#ffffff";
@@ -75,7 +78,9 @@ function formatFixed(value, digits = 1, suffix = "") {
   return typeof value === "number" ? `${value.toFixed(digits)}${suffix}` : "N/A";
 }
 
-function formatStrikeTimePanel(date) {
+function formatEpochToPanel(epoch) {
+  if (typeof epoch !== "number") return "N/A";
+  const date = new Date(epoch * 1000);
   const month = date.getMonth() + 1;
   const day = date.getDate();
   let hours = date.getHours();
@@ -85,7 +90,9 @@ function formatStrikeTimePanel(date) {
   return `${month}/${day} ${hours}:${minutes} ${suffix}`;
 }
 
-function formatStrikeTime(date) {
+function formatStrikeTime(epoch) {
+  if (typeof epoch !== "number") return "N/A";
+  const date = new Date(epoch * 1000);
   let hours = date.getHours();
   const minutes = String(date.getMinutes()).padStart(2, "0");
   const suffix = hours >= 12 ? "PM" : "AM";
@@ -193,13 +200,13 @@ function isPds(alert) {
 function isDestructiveSevere(alert) {
   const blob = alertBlob(alert);
   return (alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
-    (blob.includes("destructive") || blob.includes("damage threat") && blob.includes("destructive"));
+    (blob.includes("destructive") || (blob.includes("damage threat") && blob.includes("destructive")));
 }
 
 function isConsiderableSevere(alert) {
   const blob = alertBlob(alert);
   return (alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
-    (blob.includes("considerable") || blob.includes("damage threat") && blob.includes("considerable"));
+    (blob.includes("considerable") || (blob.includes("damage threat") && blob.includes("considerable")));
 }
 
 function isCivilMessage(alert) {
@@ -243,15 +250,16 @@ function getAlertPriority(alert) {
   if (event.includes("severe thunderstorm warning")) return 6;
   if (event.includes("flash flood warning")) return 7;
   if (event.includes("flood warning")) return 8;
-  if (isWinterWarning(alert)) return 9;
-  if (event.includes("tornado watch") && isPds(alert)) return 10;
-  if (event.includes("tornado watch")) return 11;
-  if (event.includes("severe thunderstorm watch")) return 12;
-  if (event.includes("flash flood watch")) return 13;
-  if (event.includes("flood watch")) return 14;
-  if (isWinterWatch(alert)) return 15;
-  if (isCivilMessage(alert)) return 17;
-  return 16;
+  if (event.includes("flood advisory")) return 9;
+  if (isWinterWarning(alert)) return 10;
+  if (event.includes("tornado watch") && isPds(alert)) return 11;
+  if (event.includes("tornado watch")) return 12;
+  if (event.includes("severe thunderstorm watch")) return 13;
+  if (event.includes("flash flood watch")) return 14;
+  if (event.includes("flood watch")) return 15;
+  if (isWinterWatch(alert)) return 16;
+  if (isCivilMessage(alert)) return 18;
+  return 17;
 }
 
 function getAlertTheme(alert) {
@@ -324,14 +332,14 @@ function getAlertTheme(alert) {
 
   if (event.includes("severe thunderstorm warning")) {
     return {
-      bg1: "#ffad00",
-      bg2: "#f07c00",
-      title1: "#ffc12c",
-      title2: "#ff9300",
-      border: "#ffe09a",
+      bg1: "#ffe2a6",
+      bg2: "#ffc97a",
+      title1: "#ffe9b8",
+      title2: "#ffd694",
+      border: "#ffcf8a",
       text: "#111111",
-      chipBg: "rgba(255,255,255,0.22)",
-      chipBorder: "rgba(0,0,0,0.18)"
+      chipBg: "rgba(0,0,0,0.05)",
+      chipBorder: "rgba(0,0,0,0.12)"
     };
   }
 
@@ -348,12 +356,12 @@ function getAlertTheme(alert) {
     };
   }
 
-  if (event.includes("flood warning")) {
+  if (event.includes("flood warning") || event.includes("flood advisory")) {
     return {
-      bg1: "#138a2e",
-      bg2: "#0b6721",
-      title1: "#1a9b36",
-      title2: "#0f7025",
+      bg1: "#2f9e44",
+      bg2: "#1f6d2d",
+      title1: "#39b54a",
+      title2: "#2a873a",
       border: "#8dd7a0",
       text: "#ffffff",
       chipBg: "rgba(255,255,255,0.12)",
@@ -463,6 +471,7 @@ function getShortAlertLabel(alert) {
   if (lower.includes("severe thunderstorm warning")) return "SVR T-STORM WARNING";
   if (lower.includes("flash flood warning")) return "FLASH FLOOD WARNING";
   if (lower.includes("flood warning")) return "FLOOD WARNING";
+  if (lower.includes("flood advisory")) return "FLOOD ADVISORY";
   if (lower.includes("winter storm warning")) return "WINTER STORM WARNING";
   if (lower.includes("blizzard warning")) return "BLIZZARD WARNING";
   if (lower.includes("ice storm warning")) return "ICE STORM WARNING";
@@ -473,7 +482,6 @@ function getShortAlertLabel(alert) {
   if (lower.includes("flood watch")) return "FLOOD WATCH";
   if (lower.includes("wind advisory")) return "WIND ADVISORY";
   if (lower.includes("winter weather advisory")) return "WINTER WX ADVISORY";
-  if (lower.includes("special weather statement")) return "SPECIAL WEATHER STATEMENT";
   if (lower.includes("civil danger warning")) return "CIVIL DANGER WARNING";
   if (lower.includes("civil emergency message")) return "CIVIL EMERGENCY MESSAGE";
 
@@ -628,7 +636,7 @@ function renderActiveAlertChips(sortedAlerts) {
   }
 
   if (usedOverflow) {
-    let plusChip = createChip("+");
+    const plusChip = createChip("+");
     list.appendChild(plusChip);
 
     while (list.scrollWidth > maxWidth && list.children.length > 1) {
@@ -681,21 +689,72 @@ function renderWarnings(forceRestartTicker = false) {
   }
 }
 
+function ensureLightningMeta() {
+  const panel = document.getElementById("lightning-warning")?.closest(".panel");
+  const history = document.querySelector(".lightning-history");
+
+  if (!panel || !history) return;
+
+  let note = panel.querySelector(".lightning-counts-note");
+  if (!note) {
+    note = document.createElement("div");
+    note.className = "lightning-counts-note";
+    note.style.fontSize = "11px";
+    note.style.fontWeight = "700";
+    note.style.color = "#a9c7ff";
+    note.style.margin = "10px 0 6px 2px";
+    history.parentNode.insertBefore(note, history);
+  }
+
+  let disclaimer = panel.querySelector(".lightning-disclaimer");
+  if (!disclaimer) {
+    disclaimer = document.createElement("div");
+    disclaimer.className = "lightning-disclaimer";
+    disclaimer.style.fontSize = "10px";
+    disclaimer.style.color = "#98a8bf";
+    disclaimer.style.marginTop = "10px";
+    disclaimer.style.lineHeight = "1.3";
+    history.parentNode.appendChild(disclaimer);
+  }
+
+  note.textContent = `Strike Counts — Within ${data.lightning.countsRadiusMiles} Miles`;
+  disclaimer.textContent = data.lightning.disclaimer;
+}
+
 function renderLightningWarning() {
   const warn = document.getElementById("lightning-warning");
   if (!warn) return;
 
-  const strike = data.lightning.last;
-  const distance = Number(data.lightning.distance);
-  const ageMinutes = (Date.now() - strike.getTime()) / 60000;
+  const strikeEpoch = data.lightning.lastStrikeEpoch;
+  const distance = data.lightning.lastStrikeDistanceMiles;
 
-  if (ageMinutes <= 5 && distance <= 3) {
+  if (typeof strikeEpoch === "number" && typeof distance === "number" && distance <= 3) {
     warn.style.display = "block";
-    warn.textContent = `Recent lightning strike at ${formatStrikeTime(strike)} at a distance of ${distance} mi ${data.lightning.direction} from west side of Rushville. Use caution.`;
+    warn.textContent = `Recent lightning strike at ${formatStrikeTime(strikeEpoch)} at a distance of ${distance.toFixed(1)} mi. Use caution.`;
   } else {
     warn.style.display = "none";
     warn.textContent = "";
   }
+}
+
+function renderLightningPanel() {
+  ensureLightningMeta();
+
+  setText("lt-last", formatEpochToPanel(data.lightning.lastStrikeEpoch));
+  setText(
+    "lt-distance",
+    typeof data.lightning.lastStrikeDistanceMiles === "number"
+      ? `${data.lightning.lastStrikeDistanceMiles.toFixed(1)} mi`
+      : "N/A"
+  );
+  setText("lt-direction", data.lightning.lastStrikeDirection || "N/A");
+
+  setText("lt-minute", formatValue(data.lightning.minuteCount));
+  setText("lt-fifteen", formatValue(data.lightning.fifteenMinuteCount));
+  setText("lt-hour", formatValue(data.lightning.hourCount));
+  setText("lt-midnight", formatValue(data.lightning.todayCount));
+
+  renderLightningWarning();
 }
 
 function renderForecast() {
@@ -764,14 +823,6 @@ function renderAll() {
 
   updateRainfallPanel();
 
-  setText("lt-last", formatStrikeTimePanel(data.lightning.last));
-  setText("lt-distance", `${data.lightning.distance} mi`);
-  setText("lt-direction", data.lightning.direction);
-  setText("lt-minute", String(data.lightning.minute));
-  setText("lt-fifteen", String(data.lightning.fifteen));
-  setText("lt-hour", String(data.lightning.hour));
-  setText("lt-midnight", String(data.lightning.midnight));
-
   setText("today-high", `${data.today.high}°`);
   setText("today-low", `${data.today.low}°`);
   setText("today-sunrise", data.today.sunrise);
@@ -780,7 +831,7 @@ function renderAll() {
 
   renderForecast();
   renderWarnings(true);
-  renderLightningWarning();
+  renderLightningPanel();
   updateClock();
 }
 
@@ -821,6 +872,56 @@ async function updateLiveTempestCurrent() {
   }
 }
 
+function scheduleLightningRefresh(ms) {
+  if (lightningTimer) clearTimeout(lightningTimer);
+  lightningTimer = setTimeout(updateLiveLightning, ms);
+}
+
+async function updateLiveLightning() {
+  try {
+    const response = await fetch("http://localhost:3000/api/tempest/lightning");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const live = await response.json();
+
+    data.lightning.lastStrikeEpoch =
+      typeof live.lastStrikeEpoch === "number" ? live.lastStrikeEpoch : null;
+    data.lightning.lastStrikeDistanceMiles =
+      typeof live.lastStrikeDistanceMiles === "number" ? live.lastStrikeDistanceMiles : null;
+    data.lightning.lastStrikeDirection = live.lastStrikeDirection || null;
+    data.lightning.minuteCount =
+      typeof live.minuteCount === "number" ? live.minuteCount : null;
+    data.lightning.fifteenMinuteCount =
+      typeof live.fifteenMinuteCount === "number" ? live.fifteenMinuteCount : null;
+    data.lightning.hourCount =
+      typeof live.hourCount === "number" ? live.hourCount : null;
+    data.lightning.todayCount =
+      typeof live.todayCount === "number" ? live.todayCount : null;
+    data.lightning.countsRadiusMiles =
+      typeof live.countsRadiusMiles === "number" ? live.countsRadiusMiles : 10;
+    data.lightning.disclaimer =
+      live.disclaimer || "Lightning data is subject to interference and detection limits.";
+
+    renderLightningPanel();
+
+    const nextMs = live.fastPolling ? 3000 : 30000;
+    scheduleLightningRefresh(nextMs);
+  } catch (error) {
+    console.error("Failed to load live lightning data:", error);
+
+    data.lightning.lastStrikeEpoch = null;
+    data.lightning.lastStrikeDistanceMiles = null;
+    data.lightning.lastStrikeDirection = null;
+    data.lightning.minuteCount = null;
+    data.lightning.fifteenMinuteCount = null;
+    data.lightning.hourCount = null;
+    data.lightning.todayCount = null;
+
+    renderLightningPanel();
+    scheduleLightningRefresh(30000);
+  }
+}
+
 async function updateLiveNwsAlerts() {
   try {
     const response = await fetch("http://localhost:3000/api/nws-alerts");
@@ -844,6 +945,7 @@ renderAll();
 updateClock();
 updateLiveTempestCurrent();
 updateLiveNwsAlerts();
+updateLiveLightning();
 
 setInterval(updateClock, 1000);
 setInterval(updateLiveTempestCurrent, 30000);
