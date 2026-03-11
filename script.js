@@ -42,8 +42,12 @@ const data = {
     { high: 62, low: 45, cond: "Storm", pop: 30 },
     { high: 68, low: 50, cond: "Storm", pop: 20 }
   ],
-  alerts: null
+  alerts: []
 };
+
+let tickerTimer = null;
+let tickerIndex = 0;
+let lastAlertSignature = "";
 
 function tempColor(temp) {
   if (typeof temp !== "number") return "#ffffff";
@@ -164,7 +168,481 @@ function updateRainfallPanel() {
   }
 }
 
-function renderWarnings() {
+function normalizeAlertText(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/\n+/g, " ")
+    .trim();
+}
+
+function alertBlob(alert) {
+  return [
+    alert.event || "",
+    alert.headline || "",
+    alert.description || "",
+    alert.instruction || "",
+    alert.severity || ""
+  ].join(" ").toLowerCase();
+}
+
+function isPds(alert) {
+  const blob = alertBlob(alert);
+  return blob.includes("particularly dangerous situation") || blob.includes(" pds ");
+}
+
+function isDestructiveSevere(alert) {
+  const blob = alertBlob(alert);
+  return (alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
+    (blob.includes("destructive") || blob.includes("damage threat") && blob.includes("destructive"));
+}
+
+function isConsiderableSevere(alert) {
+  const blob = alertBlob(alert);
+  return (alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
+    (blob.includes("considerable") || blob.includes("damage threat") && blob.includes("considerable"));
+}
+
+function isCivilMessage(alert) {
+  const event = String(alert.event || "").toLowerCase();
+  return event.includes("civil danger warning") ||
+    event.includes("civil emergency message") ||
+    event.includes("law enforcement warning") ||
+    event.includes("local area emergency") ||
+    event.includes("911 telephone outage emergency") ||
+    event.includes("evacuation immediate");
+}
+
+function isWinterWarning(alert) {
+  const event = String(alert.event || "").toLowerCase();
+  return event.includes("winter storm warning") ||
+    event.includes("blizzard warning") ||
+    event.includes("ice storm warning") ||
+    event.includes("snow squall warning") ||
+    event.includes("wind chill warning") ||
+    event.includes("lake effect snow warning") ||
+    event.includes("extreme cold warning");
+}
+
+function isWinterWatch(alert) {
+  const event = String(alert.event || "").toLowerCase();
+  return event.includes("winter storm watch") ||
+    event.includes("blizzard watch") ||
+    event.includes("ice storm watch") ||
+    event.includes("wind chill watch") ||
+    event.includes("lake effect snow watch");
+}
+
+function getAlertPriority(alert) {
+  const event = String(alert.event || "").toLowerCase();
+
+  if (event.includes("tornado emergency")) return 1;
+  if (event.includes("tornado warning") && isPds(alert)) return 2;
+  if (event.includes("tornado warning")) return 3;
+  if (isDestructiveSevere(alert)) return 4;
+  if (isConsiderableSevere(alert)) return 5;
+  if (event.includes("severe thunderstorm warning")) return 6;
+  if (event.includes("flash flood warning")) return 7;
+  if (event.includes("flood warning")) return 8;
+  if (isWinterWarning(alert)) return 9;
+  if (event.includes("tornado watch") && isPds(alert)) return 10;
+  if (event.includes("tornado watch")) return 11;
+  if (event.includes("severe thunderstorm watch")) return 12;
+  if (event.includes("flash flood watch")) return 13;
+  if (event.includes("flood watch")) return 14;
+  if (isWinterWatch(alert)) return 15;
+  if (isCivilMessage(alert)) return 17;
+  return 16;
+}
+
+function getAlertTheme(alert) {
+  const event = String(alert.event || "").toLowerCase();
+
+  if (event.includes("tornado emergency")) {
+    return {
+      bg1: "#6f1ab1",
+      bg2: "#4a0f7a",
+      title1: "#7d24c7",
+      title2: "#53118a",
+      border: "#c58cff",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (event.includes("tornado warning") && isPds(alert)) {
+    return {
+      bg1: "#cf0000",
+      bg2: "#8f0000",
+      title1: "#e00000",
+      title2: "#a90000",
+      border: "#ff9090",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (event.includes("tornado warning")) {
+    return {
+      bg1: "#ef0000",
+      bg2: "#b10000",
+      title1: "#ff2222",
+      title2: "#c20000",
+      border: "#ff9a9a",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (isDestructiveSevere(alert)) {
+    return {
+      bg1: "#ff6a00",
+      bg2: "#d33d00",
+      title1: "#ff7b14",
+      title2: "#e64c00",
+      border: "#ffc08f",
+      text: "#111111",
+      chipBg: "rgba(255,255,255,0.22)",
+      chipBorder: "rgba(0,0,0,0.18)"
+    };
+  }
+
+  if (isConsiderableSevere(alert)) {
+    return {
+      bg1: "#ff8a00",
+      bg2: "#e15d00",
+      title1: "#ffa01f",
+      title2: "#ef6d00",
+      border: "#ffd08a",
+      text: "#111111",
+      chipBg: "rgba(255,255,255,0.22)",
+      chipBorder: "rgba(0,0,0,0.18)"
+    };
+  }
+
+  if (event.includes("severe thunderstorm warning")) {
+    return {
+      bg1: "#ffad00",
+      bg2: "#f07c00",
+      title1: "#ffc12c",
+      title2: "#ff9300",
+      border: "#ffe09a",
+      text: "#111111",
+      chipBg: "rgba(255,255,255,0.22)",
+      chipBorder: "rgba(0,0,0,0.18)"
+    };
+  }
+
+  if (event.includes("flash flood warning")) {
+    return {
+      bg1: "#00a53d",
+      bg2: "#007d2f",
+      title1: "#16b950",
+      title2: "#008736",
+      border: "#8ae1aa",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (event.includes("flood warning")) {
+    return {
+      bg1: "#138a2e",
+      bg2: "#0b6721",
+      title1: "#1a9b36",
+      title2: "#0f7025",
+      border: "#8dd7a0",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (isWinterWarning(alert)) {
+    return {
+      bg1: "#efefef",
+      bg2: "#d6d6d6",
+      title1: "#f7f7f7",
+      title2: "#e0e0e0",
+      border: "#ffffff",
+      text: "#111111",
+      chipBg: "rgba(0,0,0,0.06)",
+      chipBorder: "rgba(0,0,0,0.12)"
+    };
+  }
+
+  if (event.includes("tornado watch")) {
+    return {
+      bg1: "#8c1b2a",
+      bg2: "#5f111b",
+      title1: "#9f2231",
+      title2: "#6a1520",
+      border: "#d68792",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (event.includes("severe thunderstorm watch")) {
+    return {
+      bg1: "#9f6800",
+      bg2: "#764b00",
+      title1: "#b87900",
+      title2: "#875600",
+      border: "#e0c07a",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (event.includes("flash flood watch") || event.includes("flood watch")) {
+    return {
+      bg1: "#5e7a15",
+      bg2: "#445910",
+      title1: "#6b8919",
+      title2: "#4c6312",
+      border: "#b9cf7f",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.12)",
+      chipBorder: "rgba(255,255,255,0.22)"
+    };
+  }
+
+  if (isWinterWatch(alert)) {
+    return {
+      bg1: "#adb3ba",
+      bg2: "#888f97",
+      title1: "#bcc1c8",
+      title2: "#949ca4",
+      border: "#e8ecf0",
+      text: "#111111",
+      chipBg: "rgba(0,0,0,0.06)",
+      chipBorder: "rgba(0,0,0,0.12)"
+    };
+  }
+
+  if (isCivilMessage(alert)) {
+    return {
+      bg1: "#1c1c1c",
+      bg2: "#000000",
+      title1: "#2a2a2a",
+      title2: "#101010",
+      border: "#5d5d5d",
+      text: "#ffffff",
+      chipBg: "rgba(255,255,255,0.10)",
+      chipBorder: "rgba(255,255,255,0.18)"
+    };
+  }
+
+  return {
+    bg1: "#b88952",
+    bg2: "#9b6f3f",
+    title1: "#c5955d",
+    title2: "#aa7c48",
+    border: "#e1be97",
+    text: "#111111",
+    chipBg: "rgba(255,255,255,0.20)",
+    chipBorder: "rgba(0,0,0,0.12)"
+  };
+}
+
+function getShortAlertLabel(alert) {
+  const event = String(alert.event || "");
+  const lower = event.toLowerCase();
+
+  if (lower.includes("tornado emergency")) return "TORNADO EMERGENCY";
+  if (lower.includes("tornado warning") && isPds(alert)) return "PDS TORNADO WARNING";
+  if (lower.includes("tornado warning")) return "TORNADO WARNING";
+  if (isDestructiveSevere(alert)) return "DESTRUCTIVE SVR T-STORM WARNING";
+  if (isConsiderableSevere(alert)) return "CONSIDERABLE SVR T-STORM WARNING";
+  if (lower.includes("severe thunderstorm warning")) return "SVR T-STORM WARNING";
+  if (lower.includes("flash flood warning")) return "FLASH FLOOD WARNING";
+  if (lower.includes("flood warning")) return "FLOOD WARNING";
+  if (lower.includes("winter storm warning")) return "WINTER STORM WARNING";
+  if (lower.includes("blizzard warning")) return "BLIZZARD WARNING";
+  if (lower.includes("ice storm warning")) return "ICE STORM WARNING";
+  if (lower.includes("tornado watch") && isPds(alert)) return "PDS TORNADO WATCH";
+  if (lower.includes("tornado watch")) return "TORNADO WATCH";
+  if (lower.includes("severe thunderstorm watch")) return "SVR T-STORM WATCH";
+  if (lower.includes("flash flood watch")) return "FLASH FLOOD WATCH";
+  if (lower.includes("flood watch")) return "FLOOD WATCH";
+  if (lower.includes("wind advisory")) return "WIND ADVISORY";
+  if (lower.includes("winter weather advisory")) return "WINTER WX ADVISORY";
+  if (lower.includes("special weather statement")) return "SPECIAL WEATHER STATEMENT";
+  if (lower.includes("civil danger warning")) return "CIVIL DANGER WARNING";
+  if (lower.includes("civil emergency message")) return "CIVIL EMERGENCY MESSAGE";
+
+  return event.toUpperCase() || "ALERT";
+}
+
+function getTickerMessage(alert) {
+  const label = getShortAlertLabel(alert);
+  const headline = normalizeAlertText(alert.headline);
+  const description = normalizeAlertText(alert.description);
+
+  if (headline) return headline;
+  if (description) return `${label}: ${description}`;
+  return label;
+}
+
+function getSortedAlerts(alerts) {
+  return [...alerts].sort((a, b) => {
+    const pa = getAlertPriority(a);
+    const pb = getAlertPriority(b);
+    if (pa !== pb) return pa - pb;
+    return getShortAlertLabel(a).localeCompare(getShortAlertLabel(b));
+  });
+}
+
+function applyAlertTheme(alerts) {
+  const activeBar = document.getElementById("active-alerts-bar");
+  const priorityBar = document.getElementById("priority-alerts-bar");
+  const activeTitle = activeBar ? activeBar.querySelector(".alert-title") : null;
+  const priorityTitle = priorityBar ? priorityBar.querySelector(".alert-title") : null;
+  const activeList = document.getElementById("active-alerts-list");
+  const priorityTrack = document.getElementById("priority-alerts-track");
+
+  if (!activeBar || !priorityBar || !activeTitle || !priorityTitle || !activeList || !priorityTrack) return;
+
+  const theme = getAlertTheme(alerts[0]);
+
+  [activeBar, priorityBar].forEach((bar) => {
+    bar.style.borderColor = theme.border;
+    bar.style.background = `linear-gradient(180deg, ${theme.bg1}, ${theme.bg2})`;
+    bar.style.boxShadow = `0 0 14px ${theme.border}33`;
+  });
+
+  [activeTitle, priorityTitle].forEach((title) => {
+    title.style.background = `linear-gradient(180deg, ${theme.title1}, ${theme.title2})`;
+    title.style.color = theme.text;
+    title.style.borderRight = `1px solid ${theme.border}`;
+  });
+
+  activeList.style.color = theme.text;
+  priorityTrack.style.color = theme.text;
+}
+
+function clearTicker() {
+  if (tickerTimer) {
+    clearTimeout(tickerTimer);
+    tickerTimer = null;
+  }
+
+  const priorityTrack = document.getElementById("priority-alerts-track");
+  if (priorityTrack) {
+    priorityTrack.style.animation = "none";
+    priorityTrack.textContent = "";
+  }
+}
+
+function startTickerCycle(sortedAlerts) {
+  clearTicker();
+
+  const priorityTrack = document.getElementById("priority-alerts-track");
+  if (!priorityTrack || !sortedAlerts.length) return;
+
+  tickerIndex = 0;
+
+  function runNext() {
+    if (!sortedAlerts.length) return;
+
+    const alert = sortedAlerts[tickerIndex % sortedAlerts.length];
+    const message = getTickerMessage(alert);
+    const duration = Math.max(12, Math.min(32, message.length * 0.14 + 8));
+
+    priorityTrack.style.animation = "none";
+    priorityTrack.textContent = message;
+    priorityTrack.style.paddingLeft = "100%";
+
+    void priorityTrack.offsetWidth;
+
+    priorityTrack.style.animation = `ticker ${duration}s linear 1`;
+
+    tickerTimer = setTimeout(() => {
+      tickerIndex = (tickerIndex + 1) % sortedAlerts.length;
+      runNext();
+    }, duration * 1000 + 250);
+  }
+
+  runNext();
+}
+
+function renderActiveAlertChips(sortedAlerts) {
+  const activeList = document.getElementById("active-alerts-list");
+  if (!activeList) return;
+
+  const theme = getAlertTheme(sortedAlerts[0]);
+
+  activeList.innerHTML = "";
+  activeList.style.overflow = "hidden";
+  activeList.style.whiteSpace = "nowrap";
+
+  const list = document.createElement("div");
+  list.className = "alert-list";
+  list.style.display = "flex";
+  list.style.flexWrap = "nowrap";
+  list.style.gap = "8px";
+  list.style.alignItems = "center";
+  list.style.width = "max-content";
+
+  activeList.appendChild(list);
+
+  const createChip = (text) => {
+    const chip = document.createElement("div");
+    chip.className = "alert-chip";
+    chip.textContent = text;
+    chip.style.whiteSpace = "nowrap";
+    chip.style.padding = "4px 10px";
+    chip.style.borderRadius = "999px";
+    chip.style.background = theme.chipBg;
+    chip.style.border = `1px solid ${theme.chipBorder}`;
+    chip.style.color = theme.text;
+    chip.style.fontWeight = "800";
+    chip.style.fontSize = "13px";
+    chip.style.lineHeight = "1";
+    return chip;
+  };
+
+  const maxWidth = activeList.clientWidth || activeList.offsetWidth || 0;
+  if (maxWidth <= 0) {
+    sortedAlerts.forEach((alert) => list.appendChild(createChip(getShortAlertLabel(alert))));
+    return;
+  }
+
+  let usedOverflow = false;
+
+  for (let i = 0; i < sortedAlerts.length; i++) {
+    const chip = createChip(getShortAlertLabel(sortedAlerts[i]));
+    list.appendChild(chip);
+
+    if (list.scrollWidth > maxWidth) {
+      list.removeChild(chip);
+      usedOverflow = i < sortedAlerts.length;
+      break;
+    }
+  }
+
+  if (usedOverflow) {
+    let plusChip = createChip("+");
+    list.appendChild(plusChip);
+
+    while (list.scrollWidth > maxWidth && list.children.length > 1) {
+      list.removeChild(list.children[list.children.length - 2]);
+    }
+
+    if (list.scrollWidth > maxWidth && list.children.length === 1) {
+      list.innerHTML = "";
+      list.appendChild(createChip("+"));
+    }
+  }
+}
+
+function renderWarnings(forceRestartTicker = false) {
   const activeBar = document.getElementById("active-alerts-bar");
   const activeList = document.getElementById("active-alerts-list");
   const priorityBar = document.getElementById("priority-alerts-bar");
@@ -172,62 +650,35 @@ function renderWarnings() {
 
   if (!activeBar || !activeList || !priorityBar || !priorityTrack) return;
 
-  if (!Array.isArray(data.alerts)) {
-    activeBar.style.display = "grid";
-    priorityBar.style.display = "grid";
-    activeList.innerHTML = '<div class="alert-list"><div class="alert-chip">N/A</div></div>';
-    priorityTrack.textContent = "N/A";
+  if (!Array.isArray(data.alerts) || data.alerts.length === 0) {
+    activeBar.style.display = "none";
+    priorityBar.style.display = "none";
+    activeList.innerHTML = "";
+    priorityTrack.textContent = "";
+    clearTicker();
     return;
   }
 
-  if (data.alerts.length === 0) {
-    activeBar.style.display = "grid";
-    priorityBar.style.display = "grid";
-    activeList.innerHTML = '<div class="alert-list"><div class="alert-chip">No Active Alerts</div></div>';
-    priorityTrack.textContent = "No active alerts for Rushville area.";
-    return;
-  }
+  const sortedAlerts = getSortedAlerts(data.alerts);
 
   activeBar.style.display = "grid";
   priorityBar.style.display = "grid";
-  activeList.innerHTML = "";
 
-  const list = document.createElement("div");
-  list.className = "alert-list";
+  applyAlertTheme(sortedAlerts);
+  renderActiveAlertChips(sortedAlerts);
 
-  data.alerts.forEach((alert) => {
-    const chip = document.createElement("div");
-    chip.className = "alert-chip";
-    chip.textContent = alert.event || "Alert";
-    list.appendChild(chip);
-  });
+  const signature = JSON.stringify(
+    sortedAlerts.map((alert) => ({
+      event: alert.event || "",
+      headline: alert.headline || "",
+      description: alert.description || ""
+    }))
+  );
 
-  activeList.appendChild(list);
-
-  const priorityOrder = [
-    "Tornado Emergency",
-    "Tornado Warning",
-    "Severe Thunderstorm Warning",
-    "Flash Flood Warning",
-    "Flood Warning",
-    "Flash Flood Advisory",
-    "Flood Advisory",
-    "Wind Advisory"
-  ];
-
-  const sortedAlerts = [...data.alerts].sort((a, b) => {
-    const ai = priorityOrder.indexOf(a.event || "");
-    const bi = priorityOrder.indexOf(b.event || "");
-    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-  });
-
-  const tickerText = sortedAlerts.map((alert) => {
-    if (alert.headline && alert.headline.trim()) return alert.headline.trim();
-    if (alert.description && alert.description.trim()) return alert.description.trim().replace(/\s+/g, " ");
-    return alert.event || "Alert";
-  });
-
-  priorityTrack.textContent = tickerText.join("   •   ");
+  if (forceRestartTicker || signature !== lastAlertSignature) {
+    lastAlertSignature = signature;
+    startTickerCycle(sortedAlerts);
+  }
 }
 
 function renderLightningWarning() {
@@ -328,7 +779,7 @@ function renderAll() {
   setText("today-moon", data.today.moon);
 
   renderForecast();
-  renderWarnings();
+  renderWarnings(true);
   renderLightningWarning();
   updateClock();
 }
@@ -377,13 +828,17 @@ async function updateLiveNwsAlerts() {
 
     const live = await response.json();
     data.alerts = Array.isArray(live.alerts) ? live.alerts : [];
-    renderWarnings();
+    renderWarnings(false);
   } catch (error) {
     console.error("Failed to load NWS alerts:", error);
-    data.alerts = null;
-    renderWarnings();
+    data.alerts = [];
+    renderWarnings(false);
   }
 }
+
+window.addEventListener("resize", () => {
+  renderWarnings(true);
+});
 
 renderAll();
 updateClock();
