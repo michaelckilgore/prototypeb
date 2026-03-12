@@ -25,7 +25,6 @@ Rushville, Indiana
 
 </header>
 
-
 <section class="alerts">
 
 <div id="active-alerts-bar" class="alert-bar">
@@ -37,7 +36,6 @@ Active Warnings
 <div id="active-alerts-list" class="alert-text"></div>
 
 </div>
-
 
 <div id="priority-alerts-bar" class="alert-bar">
 
@@ -53,10 +51,7 @@ Warning Text
 
 </section>
 
-
-
 <main class="dashboard">
-
 
 <section class="panel">
 
@@ -66,7 +61,7 @@ Warning Text
 
 <div class="current-left">
 
-<img src="images/storm.svg" class="current-icon">
+<img src="images/storm.svg" class="current-icon" alt="Current condition icon">
 
 <div id="current-condition">
 Storm
@@ -83,7 +78,6 @@ Storm
 </div>
 
 </div>
-
 
 <div class="current-stats">
 
@@ -106,15 +100,15 @@ Storm
 
 </section>
 
-
-
 <section class="panel">
 
-<h2>Wind & Rainfall</h2>
+<h2>Wind &amp; Rainfall</h2>
 
 <div class="surface-panel">
 
 <div class="surface-top">
+
+<div class="surface-left">
 
 <div class="surface-metrics">
 
@@ -124,18 +118,13 @@ Storm
 </div>
 
 <div class="stat">
-<div class="stat-label">Wind Gust</div>
-<div id="wind-gust" class="stat-value">18 mph</div>
-</div>
-
-<div class="stat">
-<div class="stat-label">Direction</div>
-<div id="wind-dir-text" class="stat-value">SE</div>
-</div>
-
-<div class="stat">
 <div class="stat-label">Daily Total</div>
 <div id="rain-daily" class="stat-value">0.30"</div>
+</div>
+
+<div class="stat">
+<div class="stat-label">Wind Gust</div>
+<div id="wind-gust" class="stat-value">18 mph</div>
 </div>
 
 <div class="stat">
@@ -144,33 +133,44 @@ Storm
 </div>
 
 <div class="stat">
+<div class="stat-label">Direction</div>
+<div id="wind-dir-text" class="stat-value">SE</div>
+</div>
+
+<div class="stat">
 <div class="stat-label">Intensity</div>
 <div id="rain-intensity" class="stat-value">Light Rain</div>
 </div>
 
-<div class="stat">
-<div class="stat-label">Today So Far High</div>
-<div id="today-high-sofar" class="stat-value">75°</div>
 </div>
+
+<div class="today-so-far">
+
+<div class="today-so-far-title">TODAY SO FAR</div>
+
+<div class="today-so-far-grid">
 
 <div class="stat">
-<div class="stat-label">Today So Far Low</div>
-<div id="today-low-sofar" class="stat-value">51°</div>
+<div class="stat-label">High</div>
+<div id="today-high" class="stat-value">75°</div>
+</div>
+
+<div class="stat">
+<div class="stat-label">Low</div>
+<div id="today-low" class="stat-value">51°</div>
 </div>
 
 </div>
 
+</div>
+
+</div>
 
 <div class="surface-right">
 
 <div class="wind-dial-wrap">
 
 <div class="wind-dial">
-
-<div class="wind-dial-center"></div>
-
-<div id="wind-arrow" class="wind-dial-arrow"></div>
-
 <span class="dial-cardinal dial-n">N</span>
 <span class="dial-cardinal dial-e">E</span>
 <span class="dial-cardinal dial-s">S</span>
@@ -181,6 +181,8 @@ Storm
 <span class="dial-ordinal dial-sw">SW</span>
 <span class="dial-ordinal dial-nw">NW</span>
 
+<div id="wind-arrow" class="wind-dial-arrow"></div>
+<div class="wind-dial-center"></div>
 </div>
 
 </div>
@@ -209,8 +211,6 @@ Storm
 
 </section>
 
-
-
 <section class="panel">
 
 <h2>Three Day Forecast</h2>
@@ -221,31 +221,29 @@ Storm
 
 <div id="f0-label">Today</div>
 <div id="f0-high" class="forecast-high">70°</div>
-<img src="images/storm.svg" class="forecast-icon">
+<img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
 <div id="f0-cond">Storm</div>
 <div id="f0-low" class="forecast-low">44°</div>
 <div id="f0-pop" class="forecast-pop">40%</div>
 
 </div>
 
-
 <div class="forecast-day">
 
 <div id="f1-label">Mon</div>
 <div id="f1-high" class="forecast-high">62°</div>
-<img src="images/storm.svg" class="forecast-icon">
+<img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
 <div id="f1-cond">Storm</div>
 <div id="f1-low" class="forecast-low">45°</div>
 <div id="f1-pop" class="forecast-pop">30%</div>
 
 </div>
 
-
 <div class="forecast-day">
 
 <div id="f2-label">Tue</div>
 <div id="f2-high" class="forecast-high">68°</div>
-<img src="images/storm.svg" class="forecast-icon">
+<img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
 <div id="f2-cond">Storm</div>
 <div id="f2-low" class="forecast-low">50°</div>
 <div id="f2-pop" class="forecast-pop">20%</div>
@@ -255,8 +253,6 @@ Storm
 </div>
 
 </section>
-
-
 
 <section class="panel">
 
@@ -282,7 +278,6 @@ Storm
 </div>
 
 </div>
-
 
 <div class="lightning-history">
 
@@ -310,26 +305,15 @@ Storm
 
 </section>
 
-
-
-<section class="panel radar">
+<section class="panel radar-panel">
 
 <h2>Radar</h2>
 
+<div class="radar">
 Radar Image Here
+</div>
 
 </section>
-
-
-
-<section class="panel radar">
-
-<h2>Radar</h2>
-
-Radar Image Here
-
-</section>
-
 
 </main>
 
