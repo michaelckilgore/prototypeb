@@ -12,11 +12,6 @@ const data = {
     gust: null,
     directionDeg: null
   },
-  indoor: {
-    temp: 67,
-    humidity: 55,
-    dew: 60
-  },
   rainfall: {
     daily: null,
     rate: null
@@ -34,10 +29,7 @@ const data = {
   },
   today: {
     high: 75,
-    low: 51,
-    sunrise: "8:04 AM",
-    sunset: "7:41 PM",
-    moon: "Waning Gibbous"
+    low: 51
   },
   forecast: [
     { high: 70, low: 44, cond: "Storm", pop: 40 },
@@ -53,7 +45,7 @@ const radarConfig = {
   radar: "KIND",
   product: "N0Q",
   frames: 6,
-  animationMs: 750,
+  animationMs: 850,
   refreshMs: 120000,
   cities: [
     { name: "Indianapolis", lat: 39.7684, lon: -86.1581 },
@@ -61,22 +53,20 @@ const radarConfig = {
     { name: "Shelbyville", lat: 39.5214, lon: -85.7769 },
     { name: "Greensburg", lat: 39.3373, lon: -85.4836 },
     { name: "Connersville", lat: 39.6412, lon: -85.1411 },
-    { name: "Columbus", lat: 39.2014, lon: -85.9214 },
-    { name: "Franklin", lat: 39.4806, lon: -86.05499 },
-    { name: "New Castle", lat: 39.9289, lon: -85.3703 }
+    { name: "Franklin", lat: 39.4806, lon: -86.0549 }
   ],
   highways: [
-    { name: "I-74", lat: 39.59, lon: -85.85 },
-    { name: "I-70", lat: 39.77, lon: -85.95 },
-    { name: "US 52", lat: 39.63, lon: -85.55 },
-    { name: "SR 44", lat: 39.43, lon: -85.72 },
-    { name: "SR 3", lat: 39.69, lon: -85.62 },
-    { name: "SR 244", lat: 39.30, lon: -85.33 },
-    { name: "US 40", lat: 39.80, lon: -85.78 },
+    { name: "I-74", lat: 39.58, lon: -85.82 },
+    { name: "I-70", lat: 39.78, lon: -85.94 },
+    { name: "US 52", lat: 39.63, lon: -85.53 },
+    { name: "SR 44", lat: 39.48, lon: -85.83 },
+    { name: "SR 3", lat: 39.70, lon: -85.62 },
+    { name: "SR 244", lat: 39.32, lon: -85.35 },
+    { name: "US 40", lat: 39.80, lon: -85.76 },
     { name: "I-465", lat: 39.79, lon: -86.06 },
-    { name: "I-65", lat: 39.31, lon: -85.98 },
+    { name: "I-65", lat: 39.32, lon: -85.98 },
     { name: "SR 9", lat: 39.67, lon: -85.61 },
-    { name: "US 31", lat: 39.27, lon: -85.97 }
+    { name: "US 31", lat: 39.28, lon: -85.97 }
   ]
 };
 
@@ -87,7 +77,7 @@ const radarState = {
   frameIndex: 0,
   animationTimer: null,
   refreshTimer: null,
-  latestOnlyLayer: null
+  latestLayer: null
 };
 
 let tickerTimer = null;
@@ -141,22 +131,6 @@ function formatStrikeTime(epoch) {
   const suffix = hours >= 12 ? "PM" : "AM";
   hours = hours % 12 || 12;
   return `${hours}:${minutes} ${suffix}`;
-}
-
-function formatRadarStamp(stamp) {
-  if (!stamp || !/^\d{12}$/.test(stamp)) return "KIND radar";
-  const year = Number(stamp.slice(0, 4));
-  const month = Number(stamp.slice(4, 6)) - 1;
-  const day = Number(stamp.slice(6, 8));
-  const hour = Number(stamp.slice(8, 10));
-  const minute = Number(stamp.slice(10, 12));
-  const date = new Date(Date.UTC(year, month, day, hour, minute));
-  return date.toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZoneName: "short"
-  });
 }
 
 function degToCompass(num) {
@@ -870,162 +844,48 @@ function renderRainPanel() {
   }
 }
 
-function toIsoUtcMinute(date) {
-  const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(date.getUTCDate()).padStart(2, "0");
-  const hh = String(date.getUTCHours()).padStart(2, "0");
-  const mm = String(date.getUTCMinutes()).padStart(2, "0");
-  return `${y}-${m}-${d}T${hh}:${mm}Z`;
-}
+function renderAll() {
+  renderCurrentConditions();
+  renderWindPanel();
+  renderRainPanel();
 
-function normalizeRadarStamp(value) {
-  if (typeof value !== "string") return null;
+  setText("today-high", `${data.today.high}°`);
+  setText("today-low", `${data.today.low}°`);
+  applyTempColor(document.getElementById("today-high"), data.today.high);
+  applyTempColor(document.getElementById("today-low"), data.today.low);
 
-  const trimmed = value.trim();
-
-  if (/^\d{12}$/.test(trimmed)) {
-    return trimmed;
-  }
-
-  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
-  if (isoMatch) {
-    return `${isoMatch[1]}${isoMatch[2]}${isoMatch[3]}${isoMatch[4]}${isoMatch[5]}`;
-  }
-
-  const compactMatch = trimmed.match(/(\d{12})/);
-  if (compactMatch) {
-    return compactMatch[1];
-  }
-
-  return null;
-}
-
-function collectRadarStamps(node, found = []) {
-  if (node == null) return found;
-
-  if (typeof node === "string") {
-    const stamp = normalizeRadarStamp(node);
-    if (stamp) found.push(stamp);
-    return found;
-  }
-
-  if (Array.isArray(node)) {
-    node.forEach((item) => collectRadarStamps(item, found));
-    return found;
-  }
-
-  if (typeof node === "object") {
-    Object.values(node).forEach((value) => collectRadarStamps(value, found));
-  }
-
-  return found;
-}
-
-function dedupeAndSortRadarStamps(stamps) {
-  return [...new Set(stamps)].sort();
+  renderForecast();
+  renderWarnings(true);
+  renderLightningPanel();
+  updateClock();
 }
 
 function setRadarStatus(text) {
   setText("radar-status", text);
 }
 
-function addRadarLabels() {
-  if (!radarState.map) return;
-
-  const labelPane = radarState.map.createPane("radarLabels");
-  labelPane.style.zIndex = 720;
-  labelPane.style.pointerEvents = "none";
-
-  const stationPane = radarState.map.createPane("radarStation");
-  stationPane.style.zIndex = 730;
-  stationPane.style.pointerEvents = "none";
-
-  radarConfig.cities.forEach((city) => {
-    L.marker([city.lat, city.lon], {
-      pane: "radarLabels",
-      interactive: false,
-      icon: L.divIcon({
-        className: "radar-city-label",
-        html: city.name,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
-      })
-    }).addTo(radarState.map);
-  });
-
-  radarConfig.highways.forEach((route) => {
-    L.marker([route.lat, route.lon], {
-      pane: "radarLabels",
-      interactive: false,
-      icon: L.divIcon({
-        className: "radar-highway-label",
-        html: route.name,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
-      })
-    }).addTo(radarState.map);
-  });
-
-  L.marker(radarConfig.center, {
-    pane: "radarStation",
-    interactive: false,
-    icon: L.divIcon({
-      className: "",
-      html: '<div class="radar-station-dot"></div>',
-      iconSize: [10, 10],
-      iconAnchor: [5, 5]
-    })
-  }).addTo(radarState.map);
-
-  L.marker([radarConfig.center[0] + 0.02, radarConfig.center[1] + 0.02], {
-    pane: "radarStation",
-    interactive: false,
-    icon: L.divIcon({
-      className: "radar-station-label",
-      html: "Sugar Hill",
-      iconSize: [0, 0],
-      iconAnchor: [0, 0]
-    })
-  }).addTo(radarState.map);
+function radarStampToDisplay(stamp) {
+  if (!stamp || stamp === "0") return "latest";
+  const m = stamp.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if (!m) return stamp;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]));
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true, timeZoneName: "short" });
 }
 
-function addRadarBaseLayers() {
-  if (!radarState.map) return;
-
-  const basePane = radarState.map.createPane("baseMap");
-  basePane.style.zIndex = 200;
-
-  const countyPane = radarState.map.createPane("countyLines");
-  countyPane.style.zIndex = 500;
-
-  const radarPane = radarState.map.createPane("radarTiles");
-  radarPane.style.zIndex = 550;
-
-  L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+function createRadarTileLayer(stamp) {
+  return L.tileLayer(
+    `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::${radarConfig.radar}-${radarConfig.product}-${stamp}/{z}/{x}/{y}.png`,
     {
-      pane: "baseMap",
-      subdomains: "abcd",
-      maxZoom: 18,
-      crossOrigin: true
+      pane: "radarPane",
+      opacity: 0,
+      maxZoom: 12,
+      updateWhenIdle: false,
+      updateWhenZooming: false
     }
-  ).addTo(radarState.map);
-
-  L.tileLayer.wms(
-    "https://tigerweb.geo.census.gov/arcgis/services/TIGERweb/tigerWMS_Current/MapServer/WmsServer",
-    {
-      layers: "82",
-      format: "image/png",
-      transparent: true,
-      version: "1.3.0",
-      opacity: 0.55,
-      pane: "countyLines"
-    }
-  ).addTo(radarState.map);
+  );
 }
 
-function clearRadarAnimation() {
+function clearRadarFrames() {
   if (radarState.animationTimer) {
     clearInterval(radarState.animationTimer);
     radarState.animationTimer = null;
@@ -1040,153 +900,183 @@ function clearRadarAnimation() {
   radarState.frameLayers = [];
   radarState.frameTimes = [];
   radarState.frameIndex = 0;
-}
 
-function clearLatestOnlyRadar() {
-  if (radarState.latestOnlyLayer && radarState.map && radarState.map.hasLayer(radarState.latestOnlyLayer)) {
-    radarState.map.removeLayer(radarState.latestOnlyLayer);
+  if (radarState.latestLayer && radarState.map && radarState.map.hasLayer(radarState.latestLayer)) {
+    radarState.map.removeLayer(radarState.latestLayer);
   }
-  radarState.latestOnlyLayer = null;
-}
-
-function buildRadarTileLayer(stamp) {
-  return L.tileLayer(
-    `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::${radarConfig.radar}-${radarConfig.product}-${stamp}/{z}/{x}/{y}.png`,
-    {
-      pane: "radarTiles",
-      maxZoom: 18,
-      opacity: 0,
-      updateWhenIdle: false,
-      updateWhenZooming: false,
-      crossOrigin: true
-    }
-  );
+  radarState.latestLayer = null;
 }
 
 function showRadarFrame(index) {
-  if (!radarState.frameLayers.length) return;
-
   radarState.frameLayers.forEach((layer, i) => {
-    layer.setOpacity(i === index ? 0.92 : 0);
+    layer.setOpacity(i === index ? 0.9 : 0);
   });
-
   radarState.frameIndex = index;
   const stamp = radarState.frameTimes[index];
-  if (stamp) {
-    setRadarStatus(`KIND • ${formatRadarStamp(stamp)}`);
-  }
+  setRadarStatus(`KIND • ${radarStampToDisplay(stamp)}`);
 }
 
 function startRadarAnimation() {
   if (!radarState.frameLayers.length) return;
-
-  if (radarState.animationTimer) {
-    clearInterval(radarState.animationTimer);
-  }
-
   showRadarFrame(0);
-
   radarState.animationTimer = setInterval(() => {
     const next = (radarState.frameIndex + 1) % radarState.frameLayers.length;
     showRadarFrame(next);
   }, radarConfig.animationMs);
 }
 
+function extractRadarStamps(json) {
+  const found = [];
+
+  function scan(value) {
+    if (value == null) return;
+    if (typeof value === "string") {
+      const m = value.match(/(\d{12})/);
+      if (m) found.push(m[1]);
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(scan);
+      return;
+    }
+    if (typeof value === "object") {
+      Object.values(value).forEach(scan);
+    }
+  }
+
+  scan(json);
+  return [...new Set(found)].sort().slice(-radarConfig.frames);
+}
+
 async function loadRadarLoop() {
   if (!radarState.map) return;
 
   try {
-    const end = new Date();
-    const start = new Date(end.getTime() - 75 * 60 * 1000);
+    const response = await fetch(
+      `https://mesonet.agron.iastate.edu/json/radar.py?operation=list&radar=${radarConfig.radar}&product=${radarConfig.product}`
+    );
 
-    const url =
-      `https://mesonet.agron.iastate.edu/json/radar.py?operation=list&radar=${radarConfig.radar}&product=${radarConfig.product}` +
-      `&start=${encodeURIComponent(toIsoUtcMinute(start))}` +
-      `&end=${encodeURIComponent(toIsoUtcMinute(end))}`;
-
-    const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const json = await response.json();
-    const stamps = dedupeAndSortRadarStamps(collectRadarStamps(json)).slice(-radarConfig.frames);
+    const stamps = extractRadarStamps(json);
+
+    clearRadarFrames();
 
     if (!stamps.length) {
-      throw new Error("No recent radar scans found");
+      throw new Error("No radar timestamps found");
     }
 
-    clearLatestOnlyRadar();
-    clearRadarAnimation();
-
     radarState.frameTimes = stamps;
-    radarState.frameLayers = stamps.map((stamp) => buildRadarTileLayer(stamp));
+    radarState.frameLayers = stamps.map(createRadarTileLayer);
 
-    radarState.frameLayers.forEach((layer) => {
-      layer.addTo(radarState.map);
-    });
-
+    radarState.frameLayers.forEach((layer) => layer.addTo(radarState.map));
     startRadarAnimation();
   } catch (error) {
     console.error("Radar loop load failed:", error);
-    clearRadarAnimation();
-
-    const latestStamp = "0";
-    clearLatestOnlyRadar();
-
-    radarState.latestOnlyLayer = buildRadarTileLayer(latestStamp);
-    radarState.latestOnlyLayer.setOpacity(0.92);
-    radarState.latestOnlyLayer.addTo(radarState.map);
+    clearRadarFrames();
+    radarState.latestLayer = createRadarTileLayer("0");
+    radarState.latestLayer.setOpacity(0.9);
+    radarState.latestLayer.addTo(radarState.map);
     setRadarStatus("KIND • latest");
   }
 }
 
-function initRadar() {
-  const radarMapEl = document.getElementById("radar-map");
-  if (!radarMapEl || radarState.map) return;
+function addRadarLabels() {
+  radarConfig.cities.forEach((city) => {
+    L.marker([city.lat, city.lon], {
+      interactive: false,
+      icon: L.divIcon({
+        className: "radar-city-label",
+        html: city.name,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      })
+    }).addTo(radarState.map);
+  });
 
-  radarState.map = L.map(radarMapEl, {
+  radarConfig.highways.forEach((route) => {
+    L.marker([route.lat, route.lon], {
+      interactive: false,
+      icon: L.divIcon({
+        className: "radar-highway-label",
+        html: route.name,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      })
+    }).addTo(radarState.map);
+  });
+
+  L.marker(radarConfig.center, {
+    interactive: false,
+    icon: L.divIcon({
+      className: "",
+      html: '<div class="radar-station-dot"></div>',
+      iconSize: [10, 10],
+      iconAnchor: [5, 5]
+    })
+  }).addTo(radarState.map);
+
+  L.marker([radarConfig.center[0] + 0.02, radarConfig.center[1] + 0.02], {
+    interactive: false,
+    icon: L.divIcon({
+      className: "radar-station-label",
+      html: "Sugar Hill",
+      iconSize: [0, 0],
+      iconAnchor: [0, 0]
+    })
+  }).addTo(radarState.map);
+}
+
+function initRadar() {
+  const mapEl = document.getElementById("radar-map");
+  if (!mapEl) return;
+
+  radarState.map = L.map(mapEl, {
     zoomControl: false,
     attributionControl: false,
     dragging: false,
+    scrollWheelZoom: false,
     doubleClickZoom: false,
     boxZoom: false,
     keyboard: false,
-    scrollWheelZoom: false,
-    tap: false,
     touchZoom: false
-  });
+  }).setView(radarConfig.center, radarConfig.zoom);
 
-  radarState.map.setView(radarConfig.center, radarConfig.zoom);
+  radarState.map.createPane("basePane");
+  radarState.map.createPane("countyPane");
+  radarState.map.createPane("radarPane");
 
-  addRadarBaseLayers();
+  radarState.map.getPane("basePane").style.zIndex = 200;
+  radarState.map.getPane("countyPane").style.zIndex = 400;
+  radarState.map.getPane("radarPane").style.zIndex = 500;
+
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+    {
+      pane: "basePane",
+      subdomains: "abcd",
+      maxZoom: 19
+    }
+  ).addTo(radarState.map);
+
+  L.tileLayer.wms(
+    "https://tigerweb.geo.census.gov/arcgis/services/TIGERweb/tigerWMS_Current/MapServer/WmsServer",
+    {
+      layers: "82",
+      format: "image/png",
+      transparent: true,
+      opacity: 0.5,
+      pane: "countyPane"
+    }
+  ).addTo(radarState.map);
+
   addRadarLabels();
   loadRadarLoop();
 
-  if (radarState.refreshTimer) {
-    clearInterval(radarState.refreshTimer);
-  }
-
   radarState.refreshTimer = setInterval(loadRadarLoop, radarConfig.refreshMs);
 
-  setTimeout(() => {
-    if (radarState.map) radarState.map.invalidateSize();
-  }, 200);
-}
-
-function renderAll() {
-  renderCurrentConditions();
-  renderWindPanel();
-  renderRainPanel();
-
-  setText("today-high", `${data.today.high}°`);
-  setText("today-low", `${data.today.low}°`);
-
-  applyTempColor(document.getElementById("today-high"), data.today.high);
-  applyTempColor(document.getElementById("today-low"), data.today.low);
-
-  renderForecast();
-  renderWarnings(true);
-  renderLightningPanel();
-  updateClock();
+  setTimeout(() => radarState.map.invalidateSize(), 200);
 }
 
 async function updateLiveTempestCurrent() {
@@ -1220,11 +1110,9 @@ async function updateLiveTempestCurrent() {
     data.current.humidity = null;
     data.current.pressureIn = null;
     data.current.pressureMb = null;
-
     data.wind.speed = null;
     data.wind.gust = null;
     data.wind.directionDeg = null;
-
     data.rainfall.daily = null;
     data.rainfall.rate = null;
 
