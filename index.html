@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <title>Sugar Hill Reporting Station</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  crossorigin=""
-/>
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -46,7 +41,13 @@
       </div>
 
       <div class="current-right">
-        <div id="current-temp" class="big-temp">74.2°</div>
+        <div class="temp-stack">
+          <div class="big-temp-row">
+            <div id="current-temp" class="big-temp">74.2°</div>
+            <div id="current-temp-trend" class="temp-trend" aria-hidden="true"></div>
+          </div>
+          <div id="current-feels-like" class="feels-like">Feels Like 76°</div>
+        </div>
       </div>
     </div>
 
@@ -63,7 +64,10 @@
 
       <div class="stat">
         <div class="stat-label">Pressure</div>
-        <div id="current-pressure" class="stat-value">28.97" / 981 MB</div>
+        <div id="current-pressure" class="stat-value pressure-value">
+          <span id="current-pressure-text">28.97" / 981 MB</span>
+          <span id="current-pressure-trend" class="pressure-trend" aria-hidden="true"></span>
+        </div>
       </div>
     </div>
   </section>
@@ -246,18 +250,12 @@
     <h2>Radar</h2>
 
     <div class="radar-shell">
-      <div id="radar-map"></div>
-      <div id="radar-status" class="radar-status">Loading KIND radar…</div>
-      <div class="radar-credit">KIND • 6-frame loop</div>
+      <div class="radar-placeholder">Radar Image Here</div>
     </div>
   </section>
 
 </main>
 
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  crossorigin=""
-></script>
 <script src="script.js"></script>
 
 </body>
