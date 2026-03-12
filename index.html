@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sugar Hill Reporting Station</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-gradient"></div>
+  <div class="bg-orb bg-orb-left"></div>
+  <div class="bg-orb bg-orb-right"></div>
+  <div class="bg-wave-layer bg-wave-back"></div>
+  <div class="bg-wave-layer bg-wave-front"></div>
+  <div class="bg-vignette"></div>
+</div>
+
+<header class="header">
+  <div class="station">SUGAR HILL REPORTING STATION</div>
+  <div class="location">Rushville, Indiana</div>
+  <div id="clock" class="clock">--:--</div>
+</header>
+
+<section class="alerts">
+  <div id="active-alerts-bar" class="alert-bar">
+    <div class="alert-title">Active Alerts</div>
+    <div id="active-alerts-list" class="alert-text"></div>
+  </div>
+
+  <div id="priority-alerts-bar" class="alert-bar">
+    <div class="alert-title">Alert Text</div>
+    <div class="ticker">
+      <div id="priority-alerts-track"></div>
+    </div>
+  </div>
+</section>
+
+<main class="dashboard">
+
+  <section class="panel">
+    <h2>Current Conditions</h2>
+
+    <div class="current">
+      <div class="current-left">
+        <img src="images/storm.svg" class="current-icon" alt="Current condition icon">
+        <div id="current-condition">Storm</div>
+      </div>
+
+      <div class="current-right">
+        <div class="temp-stack">
+          <div class="big-temp-row">
+            <div id="current-temp" class="big-temp">74.2°</div>
+            <div id="current-temp-trend" class="temp-trend" aria-hidden="true"></div>
+          </div>
+          <div id="current-feels-like" class="feels-like">Feels Like 76°</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="current-stats">
+      <div class="stat">
+        <div class="stat-label">Dew Point</div>
+        <div id="current-dew" class="stat-value">65°</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Humidity</div>
+        <div id="current-humidity" class="stat-value">57%</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Pressure</div>
+        <div id="current-pressure" class="stat-value pressure-value">
+          <span id="current-pressure-text">28.97" / 981 MB</span>
+          <span id="current-pressure-trend" class="pressure-trend" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Wind &amp; Rainfall</h2>
+
+    <div class="surface-panel">
+      <div class="surface-top">
+
+        <div class="surface-left">
+
+          <div class="surface-metrics">
+            <div class="stat">
+              <div class="stat-label">Wind Speed</div>
+              <div id="wind-speed" class="stat-value">12 mph</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">Daily Total</div>
+              <div id="rain-daily" class="stat-value">0.30"</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">Wind Gust</div>
+              <div id="wind-gust" class="stat-value">18 mph</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">Rain Rate</div>
+              <div id="rain-rate" class="stat-value">0.05"/hr</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">Direction</div>
+              <div id="wind-dir-text" class="stat-value">SE</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-label">Intensity</div>
+              <div id="rain-intensity" class="stat-value">Light Rain</div>
+            </div>
+          </div>
+
+          <div class="today-so-far">
+            <div class="today-so-far-title">TODAY SO FAR</div>
+
+            <div class="today-so-far-grid">
+              <div class="stat">
+                <div class="stat-label">High</div>
+                <div id="today-high" class="stat-value">75°</div>
+              </div>
+
+              <div class="stat">
+                <div class="stat-label">Low</div>
+                <div id="today-low" class="stat-value">51°</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="surface-right">
+
+          <div class="wind-dial-wrap">
+            <div class="wind-dial">
+              <span class="dial-cardinal dial-n">N</span>
+              <span class="dial-cardinal dial-e">E</span>
+              <span class="dial-cardinal dial-s">S</span>
+              <span class="dial-cardinal dial-w">W</span>
+
+              <span class="dial-ordinal dial-ne">NE</span>
+              <span class="dial-ordinal dial-se">SE</span>
+              <span class="dial-ordinal dial-sw">SW</span>
+              <span class="dial-ordinal dial-nw">NW</span>
+
+              <div id="wind-arrow" class="wind-dial-arrow"></div>
+              <div class="wind-dial-center"></div>
+            </div>
+          </div>
+
+          <div class="surface-extra-slot"></div>
+
+        </div>
+      </div>
+
+      <div class="rain-meter">
+        <div class="meter-labels">
+          <span>0</span>
+          <span>0.25</span>
+          <span>0.50+</span>
+        </div>
+
+        <div class="meter-track">
+          <div id="rain-meter-fill"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Three Day Forecast</h2>
+
+    <div class="forecast">
+      <div class="forecast-day">
+        <div id="f0-label">Today</div>
+        <div id="f0-high" class="forecast-high">70°</div>
+        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
+        <div id="f0-cond">Storm</div>
+        <div id="f0-low" class="forecast-low">44°</div>
+        <div id="f0-pop" class="forecast-pop">40%</div>
+      </div>
+
+      <div class="forecast-day">
+        <div id="f1-label">Mon</div>
+        <div id="f1-high" class="forecast-high">62°</div>
+        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
+        <div id="f1-cond">Storm</div>
+        <div id="f1-low" class="forecast-low">45°</div>
+        <div id="f1-pop" class="forecast-pop">30%</div>
+      </div>
+
+      <div class="forecast-day">
+        <div id="f2-label">Tue</div>
+        <div id="f2-high" class="forecast-high">68°</div>
+        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
+        <div id="f2-cond">Storm</div>
+        <div id="f2-low" class="forecast-low">50°</div>
+        <div id="f2-pop" class="forecast-pop">20%</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Lightning</h2>
+
+    <div id="lightning-warning" class="lightning-warning"></div>
+
+    <div class="lightning-top">
+      <div class="stat">
+        <div class="stat-label">Last Strike</div>
+        <div id="lt-last" class="stat-value">--</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Distance</div>
+        <div id="lt-distance" class="stat-value">--</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Direction</div>
+        <div id="lt-direction" class="stat-value">--</div>
+      </div>
+    </div>
+
+    <div class="lightning-history">
+      <div class="history-box">
+        <div class="history-label">1 Min</div>
+        <div id="lt-minute" class="history-value">0</div>
+      </div>
+
+      <div class="history-box">
+        <div class="history-label">15 Min</div>
+        <div id="lt-fifteen" class="history-value">0</div>
+      </div>
+
+      <div class="history-box">
+        <div class="history-label">1 Hour</div>
+        <div id="lt-hour" class="history-value">0</div>
+      </div>
+
+      <div class="history-box">
+        <div class="history-label">Today</div>
+        <div id="lt-midnight" class="history-value">0</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel radar-panel">
+    <h2>Radar</h2>
+
+    <div class="radar-shell">
+      <div class="radar-placeholder">Radar Image Here</div>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+
+</body>
+</html>
