@@ -1,271 +1,1012 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Sugar Hill Reporting Station</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-</head>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-<body>
+:root{
+  --bg:#050b18;
+  --bg2:#09152a;
+  --bg3:#0b1e3d;
+  --panel:#13233d;
+  --panel2:#1a2c49;
+  --line:#5fe3ff;
+  --line-soft:rgba(95,227,255,.35);
+  --text:#f4fbff;
+  --muted:#9fc3df;
+  --title:#e6f7ff;
+  --accent:#7be7ff;
+  --danger:#ff6c8f;
+  --gold:#ffd24d;
+  --shadow:0 12px 30px rgba(0,0,0,.38);
+  --glow:0 0 18px rgba(95,227,255,.16);
+  --radius:16px;
+  --temp-up:#ffb060;
+  --temp-down:#6fd0ff;
+  --trend-neutral:#9fc3df;
+  --pressure-accent:#7be7ff;
+}
 
-<div class="bg-scene" aria-hidden="true">
-  <div class="bg-gradient"></div>
-  <div class="bg-orb bg-orb-left"></div>
-  <div class="bg-orb bg-orb-right"></div>
-  <div class="bg-wave-layer bg-wave-back"></div>
-  <div class="bg-wave-layer bg-wave-front"></div>
-  <div class="bg-vignette"></div>
-</div>
+html,body{
+  min-height:100%;
+}
 
-<header class="header">
-  <div class="station">SUGAR HILL REPORTING STATION</div>
-  <div class="location">Rushville, Indiana</div>
-  <div id="clock" class="clock">--:--</div>
-</header>
+body{
+  color:var(--text);
+  font-family:Arial, Helvetica, sans-serif;
+  padding:14px;
+  position:relative;
+  overflow-x:hidden;
+  background:#040915;
+}
 
-<section class="alerts">
-  <div id="active-alerts-bar" class="alert-bar">
-    <div class="alert-title">Active Alerts</div>
-    <div id="active-alerts-list" class="alert-text"></div>
-  </div>
+.bg-scene{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  overflow:hidden;
+  pointer-events:none;
+}
 
-  <div id="priority-alerts-bar" class="alert-bar">
-    <div class="alert-title">Alert Text</div>
-    <div class="ticker">
-      <div id="priority-alerts-track"></div>
-    </div>
-  </div>
-</section>
+.bg-gradient{
+  position:absolute;
+  inset:-6%;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(35,95,205,.18), transparent 24%),
+    radial-gradient(circle at 84% 18%, rgba(0,205,255,.14), transparent 20%),
+    radial-gradient(circle at 78% 74%, rgba(0,120,255,.10), transparent 26%),
+    linear-gradient(180deg, #050913 0%, #07101f 26%, #08152b 55%, #071228 78%, #050913 100%);
+  transform:scale(1.04);
+}
 
-<main class="dashboard">
+.bg-orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(60px);
+  opacity:.34;
+  mix-blend-mode:screen;
+}
 
-  <section class="panel">
-    <h2>Current Conditions</h2>
+.bg-orb-left{
+  width:420px;
+  height:420px;
+  left:-140px;
+  top:-100px;
+  background:radial-gradient(circle, rgba(33,104,255,.34), rgba(33,104,255,0) 70%);
+  animation:orbDriftLeft 18s ease-in-out infinite alternate;
+}
 
-    <div class="current">
-      <div class="current-left">
-        <img src="images/storm.svg" class="current-icon" alt="Current condition icon">
-        <div id="current-condition">Storm</div>
-      </div>
+.bg-orb-right{
+  width:520px;
+  height:520px;
+  right:-180px;
+  top:40px;
+  background:radial-gradient(circle, rgba(0,221,255,.26), rgba(0,221,255,0) 72%);
+  animation:orbDriftRight 20s ease-in-out infinite alternate;
+}
 
-      <div class="current-right">
-        <div class="temp-stack">
-          <div class="big-temp-row">
-            <div id="current-temp" class="big-temp">74.2°</div>
-            <div id="current-temp-trend" class="temp-trend" aria-hidden="true"></div>
-          </div>
-          <div id="current-feels-like" class="feels-like">Feels Like 76°</div>
-        </div>
-      </div>
-    </div>
+.bg-wave-layer{
+  position:absolute;
+  inset:0;
+  transform-origin:center;
+  will-change:transform, opacity;
+}
 
-    <div class="current-stats">
-      <div class="stat">
-        <div class="stat-label">Dew Point</div>
-        <div id="current-dew" class="stat-value">65°</div>
-      </div>
+.bg-wave-layer::before{
+  content:"";
+  position:absolute;
+  right:-8%;
+  top:30%;
+  width:88%;
+  height:34%;
+  border-radius:50%;
+  filter:blur(10px);
+}
 
-      <div class="stat">
-        <div class="stat-label">Humidity</div>
-        <div id="current-humidity" class="stat-value">57%</div>
-      </div>
+.bg-wave-back::before{
+  background:
+    radial-gradient(ellipse at center,
+      rgba(0,190,255,.12) 0%,
+      rgba(0,190,255,.10) 20%,
+      rgba(0,190,255,.00) 68%),
+    linear-gradient(90deg,
+      rgba(0,0,0,0) 0%,
+      rgba(48,109,255,.12) 28%,
+      rgba(82,226,255,.20) 50%,
+      rgba(38,120,255,.16) 68%,
+      rgba(0,0,0,0) 100%);
+  clip-path:polygon(
+    0% 67%, 4% 63%, 8% 61%, 12% 60%, 16% 63%, 20% 68%, 24% 72%, 28% 71%,
+    32% 65%, 36% 57%, 40% 50%, 44% 47%, 48% 50%, 52% 57%, 56% 66%, 60% 72%,
+    64% 72%, 68% 66%, 72% 58%, 76% 50%, 80% 46%, 84% 48%, 88% 54%, 92% 61%,
+    96% 67%, 100% 69%, 100% 100%, 0% 100%
+  );
+  opacity:.42;
+  animation:waveDriftBack 26s ease-in-out infinite alternate;
+}
 
-      <div class="stat">
-        <div class="stat-label">Pressure</div>
-        <div id="current-pressure" class="stat-value pressure-value">
-          <span id="current-pressure-text">28.97" / 981 MB</span>
-          <span id="current-pressure-trend" class="pressure-trend" aria-hidden="true"></span>
-        </div>
-      </div>
-    </div>
-  </section>
+.bg-wave-front::before{
+  background:
+    radial-gradient(ellipse at center,
+      rgba(123,231,255,.28) 0%,
+      rgba(123,231,255,.16) 22%,
+      rgba(123,231,255,.00) 70%),
+    linear-gradient(90deg,
+      rgba(0,0,0,0) 0%,
+      rgba(60,135,255,.10) 28%,
+      rgba(110,240,255,.30) 46%,
+      rgba(57,173,255,.20) 64%,
+      rgba(0,0,0,0) 100%);
+  box-shadow:
+    0 0 24px rgba(123,231,255,.08),
+    0 0 60px rgba(0,170,255,.06);
+  clip-path:polygon(
+    0% 63%, 4% 59%, 8% 57%, 12% 58%, 16% 62%, 20% 68%, 24% 72%, 28% 70%,
+    32% 63%, 36% 55%, 40% 48%, 44% 44%, 48% 45%, 52% 51%, 56% 60%, 60% 68%,
+    64% 70%, 68% 66%, 72% 58%, 76% 48%, 80% 42%, 84% 43%, 88% 48%, 92% 55%,
+    96% 61%, 100% 63%, 100% 100%, 0% 100%
+  );
+  opacity:.54;
+  animation:waveDriftFront 18s ease-in-out infinite alternate;
+}
 
-  <section class="panel">
-    <h2>Wind &amp; Rainfall</h2>
+.bg-vignette{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at center, rgba(0,0,0,0) 40%, rgba(0,0,0,.18) 72%, rgba(0,0,0,.38) 100%);
+}
 
-    <div class="surface-panel">
-      <div class="surface-top">
+@keyframes orbDriftLeft{
+  0%{ transform:translate3d(0,0,0) scale(1); opacity:.26; }
+  100%{ transform:translate3d(42px,22px,0) scale(1.08); opacity:.36; }
+}
 
-        <div class="surface-left">
+@keyframes orbDriftRight{
+  0%{ transform:translate3d(0,0,0) scale(1); opacity:.24; }
+  100%{ transform:translate3d(-34px,18px,0) scale(1.06); opacity:.34; }
+}
 
-          <div class="surface-metrics">
-            <div class="stat">
-              <div class="stat-label">Wind Speed</div>
-              <div id="wind-speed" class="stat-value">12 mph</div>
-            </div>
+@keyframes waveDriftBack{
+  0%{ transform:translate3d(0,0,0) scale(1); opacity:.34; }
+  100%{ transform:translate3d(-26px,10px,0) scale(1.04); opacity:.46; }
+}
 
-            <div class="stat">
-              <div class="stat-label">Daily Total</div>
-              <div id="rain-daily" class="stat-value">0.30"</div>
-            </div>
+@keyframes waveDriftFront{
+  0%{ transform:translate3d(0,0,0) scale(1); opacity:.46; }
+  100%{ transform:translate3d(-18px,-8px,0) scale(1.03); opacity:.58; }
+}
 
-            <div class="stat">
-              <div class="stat-label">Wind Gust</div>
-              <div id="wind-gust" class="stat-value">18 mph</div>
-            </div>
+/* HEADER */
 
-            <div class="stat">
-              <div class="stat-label">Rain Rate</div>
-              <div id="rain-rate" class="stat-value">0.05"/hr</div>
-            </div>
+.header{
+  display:grid;
+  grid-template-columns:1.4fr 1fr .8fr;
+  align-items:center;
+  gap:14px;
+  padding:16px 22px;
+  margin-bottom:12px;
+  border:1px solid var(--line-soft);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(24,40,68,.94), rgba(15,27,47,.96));
+  box-shadow:var(--shadow), var(--glow);
+  backdrop-filter:blur(5px);
+}
 
-            <div class="stat">
-              <div class="stat-label">Direction</div>
-              <div id="wind-dir-text" class="stat-value">SE</div>
-            </div>
+.station{
+  text-align:left;
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:1.6px;
+  color:var(--title);
+  text-transform:uppercase;
+}
 
-            <div class="stat">
-              <div class="stat-label">Intensity</div>
-              <div id="rain-intensity" class="stat-value">Light Rain</div>
-            </div>
-          </div>
+.location{
+  text-align:center;
+  font-size:16px;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:.6px;
+}
 
-          <div class="today-so-far">
-            <div class="today-so-far-title">TODAY SO FAR</div>
+.clock{
+  text-align:right;
+  font-size:24px;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:.8px;
+}
 
-            <div class="today-so-far-grid">
-              <div class="stat">
-                <div class="stat-label">High</div>
-                <div id="today-high" class="stat-value">75°</div>
-              </div>
+/* ALERTS */
 
-              <div class="stat">
-                <div class="stat-label">Low</div>
-                <div id="today-low" class="stat-value">51°</div>
-              </div>
-            </div>
-          </div>
+.alerts{
+  display:grid;
+  gap:10px;
+  margin-bottom:14px;
+}
 
-        </div>
+.alert-bar{
+  display:grid;
+  grid-template-columns:190px 1fr;
+  border:1px solid rgba(255,108,143,.45);
+  border-radius:14px;
+  overflow:hidden;
+  background:linear-gradient(180deg, rgba(72,22,38,.95), rgba(50,15,27,.96));
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
 
-        <div class="surface-right">
+.alert-title{
+  background:linear-gradient(180deg, #a73e61, #7d2b48);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:white;
+  border-right:1px solid rgba(255,255,255,.08);
+}
 
-          <div class="wind-dial-wrap">
-            <div class="wind-dial">
-              <span class="dial-cardinal dial-n">N</span>
-              <span class="dial-cardinal dial-e">E</span>
-              <span class="dial-cardinal dial-s">S</span>
-              <span class="dial-cardinal dial-w">W</span>
+.alert-text{
+  padding:8px 14px;
+  display:flex;
+  align-items:center;
+  min-height:42px;
+  font-size:15px;
+  font-weight:700;
+  color:white;
+}
 
-              <span class="dial-ordinal dial-ne">NE</span>
-              <span class="dial-ordinal dial-se">SE</span>
-              <span class="dial-ordinal dial-sw">SW</span>
-              <span class="dial-ordinal dial-nw">NW</span>
+.alert-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
 
-              <div id="wind-arrow" class="wind-dial-arrow"></div>
-              <div class="wind-dial-center"></div>
-            </div>
-          </div>
+.alert-chip{
+  white-space:nowrap;
+  padding:5px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:13px;
+  font-weight:800;
+}
 
-          <div class="surface-extra-slot"></div>
+.ticker{
+  overflow:hidden;
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  padding:8px 0;
+}
 
-        </div>
-      </div>
+#priority-alerts-track{
+  display:inline-block;
+  padding-left:100%;
+  animation:ticker 25s linear infinite;
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+}
 
-      <div class="rain-meter">
-        <div class="meter-labels">
-          <span>0</span>
-          <span>0.25</span>
-          <span>0.50+</span>
-        </div>
+@keyframes ticker{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-100%)}
+}
 
-        <div class="meter-track">
-          <div id="rain-meter-fill"></div>
-        </div>
-      </div>
-    </div>
-  </section>
+/* DASHBOARD */
 
-  <section class="panel">
-    <h2>Three Day Forecast</h2>
+.dashboard{
+  display:grid;
+  grid-template-columns:1.25fr 1.05fr 1.1fr;
+  gap:14px;
+  align-items:stretch;
+}
 
-    <div class="forecast">
-      <div class="forecast-day">
-        <div id="f0-label">Today</div>
-        <div id="f0-high" class="forecast-high">70°</div>
-        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
-        <div id="f0-cond">Storm</div>
-        <div id="f0-low" class="forecast-low">44°</div>
-        <div id="f0-pop" class="forecast-pop">40%</div>
-      </div>
+.panel{
+  background:linear-gradient(180deg, rgba(24,40,66,.92) 0%, rgba(16,29,50,.94) 100%);
+  border:1px solid var(--line-soft);
+  border-radius:var(--radius);
+  padding:16px;
+  min-height:170px;
+  box-shadow:var(--shadow), var(--glow);
+  position:relative;
+  overflow:hidden;
+  backdrop-filter:blur(4px);
+}
 
-      <div class="forecast-day">
-        <div id="f1-label">Mon</div>
-        <div id="f1-high" class="forecast-high">62°</div>
-        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
-        <div id="f1-cond">Storm</div>
-        <div id="f1-low" class="forecast-low">45°</div>
-        <div id="f1-pop" class="forecast-pop">30%</div>
-      </div>
+.panel::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:3px;
+  background:linear-gradient(90deg, transparent, rgba(123,231,255,.85), transparent);
+  opacity:.85;
+}
 
-      <div class="forecast-day">
-        <div id="f2-label">Tue</div>
-        <div id="f2-high" class="forecast-high">68°</div>
-        <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
-        <div id="f2-cond">Storm</div>
-        <div id="f2-low" class="forecast-low">50°</div>
-        <div id="f2-pop" class="forecast-pop">20%</div>
-      </div>
-    </div>
-  </section>
+.panel h2{
+  margin-bottom:14px;
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:.9px;
+  text-transform:uppercase;
+  color:var(--title);
+}
 
-  <section class="panel">
-    <h2>Lightning</h2>
+.dashboard .panel:nth-child(1){
+  min-height:255px;
+}
 
-    <div id="lightning-warning" class="lightning-warning"></div>
+.dashboard .panel:nth-child(4){
+  min-height:255px;
+}
 
-    <div class="lightning-top">
-      <div class="stat">
-        <div class="stat-label">Last Strike</div>
-        <div id="lt-last" class="stat-value">--</div>
-      </div>
+.radar-panel{
+  grid-column:span 2;
+  min-height:255px;
+}
 
-      <div class="stat">
-        <div class="stat-label">Distance</div>
-        <div id="lt-distance" class="stat-value">--</div>
-      </div>
+/* CURRENT */
 
-      <div class="stat">
-        <div class="stat-label">Direction</div>
-        <div id="lt-direction" class="stat-value">--</div>
-      </div>
-    </div>
+.current{
+  display:grid;
+  grid-template-columns:130px 1fr;
+  gap:14px;
+  align-items:center;
+}
 
-    <div class="lightning-history">
-      <div class="history-box">
-        <div class="history-label">1 Min</div>
-        <div id="lt-minute" class="history-value">0</div>
-      </div>
+.current-left{
+  text-align:center;
+}
 
-      <div class="history-box">
-        <div class="history-label">15 Min</div>
-        <div id="lt-fifteen" class="history-value">0</div>
-      </div>
+.current-icon{
+  width:86px;
+  height:86px;
+  display:block;
+  margin:0 auto 10px auto;
+  filter:drop-shadow(0 0 12px rgba(111,232,255,.22));
+}
 
-      <div class="history-box">
-        <div class="history-label">1 Hour</div>
-        <div id="lt-hour" class="history-value">0</div>
-      </div>
+#current-condition{
+  font-size:20px;
+  font-weight:800;
+  color:#ecfaff;
+  letter-spacing:.4px;
+}
 
-      <div class="history-box">
-        <div class="history-label">Today</div>
-        <div id="lt-midnight" class="history-value">0</div>
-      </div>
-    </div>
-  </section>
+.current-right{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+}
 
-  <section class="panel radar-panel">
-    <h2>Radar</h2>
+.temp-stack{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
 
-    <div class="radar-shell">
-      <div class="radar-placeholder">Radar Image Here</div>
-    </div>
-  </section>
+.big-temp-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+}
 
-</main>
+.big-temp{
+  font-size:82px;
+  font-weight:900;
+  line-height:.95;
+  letter-spacing:-2px;
+  text-shadow:0 0 18px rgba(255,255,255,.08);
+}
 
-<script src="script.js"></script>
+.temp-trend{
+  min-width:24px;
+  margin-left:10px;
+  font-size:28px;
+  font-weight:900;
+  line-height:1;
+  transform:translateY(10px);
+  opacity:0;
+}
 
-</body>
-</html>
+.temp-trend.temp-trend-visible{
+  opacity:1;
+}
+
+.temp-trend.temp-trend-up{
+  color:var(--temp-up);
+}
+
+.temp-trend.temp-trend-down{
+  color:var(--temp-down);
+}
+
+.feels-like{
+  margin-top:4px;
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:.2px;
+  color:var(--muted);
+  text-align:left;
+}
+
+@keyframes tempPulse{
+  0%{
+    transform:translateY(10px) scale(1);
+    opacity:.82;
+    filter:drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+  50%{
+    transform:translateY(10px) scale(1.18);
+    opacity:1;
+    filter:drop-shadow(0 0 10px rgba(255,255,255,.18));
+  }
+  100%{
+    transform:translateY(10px) scale(1);
+    opacity:.82;
+    filter:drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+}
+
+.temp-trend.temp-trend-rapid{
+  animation:tempPulse 1.2s ease-in-out infinite;
+}
+
+.current-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  margin-top:16px;
+  text-align:center;
+  gap:10px;
+}
+
+.stat{
+  min-width:0;
+}
+
+.stat-label{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:5px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  font-weight:700;
+}
+
+.stat-value{
+  font-size:23px;
+  font-weight:800;
+  line-height:1.15;
+}
+
+.pressure-value{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  white-space:nowrap;
+  font-size:20px;
+}
+
+.pressure-trend{
+  min-width:14px;
+  font-size:16px;
+  font-weight:900;
+  line-height:1;
+  opacity:0;
+}
+
+.pressure-trend.pressure-trend-visible{
+  opacity:1;
+}
+
+.pressure-trend.pressure-trend-up{
+  color:var(--pressure-accent);
+}
+
+.pressure-trend.pressure-trend-down{
+  color:var(--pressure-accent);
+}
+
+@keyframes pressureRapidFlash{
+  0%{
+    opacity:.35;
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(123,231,255,0));
+  }
+  50%{
+    opacity:1;
+    transform:scale(1.16);
+    filter:drop-shadow(0 0 10px rgba(123,231,255,.45));
+  }
+  100%{
+    opacity:.35;
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(123,231,255,0));
+  }
+}
+
+.pressure-trend.pressure-trend-rapid-down{
+  animation:pressureRapidFlash .9s ease-in-out infinite;
+}
+
+/* FORECAST */
+
+.forecast{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  text-align:center;
+  align-items:start;
+}
+
+.forecast-day{
+  display:grid;
+  justify-items:center;
+  gap:5px;
+  padding:10px 8px;
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.forecast-day > div:first-child{
+  font-size:14px;
+  font-weight:800;
+  color:var(--title);
+  text-transform:uppercase;
+  letter-spacing:.6px;
+}
+
+.forecast-icon{
+  width:46px;
+  height:46px;
+  filter:drop-shadow(0 0 8px rgba(123,231,255,.14));
+}
+
+.forecast-high{
+  font-size:24px;
+  font-weight:900;
+}
+
+.forecast-low{
+  font-size:18px;
+  color:#d9e7ff;
+}
+
+.forecast-pop{
+  font-size:15px;
+  font-weight:800;
+  color:#9de0ff;
+}
+
+/* WIND + RAIN */
+
+.surface-panel{
+  display:grid;
+  gap:12px;
+}
+
+.surface-top{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) 300px;
+  gap:18px;
+  align-items:start;
+}
+
+.surface-left{
+  display:grid;
+  gap:10px;
+}
+
+.surface-metrics{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(140px,1fr));
+  gap:12px 22px;
+  align-items:start;
+}
+
+.surface-metrics .stat-label{
+  white-space:nowrap;
+}
+
+.surface-metrics .stat-value{
+  font-size:26px;
+  white-space:nowrap;
+}
+
+.today-so-far{
+  border-top:1px solid rgba(95,227,255,.16);
+  padding-top:8px;
+}
+
+.today-so-far-title{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.9px;
+  color:#ffffff;
+  margin-bottom:6px;
+}
+
+.today-so-far-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(120px,1fr));
+  gap:12px 22px;
+}
+
+.today-so-far .stat-value{
+  font-size:26px;
+  white-space:nowrap;
+}
+
+.surface-right{
+  display:grid;
+  grid-template-columns:150px 1fr;
+  gap:18px;
+  align-items:center;
+  min-width:0;
+}
+
+.surface-extra-slot{
+  min-height:132px;
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.008));
+  border:1px solid rgba(255,255,255,.04);
+}
+
+.wind-dial-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.wind-dial{
+  position:relative;
+  width:148px;
+  height:148px;
+  border-radius:50%;
+  border:1px solid rgba(95,227,255,.34);
+  background:
+    radial-gradient(circle at center, rgba(123,231,255,.10) 0 12%, transparent 12% 100%),
+    radial-gradient(circle at center, transparent 0 44%, rgba(95,227,255,.22) 44% 45%, transparent 45% 100%),
+    radial-gradient(circle at center, transparent 0 72%, rgba(95,227,255,.16) 72% 73%, transparent 73% 100%),
+    linear-gradient(180deg, rgba(11,21,36,.96), rgba(19,31,51,.96));
+  box-shadow:inset 0 0 24px rgba(95,227,255,.08), 0 0 18px rgba(95,227,255,.12);
+  overflow:hidden;
+}
+
+.wind-dial::before{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:50%;
+  background:repeating-conic-gradient(
+    from 0deg,
+    rgba(255,255,255,.00) 0deg 8deg,
+    rgba(123,231,255,.18) 8deg 9deg
+  );
+  mask:radial-gradient(circle, transparent 0 56px, #000 56px);
+  opacity:.9;
+}
+
+.wind-dial::after{
+  content:"";
+  position:absolute;
+  inset:22px;
+  border-radius:50%;
+  border:1px solid rgba(95,227,255,.18);
+  pointer-events:none;
+}
+
+.wind-dial-center{
+  position:absolute;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#ffffff;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 12px rgba(123,231,255,.45);
+  z-index:3;
+}
+
+.wind-dial-arrow{
+  position:absolute;
+  width:52px;
+  height:6px;
+  top:50%;
+  left:50%;
+  transform-origin:left center;
+  border-radius:999px;
+  background:linear-gradient(90deg, #ffffff, #9beeff 70%, #7be7ff 100%);
+  box-shadow:0 0 12px rgba(123,231,255,.35);
+  z-index:2;
+}
+
+.wind-dial-arrow::after{
+  content:"";
+  position:absolute;
+  right:-1px;
+  top:50%;
+  transform:translateY(-50%);
+  border-left:16px solid #7be7ff;
+  border-top:9px solid transparent;
+  border-bottom:9px solid transparent;
+  filter:drop-shadow(0 0 6px rgba(123,231,255,.35));
+}
+
+.dial-cardinal,
+.dial-ordinal{
+  position:absolute;
+  font-weight:800;
+  line-height:1;
+  user-select:none;
+}
+
+.dial-cardinal{
+  font-size:13px;
+  color:#effbff;
+  text-shadow:0 0 10px rgba(123,231,255,.15);
+}
+
+.dial-ordinal{
+  font-size:10px;
+  color:#9fcbef;
+}
+
+.dial-n{
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.dial-s{
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.dial-e{
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.dial-w{
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.dial-ne{
+  top:26px;
+  right:25px;
+}
+
+.dial-se{
+  bottom:26px;
+  right:25px;
+}
+
+.dial-sw{
+  bottom:26px;
+  left:25px;
+}
+
+.dial-nw{
+  top:26px;
+  left:25px;
+}
+
+/* RAIN */
+
+.rain-meter{
+  margin-top:2px;
+}
+
+.meter-labels{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:#c7d5e7;
+  margin-bottom:5px;
+  font-weight:700;
+}
+
+.meter-track{
+  height:14px;
+  background:#0a1220;
+  border:1px solid rgba(95,227,255,.5);
+  border-radius:999px;
+  overflow:hidden;
+  box-shadow:inset 0 0 10px rgba(0,0,0,.35);
+}
+
+#rain-meter-fill{
+  height:100%;
+  background:linear-gradient(90deg,#b9ecff,#78d7ff,#5cb8ff);
+  width:0%;
+  border-radius:999px;
+  box-shadow:0 0 10px rgba(92,184,255,.35);
+}
+
+/* RADAR */
+
+.radar-shell{
+  position:relative;
+  height:100%;
+  min-height:180px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:12px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,.04), rgba(255,255,255,.01)),
+    linear-gradient(180deg, rgba(9,15,26,.45), rgba(11,18,30,.75));
+}
+
+.radar-placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:#7be7ff;
+  background:
+    radial-gradient(circle at center, rgba(123,231,255,.08), rgba(10,18,32,.9));
+  text-shadow:0 0 14px rgba(123,231,255,.14);
+}
+
+/* LIGHTNING */
+
+.lightning-warning{
+  display:none;
+  background:linear-gradient(180deg, rgba(113,85,0,.95), rgba(86,63,0,.95));
+  border:1px solid rgba(255,210,77,.75);
+  border-radius:10px;
+  padding:8px 11px;
+  margin-bottom:12px;
+  font-size:13px;
+  font-weight:800;
+  color:white;
+  box-shadow:0 0 15px rgba(255,210,77,.15);
+}
+
+.lightning-top{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.lightning-history{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:12px;
+}
+
+.history-box{
+  background:linear-gradient(180deg, rgba(13,21,36,.92), rgba(19,29,47,.95));
+  border:1px solid rgba(95,227,255,.25);
+  border-radius:12px;
+  text-align:center;
+  padding:10px 8px;
+}
+
+.history-label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:var(--muted);
+  font-weight:700;
+}
+
+.history-value{
+  font-size:26px;
+  font-weight:900;
+  margin-top:4px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px){
+  .dashboard{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .radar-panel{
+    grid-column:span 2;
+  }
+
+  .surface-top{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 900px){
+  body{
+    padding:10px;
+  }
+
+  .dashboard{
+    grid-template-columns:1fr;
+  }
+
+  .radar-panel{
+    grid-column:auto;
+  }
+
+  .current,
+  .current-stats,
+  .forecast,
+  .lightning-top,
+  .surface-top,
+  .surface-metrics,
+  .surface-right,
+  .today-so-far-grid{
+    grid-template-columns:1fr;
+  }
+
+  .lightning-history{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .header{
+    grid-template-columns:1fr;
+    gap:8px;
+    text-align:center;
+  }
+
+  .station,
+  .location,
+  .clock{
+    text-align:center;
+  }
+
+  .station{
+    font-size:22px;
+  }
+
+  .big-temp{
+    font-size:64px;
+  }
+
+  .temp-trend{
+    font-size:22px;
+    transform:translateY(8px);
+  }
+
+  .feels-like{
+    font-size:16px;
+  }
+
+  .alert-bar{
+    grid-template-columns:1fr;
+  }
+
+  .surface-right{
+    justify-items:center;
+  }
+
+  .surface-extra-slot{
+    width:100%;
+    min-height:80px;
+  }
+
+  .bg-wave-back::before,
+  .bg-wave-front::before{
+    width:120%;
+    right:-24%;
+    top:38%;
+  }
+}
