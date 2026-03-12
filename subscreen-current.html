@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Current Conditions in Rushville</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="page-fade subscreen-body">
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-gradient"></div>
+  <div class="bg-orb bg-orb-left"></div>
+  <div class="bg-orb bg-orb-right"></div>
+  <div class="bg-wave-layer bg-wave-back"></div>
+  <div class="bg-wave-layer bg-wave-front"></div>
+  <div class="bg-vignette"></div>
+</div>
+
+<div class="page-fade-overlay"></div>
+
+<main class="subscreen-current">
+  <section class="subscreen-topbar">
+    <div class="subscreen-title">CURRENT CONDITIONS IN RUSHVILLE</div>
+    <div id="subscreen-clock" class="subscreen-clock">--:--</div>
+  </section>
+
+  <section class="subscreen-graph-panel temp-graph-panel">
+    <div class="subscreen-section-title">TEMPERATURE LAST 24 HOURS</div>
+    <div class="graph-wrap graph-wrap-large">
+      <svg id="temp-graph" class="graph-svg" viewBox="0 0 1200 420" preserveAspectRatio="none"></svg>
+    </div>
+  </section>
+
+  <section class="subscreen-graph-panel pressure-graph-panel">
+    <div class="subscreen-section-title">
+      <span>PRESSURE LAST 6 HOURS</span>
+      <span id="subscreen-pressure-trend" class="subscreen-pressure-trend"></span>
+    </div>
+    <div class="graph-wrap graph-wrap-small">
+      <svg id="pressure-graph" class="graph-svg" viewBox="0 0 1200 250" preserveAspectRatio="none"></svg>
+    </div>
+  </section>
+
+  <section class="subscreen-conditions-shell">
+    <div class="subscreen-conditions-title">CURRENT CONDITIONS IN RUSHVILLE</div>
+    <div class="subscreen-conditions-window">
+      <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
+    </div>
+  </section>
+
+  <section id="subscreen-alert-ribbon" class="subscreen-alert-ribbon" style="display:none;">
+    <div id="subscreen-alert-text" class="subscreen-alert-text"></div>
+  </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
