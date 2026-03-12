@@ -1,11 +1,16 @@
 const data = {
   current: {
     temp: null,
+    feelsLike: null,
+    tempTrend: "steady",
+    tempRapid: false,
     condition: "N/A",
     dew: null,
     humidity: null,
     pressureIn: null,
-    pressureMb: null
+    pressureMb: null,
+    pressureTrend: "steady",
+    pressureRapidDrop: false
   },
   wind: {
     speed: null,
@@ -32,52 +37,11 @@ const data = {
     low: 51
   },
   forecast: [
-    { label: "Today", high: 70, low: 44, cond: "Storm", pop: 40 },
-    { label: "Mon", high: 62, low: 45, cond: "Storm", pop: 30 },
-    { label: "Tue", high: 68, low: 50, cond: "Storm", pop: 20 }
+    { high: 70, low: 44, cond: "Storm", pop: 40 },
+    { high: 62, low: 45, cond: "Storm", pop: 30 },
+    { high: 68, low: 50, cond: "Storm", pop: 20 }
   ],
   alerts: []
-};
-
-const radarConfig = {
-  center: [39.6092, -85.4464],
-  zoom: 9,
-  radar: "KIND",
-  product: "N0Q",
-  frames: 6,
-  animationMs: 850,
-  refreshMs: 120000,
-  cities: [
-    { name: "Indianapolis", lat: 39.7684, lon: -86.1581 },
-    { name: "Rushville", lat: 39.6092, lon: -85.4464 },
-    { name: "Shelbyville", lat: 39.5214, lon: -85.7769 },
-    { name: "Greensburg", lat: 39.3373, lon: -85.4836 },
-    { name: "Connersville", lat: 39.6412, lon: -85.1411 },
-    { name: "Franklin", lat: 39.4806, lon: -86.0549 }
-  ],
-  highways: [
-    { name: "I-74", lat: 39.58, lon: -85.82 },
-    { name: "I-70", lat: 39.78, lon: -85.94 },
-    { name: "US 52", lat: 39.63, lon: -85.53 },
-    { name: "SR 44", lat: 39.48, lon: -85.83 },
-    { name: "SR 3", lat: 39.70, lon: -85.62 },
-    { name: "SR 244", lat: 39.32, lon: -85.35 },
-    { name: "US 40", lat: 39.80, lon: -85.76 },
-    { name: "I-465", lat: 39.79, lon: -86.06 },
-    { name: "I-65", lat: 39.32, lon: -85.98 },
-    { name: "SR 9", lat: 39.67, lon: -85.61 },
-    { name: "US 31", lat: 39.28, lon: -85.97 }
-  ]
-};
-
-const radarState = {
-  map: null,
-  frameLayers: [],
-  frameTimes: [],
-  frameIndex: 0,
-  animationTimer: null,
-  refreshTimer: null,
-  latestLayer: null
 };
 
 let tickerTimer = null;
@@ -138,6 +102,16 @@ function degToCompass(num) {
   const val = Math.floor((num / 22.5) + 0.5);
   const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
   return arr[val % 16];
+}
+
+function getNextThreeDayLabels() {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const today = new Date();
+  return [
+    "Today",
+    days[(today.getDay() + 1) % 7],
+    days[(today.getDay() + 2) % 7]
+  ];
 }
 
 function setText(id, value) {
@@ -757,15 +731,17 @@ function renderLightningPanel() {
 }
 
 function renderForecast() {
+  const labels = getNextThreeDayLabels();
+
   for (let i = 0; i < 3; i++) {
     const item = data.forecast[i];
     if (!item) continue;
 
-    setText(`f${i}-label`, item.label || `Day ${i + 1}`);
-    setText(`f${i}-high`, typeof item.high === "number" ? `${item.high}°` : "N/A");
-    setText(`f${i}-low`, typeof item.low === "number" ? `${item.low}°` : "N/A");
-    setText(`f${i}-cond`, item.cond || "Forecast");
-    setText(`f${i}-pop`, typeof item.pop === "number" ? `${item.pop}%` : "--");
+    setText(`f${i}-label`, labels[i]);
+    setText(`f${i}-high`, `${item.high}°`);
+    setText(`f${i}-low`, `${item.low}°`);
+    setText(`f${i}-cond`, item.cond);
+    setText(`f${i}-pop`, `${item.pop}%`);
 
     applyTempColor(document.getElementById(`f${i}-high`), item.high);
     applyTempColor(document.getElementById(`f${i}-low`), item.low);
@@ -786,9 +762,41 @@ function renderWindArrow() {
   arrow.style.transform = `rotate(${data.wind.directionDeg - 90}deg)`;
 }
 
+function renderTrendArrow(el, direction, rapid, kind) {
+  if (!el) return;
+
+  el.textContent = "";
+  el.className = kind === "temp" ? "temp-trend" : "pressure-trend";
+
+  if (direction !== "up" && direction !== "down") {
+    return;
+  }
+
+  el.textContent = direction === "up" ? "▲" : "▼";
+
+  if (kind === "temp") {
+    el.classList.add("temp-trend-visible");
+    el.classList.add(direction === "up" ? "temp-trend-up" : "temp-trend-down");
+    if (rapid) el.classList.add("temp-trend-rapid");
+    return;
+  }
+
+  el.classList.add("pressure-trend-visible");
+  el.classList.add(direction === "up" ? "pressure-trend-up" : "pressure-trend-down");
+  if (direction === "down" && rapid) {
+    el.classList.add("pressure-trend-rapid-down");
+  }
+}
+
 function renderCurrentConditions() {
   setText("current-condition", data.current.condition || "N/A");
   setText("current-temp", formatFixed(data.current.temp, 1, "°"));
+  setText(
+    "current-feels-like",
+    typeof data.current.feelsLike === "number"
+      ? `Feels Like ${data.current.feelsLike}°`
+      : "Feels Like N/A"
+  );
   setText("current-dew", formatValue(data.current.dew, "°"));
   setText("current-humidity", formatValue(data.current.humidity, "%"));
 
@@ -797,10 +805,24 @@ function renderCurrentConditions() {
       ? `${data.current.pressureIn.toFixed(2)}" / ${data.current.pressureMb} MB`
       : "N/A";
 
-  setText("current-pressure", pressureText);
+  setText("current-pressure-text", pressureText);
 
   applyTempColor(document.getElementById("current-temp"), data.current.temp);
   applyTempColor(document.getElementById("current-dew"), data.current.dew);
+
+  renderTrendArrow(
+    document.getElementById("current-temp-trend"),
+    data.current.tempTrend,
+    data.current.tempRapid,
+    "temp"
+  );
+
+  renderTrendArrow(
+    document.getElementById("current-pressure-trend"),
+    data.current.pressureTrend,
+    data.current.pressureRapidDrop,
+    "pressure"
+  );
 }
 
 function renderWindPanel() {
@@ -848,225 +870,6 @@ function renderAll() {
   updateClock();
 }
 
-function setRadarStatus(text) {
-  setText("radar-status", text);
-}
-
-function radarStampToDisplay(stamp) {
-  if (!stamp || stamp === "0") return "latest";
-  const m = stamp.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/);
-  if (!m) return stamp;
-  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]));
-  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true, timeZoneName: "short" });
-}
-
-function createRadarTileLayer(stamp) {
-  return L.tileLayer(
-    `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::${radarConfig.radar}-${radarConfig.product}-${stamp}/{z}/{x}/{y}.png`,
-    {
-      pane: "radarPane",
-      opacity: 0,
-      maxZoom: 12,
-      updateWhenIdle: false,
-      updateWhenZooming: false
-    }
-  );
-}
-
-function clearRadarFrames() {
-  if (radarState.animationTimer) {
-    clearInterval(radarState.animationTimer);
-    radarState.animationTimer = null;
-  }
-
-  radarState.frameLayers.forEach((layer) => {
-    if (radarState.map && radarState.map.hasLayer(layer)) {
-      radarState.map.removeLayer(layer);
-    }
-  });
-
-  radarState.frameLayers = [];
-  radarState.frameTimes = [];
-  radarState.frameIndex = 0;
-
-  if (radarState.latestLayer && radarState.map && radarState.map.hasLayer(radarState.latestLayer)) {
-    radarState.map.removeLayer(radarState.latestLayer);
-  }
-  radarState.latestLayer = null;
-}
-
-function showRadarFrame(index) {
-  radarState.frameLayers.forEach((layer, i) => {
-    layer.setOpacity(i === index ? 0.9 : 0);
-  });
-  radarState.frameIndex = index;
-  const stamp = radarState.frameTimes[index];
-  setRadarStatus(`KIND • ${radarStampToDisplay(stamp)}`);
-}
-
-function startRadarAnimation() {
-  if (!radarState.frameLayers.length) return;
-  showRadarFrame(0);
-  radarState.animationTimer = setInterval(() => {
-    const next = (radarState.frameIndex + 1) % radarState.frameLayers.length;
-    showRadarFrame(next);
-  }, radarConfig.animationMs);
-}
-
-function extractRadarStamps(json) {
-  const found = [];
-
-  function scan(value) {
-    if (value == null) return;
-    if (typeof value === "string") {
-      const m = value.match(/(\d{12})/);
-      if (m) found.push(m[1]);
-      return;
-    }
-    if (Array.isArray(value)) {
-      value.forEach(scan);
-      return;
-    }
-    if (typeof value === "object") {
-      Object.values(value).forEach(scan);
-    }
-  }
-
-  scan(json);
-  return [...new Set(found)].sort().slice(-radarConfig.frames);
-}
-
-async function loadRadarLoop() {
-  if (!radarState.map) return;
-
-  try {
-    const response = await fetch(
-      `https://mesonet.agron.iastate.edu/json/radar.py?operation=list&radar=${radarConfig.radar}&product=${radarConfig.product}`
-    );
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const json = await response.json();
-    const stamps = extractRadarStamps(json);
-
-    clearRadarFrames();
-
-    if (!stamps.length) {
-      throw new Error("No radar timestamps found");
-    }
-
-    radarState.frameTimes = stamps;
-    radarState.frameLayers = stamps.map(createRadarTileLayer);
-
-    radarState.frameLayers.forEach((layer) => layer.addTo(radarState.map));
-    startRadarAnimation();
-  } catch (error) {
-    console.error("Radar loop load failed:", error);
-    clearRadarFrames();
-    radarState.latestLayer = createRadarTileLayer("0");
-    radarState.latestLayer.setOpacity(0.9);
-    radarState.latestLayer.addTo(radarState.map);
-    setRadarStatus("KIND • latest");
-  }
-}
-
-function addRadarLabels() {
-  radarConfig.cities.forEach((city) => {
-    L.marker([city.lat, city.lon], {
-      interactive: false,
-      icon: L.divIcon({
-        className: "radar-city-label",
-        html: city.name,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
-      })
-    }).addTo(radarState.map);
-  });
-
-  radarConfig.highways.forEach((route) => {
-    L.marker([route.lat, route.lon], {
-      interactive: false,
-      icon: L.divIcon({
-        className: "radar-highway-label",
-        html: route.name,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
-      })
-    }).addTo(radarState.map);
-  });
-
-  L.marker(radarConfig.center, {
-    interactive: false,
-    icon: L.divIcon({
-      className: "",
-      html: '<div class="radar-station-dot"></div>',
-      iconSize: [10, 10],
-      iconAnchor: [5, 5]
-    })
-  }).addTo(radarState.map);
-
-  L.marker([radarConfig.center[0] + 0.02, radarConfig.center[1] + 0.02], {
-    interactive: false,
-    icon: L.divIcon({
-      className: "radar-station-label",
-      html: "Sugar Hill",
-      iconSize: [0, 0],
-      iconAnchor: [0, 0]
-    })
-  }).addTo(radarState.map);
-}
-
-function initRadar() {
-  const mapEl = document.getElementById("radar-map");
-  if (!mapEl) return;
-
-  radarState.map = L.map(mapEl, {
-    zoomControl: false,
-    attributionControl: false,
-    dragging: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false,
-    boxZoom: false,
-    keyboard: false,
-    touchZoom: false
-  }).setView(radarConfig.center, radarConfig.zoom);
-
-  radarState.map.createPane("basePane");
-  radarState.map.createPane("countyPane");
-  radarState.map.createPane("radarPane");
-
-  radarState.map.getPane("basePane").style.zIndex = 200;
-  radarState.map.getPane("countyPane").style.zIndex = 400;
-  radarState.map.getPane("radarPane").style.zIndex = 500;
-
-  L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
-    {
-      pane: "basePane",
-      subdomains: "abcd",
-      maxZoom: 19
-    }
-  ).addTo(radarState.map);
-
-  L.tileLayer.wms(
-    "https://tigerweb.geo.census.gov/arcgis/services/TIGERweb/tigerWMS_Current/MapServer/WmsServer",
-    {
-      layers: "82",
-      format: "image/png",
-      transparent: true,
-      opacity: 0.5,
-      pane: "countyPane"
-    }
-  ).addTo(radarState.map);
-
-  addRadarLabels();
-  loadRadarLoop();
-
-  radarState.refreshTimer = setInterval(loadRadarLoop, radarConfig.refreshMs);
-
-  setTimeout(() => radarState.map.invalidateSize(), 200);
-}
-
 async function updateLiveTempestCurrent() {
   try {
     const response = await fetch("http://localhost:3000/api/tempest/current");
@@ -1075,10 +878,15 @@ async function updateLiveTempestCurrent() {
     const live = await response.json();
 
     data.current.temp = typeof live.tempF === "number" ? live.tempF : null;
+    data.current.feelsLike = typeof live.feelsLikeF === "number" ? live.feelsLikeF : null;
+    data.current.tempTrend = live.tempTrend || "steady";
+    data.current.tempRapid = Boolean(live.tempRapid);
     data.current.dew = typeof live.dewF === "number" ? live.dewF : null;
     data.current.humidity = typeof live.humidity === "number" ? live.humidity : null;
     data.current.pressureIn = typeof live.pressureIn === "number" ? live.pressureIn : null;
     data.current.pressureMb = typeof live.pressureMb === "number" ? live.pressureMb : null;
+    data.current.pressureTrend = live.pressureTrend || "steady";
+    data.current.pressureRapidDrop = Boolean(live.pressureRapidDrop);
 
     data.wind.speed = typeof live.windSpeed === "number" ? live.windSpeed : null;
     data.wind.gust = typeof live.windGust === "number" ? live.windGust : null;
@@ -1094,10 +902,15 @@ async function updateLiveTempestCurrent() {
     console.error("Failed to load live Tempest current data:", error);
 
     data.current.temp = null;
+    data.current.feelsLike = null;
+    data.current.tempTrend = "steady";
+    data.current.tempRapid = false;
     data.current.dew = null;
     data.current.humidity = null;
     data.current.pressureIn = null;
     data.current.pressureMb = null;
+    data.current.pressureTrend = "steady";
+    data.current.pressureRapidDrop = false;
     data.wind.speed = null;
     data.wind.gust = null;
     data.wind.directionDeg = null;
@@ -1107,31 +920,6 @@ async function updateLiveTempestCurrent() {
     renderCurrentConditions();
     renderWindPanel();
     renderRainPanel();
-  }
-}
-
-async function updateLiveForecast() {
-  try {
-    const response = await fetch("http://localhost:3000/api/nws-forecast");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const live = await response.json();
-    const periods = Array.isArray(live.periods) ? live.periods : [];
-
-    if (periods.length) {
-      data.forecast = periods.slice(0, 3).map((p, index) => ({
-        label: p.label || (index === 0 ? "Today" : `Day ${index + 1}`),
-        high: typeof p.high === "number" ? p.high : null,
-        low: typeof p.low === "number" ? p.low : null,
-        cond: p.cond || "Forecast",
-        pop: typeof p.pop === "number" ? p.pop : null
-      }));
-    }
-
-    renderForecast();
-  } catch (error) {
-    console.error("Failed to load live forecast:", error);
-    renderForecast();
   }
 }
 
@@ -1202,20 +990,14 @@ async function updateLiveNwsAlerts() {
 
 window.addEventListener("resize", () => {
   renderWarnings(true);
-  if (radarState.map) {
-    setTimeout(() => radarState.map.invalidateSize(), 100);
-  }
 });
 
 renderAll();
 updateClock();
 updateLiveTempestCurrent();
-updateLiveForecast();
 updateLiveNwsAlerts();
 updateLiveLightning();
-initRadar();
 
 setInterval(updateClock, 1000);
 setInterval(updateLiveTempestCurrent, 30000);
-setInterval(updateLiveForecast, 300000);
 setInterval(updateLiveNwsAlerts, 60000);
