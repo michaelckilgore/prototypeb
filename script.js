@@ -32,9 +32,9 @@ const data = {
     low: 51
   },
   forecast: [
-    { high: 70, low: 44, cond: "Storm", pop: 40 },
-    { high: 62, low: 45, cond: "Storm", pop: 30 },
-    { high: 68, low: 50, cond: "Storm", pop: 20 }
+    { label: "Today", high: 70, low: 44, cond: "Storm", pop: 40 },
+    { label: "Mon", high: 62, low: 45, cond: "Storm", pop: 30 },
+    { label: "Tue", high: 68, low: 50, cond: "Storm", pop: 20 }
   ],
   alerts: []
 };
@@ -138,16 +138,6 @@ function degToCompass(num) {
   const val = Math.floor((num / 22.5) + 0.5);
   const arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
   return arr[val % 16];
-}
-
-function getNextThreeDayLabels() {
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const today = new Date();
-  return [
-    "Today",
-    days[(today.getDay() + 1) % 7],
-    days[(today.getDay() + 2) % 7]
-  ];
 }
 
 function setText(id, value) {
@@ -767,17 +757,15 @@ function renderLightningPanel() {
 }
 
 function renderForecast() {
-  const labels = getNextThreeDayLabels();
-
   for (let i = 0; i < 3; i++) {
     const item = data.forecast[i];
     if (!item) continue;
 
-    setText(`f${i}-label`, labels[i]);
-    setText(`f${i}-high`, `${item.high}°`);
-    setText(`f${i}-low`, `${item.low}°`);
-    setText(`f${i}-cond`, item.cond);
-    setText(`f${i}-pop`, `${item.pop}%`);
+    setText(`f${i}-label`, item.label || `Day ${i + 1}`);
+    setText(`f${i}-high`, typeof item.high === "number" ? `${item.high}°` : "N/A");
+    setText(`f${i}-low`, typeof item.low === "number" ? `${item.low}°` : "N/A");
+    setText(`f${i}-cond`, item.cond || "Forecast");
+    setText(`f${i}-pop`, typeof item.pop === "number" ? `${item.pop}%` : "--");
 
     applyTempColor(document.getElementById(`f${i}-high`), item.high);
     applyTempColor(document.getElementById(`f${i}-low`), item.low);
@@ -1122,6 +1110,31 @@ async function updateLiveTempestCurrent() {
   }
 }
 
+async function updateLiveForecast() {
+  try {
+    const response = await fetch("http://localhost:3000/api/nws-forecast");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const live = await response.json();
+    const periods = Array.isArray(live.periods) ? live.periods : [];
+
+    if (periods.length) {
+      data.forecast = periods.slice(0, 3).map((p, index) => ({
+        label: p.label || (index === 0 ? "Today" : `Day ${index + 1}`),
+        high: typeof p.high === "number" ? p.high : null,
+        low: typeof p.low === "number" ? p.low : null,
+        cond: p.cond || "Forecast",
+        pop: typeof p.pop === "number" ? p.pop : null
+      }));
+    }
+
+    renderForecast();
+  } catch (error) {
+    console.error("Failed to load live forecast:", error);
+    renderForecast();
+  }
+}
+
 function scheduleLightningRefresh(ms) {
   if (lightningTimer) clearTimeout(lightningTimer);
   lightningTimer = setTimeout(updateLiveLightning, ms);
@@ -1197,10 +1210,12 @@ window.addEventListener("resize", () => {
 renderAll();
 updateClock();
 updateLiveTempestCurrent();
+updateLiveForecast();
 updateLiveNwsAlerts();
 updateLiveLightning();
 initRadar();
 
 setInterval(updateClock, 1000);
 setInterval(updateLiveTempestCurrent, 30000);
+setInterval(updateLiveForecast, 300000);
 setInterval(updateLiveNwsAlerts, 60000);
