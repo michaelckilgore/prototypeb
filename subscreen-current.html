@@ -19,30 +19,76 @@
 
 <div class="page-fade-overlay"></div>
 
-<main class="subscreen-current">
-  <section class="subscreen-topbar">
-    <div class="subscreen-title">CURRENT CONDITIONS IN RUSHVILLE</div>
-    <div id="subscreen-clock" class="subscreen-clock">--:--</div>
+<main class="subscreen-current-v2">
+  <section class="subscreen-header-bar">
+    <div class="subscreen-header-title">CURRENT CONDITIONS IN RUSHVILLE</div>
+    <div id="subscreen-clock" class="subscreen-header-clock">--:--</div>
   </section>
 
-  <section class="subscreen-graph-panel temp-graph-panel">
-    <div class="subscreen-section-title">TEMPERATURE LAST 24 HOURS</div>
-    <div class="graph-wrap graph-wrap-large">
-      <svg id="temp-graph" class="graph-svg" viewBox="0 0 1200 420" preserveAspectRatio="none"></svg>
-    </div>
+  <section class="subscreen-main-grid">
+    <section class="sub-panel graph-panel-left">
+      <div class="sub-panel-title">TEMPERATURE LAST 24 HOURS</div>
+      <div class="sub-graph-shell">
+        <svg id="temp-graph" class="graph-svg" viewBox="0 0 860 360" preserveAspectRatio="none"></svg>
+      </div>
+    </section>
+
+    <section class="sub-panel center-conditions-panel">
+      <div class="sub-center-block">
+        <div class="temp-range-top">
+          <div class="range-label">HIGH</div>
+          <div id="ring-high-temp" class="range-value">--°</div>
+        </div>
+
+        <div class="temp-ring-wrap">
+          <svg id="temp-ring-svg" class="temp-ring-svg" viewBox="0 0 360 360" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="temp-ring-center">
+            <div class="ring-temp-row">
+              <div id="ring-current-temp" class="ring-current-temp">--°</div>
+              <div id="ring-temp-trend" class="ring-temp-trend" aria-hidden="true"></div>
+            </div>
+            <div id="ring-feels-like" class="ring-feels-like">Feels Like --°</div>
+          </div>
+        </div>
+
+        <div class="temp-range-bottom">
+          <div class="range-label">LOW</div>
+          <div id="ring-low-temp" class="range-value">--°</div>
+        </div>
+
+        <div class="center-metrics">
+          <div class="center-metric">
+            <div class="center-metric-label">Dew Point</div>
+            <div id="center-dew" class="center-metric-value">--°</div>
+          </div>
+          <div class="center-metric">
+            <div class="center-metric-label">Humidity</div>
+            <div id="center-humidity" class="center-metric-value">--%</div>
+          </div>
+          <div class="center-metric">
+            <div class="center-metric-label">Wind</div>
+            <div id="center-wind" class="center-metric-value">--</div>
+          </div>
+          <div class="center-metric">
+            <div class="center-metric-label">Pressure</div>
+            <div id="center-pressure" class="center-metric-value">--</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sub-panel graph-panel-right">
+      <div class="sub-panel-title">
+        <span>PRESSURE LAST 6 HOURS</span>
+        <span id="subscreen-pressure-trend" class="subscreen-pressure-trend"></span>
+      </div>
+      <div class="sub-graph-shell">
+        <svg id="pressure-graph" class="graph-svg" viewBox="0 0 860 360" preserveAspectRatio="none"></svg>
+      </div>
+    </section>
   </section>
 
-  <section class="subscreen-graph-panel pressure-graph-panel">
-    <div class="subscreen-section-title">
-      <span>PRESSURE LAST 6 HOURS</span>
-      <span id="subscreen-pressure-trend" class="subscreen-pressure-trend"></span>
-    </div>
-    <div class="graph-wrap graph-wrap-small">
-      <svg id="pressure-graph" class="graph-svg" viewBox="0 0 1200 250" preserveAspectRatio="none"></svg>
-    </div>
-  </section>
-
-  <section class="subscreen-conditions-shell">
+  <section class="subscreen-conditions-shell fast-wipe-shell">
     <div class="subscreen-conditions-title">CURRENT CONDITIONS IN RUSHVILLE</div>
     <div class="subscreen-conditions-window">
       <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
