@@ -457,13 +457,13 @@ function getAlertTheme(alert) {
   }
 
   return {
-    bg1: "#b88952",
-    bg2: "#9b6f3f",
-    title1: "#c5955d",
-    title2: "#aa7c48",
-    border: "#e1be97",
+    bg1: "#fff9cc",
+    bg2: "#fff1a8",
+    title1: "#fffbe0",
+    title2: "#fff4b8",
+    border: "#fff0a0",
     text: "#111111",
-    chipBg: "rgba(255,255,255,0.20)",
+    chipBg: "rgba(0,0,0,0.05)",
     chipBorder: "rgba(0,0,0,0.12)"
   };
 }
