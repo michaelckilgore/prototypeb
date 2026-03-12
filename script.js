@@ -49,6 +49,16 @@ let tickerIndex = 0;
 let lastAlertSignature = "";
 let lightningTimer = null;
 
+let subscreenConditionSetIndex = 0;
+let subscreenConditionTimer = null;
+let activeConditionLine = null;
+
+const SCREEN_ROTATE_MS = 10000;
+const SCREEN_FADE_MS = 250;
+const CONDITION_ROTATE_MS = 10000;
+
+/* -------------------- shared helpers -------------------- */
+
 function tempColor(temp) {
   if (typeof temp !== "number") return "#ffffff";
   if (temp <= 30) return "#70C0FF";
@@ -97,6 +107,23 @@ function formatStrikeTime(epoch) {
   return `${hours}:${minutes} ${suffix}`;
 }
 
+function formatShortTime(date) {
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  });
+}
+
+function formatMinutesUntil(dateString) {
+  if (!dateString) return "";
+  const expires = new Date(dateString);
+  const now = new Date();
+  const diffMs = expires.getTime() - now.getTime();
+  const diffMin = Math.max(0, Math.round(diffMs / 60000));
+  return `Expires in ${diffMin} min • ${formatShortTime(expires)}`;
+}
+
 function degToCompass(num) {
   if (typeof num !== "number") return "N/A";
   const val = Math.floor((num / 22.5) + 0.5);
@@ -128,6 +155,12 @@ function updateClock() {
     timeZoneName: "short"
   });
   setText("clock", str);
+  setText("subscreen-clock", now.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short"
+  }));
 }
 
 function getRainIntensity(rate) {
@@ -305,118 +338,14 @@ function getAlertTheme(alert) {
 
   if (event.includes("severe thunderstorm warning")) {
     return {
-      bg1: "#ffe2a6",
-      bg2: "#ffc97a",
-      title1: "#ffe9b8",
-      title2: "#ffd694",
-      border: "#ffcf8a",
+      bg1: "#fff3b7",
+      bg2: "#ffea96",
+      title1: "#fff7c8",
+      title2: "#fff0ae",
+      border: "#ffefb0",
       text: "#111111",
       chipBg: "rgba(0,0,0,0.05)",
       chipBorder: "rgba(0,0,0,0.12)"
-    };
-  }
-
-  if (event.includes("flash flood warning")) {
-    return {
-      bg1: "#00a53d",
-      bg2: "#007d2f",
-      title1: "#16b950",
-      title2: "#008736",
-      border: "#8ae1aa",
-      text: "#ffffff",
-      chipBg: "rgba(255,255,255,0.12)",
-      chipBorder: "rgba(255,255,255,0.22)"
-    };
-  }
-
-  if (event.includes("flood warning") || event.includes("flood advisory")) {
-    return {
-      bg1: "#2f9e44",
-      bg2: "#1f6d2d",
-      title1: "#39b54a",
-      title2: "#2a873a",
-      border: "#8dd7a0",
-      text: "#ffffff",
-      chipBg: "rgba(255,255,255,0.12)",
-      chipBorder: "rgba(255,255,255,0.22)"
-    };
-  }
-
-  if (isWinterWarning(alert)) {
-    return {
-      bg1: "#efefef",
-      bg2: "#d6d6d6",
-      title1: "#f7f7f7",
-      title2: "#e0e0e0",
-      border: "#ffffff",
-      text: "#111111",
-      chipBg: "rgba(0,0,0,0.06)",
-      chipBorder: "rgba(0,0,0,0.12)"
-    };
-  }
-
-  if (event.includes("tornado watch")) {
-    return {
-      bg1: "#8c1b2a",
-      bg2: "#5f111b",
-      title1: "#9f2231",
-      title2: "#6a1520",
-      border: "#d68792",
-      text: "#ffffff",
-      chipBg: "rgba(255,255,255,0.12)",
-      chipBorder: "rgba(255,255,255,0.22)"
-    };
-  }
-
-  if (event.includes("severe thunderstorm watch")) {
-    return {
-      bg1: "#9f6800",
-      bg2: "#764b00",
-      title1: "#b87900",
-      title2: "#875600",
-      border: "#e0c07a",
-      text: "#ffffff",
-      chipBg: "rgba(255,255,255,0.12)",
-      chipBorder: "rgba(255,255,255,0.22)"
-    };
-  }
-
-  if (event.includes("flash flood watch") || event.includes("flood watch")) {
-    return {
-      bg1: "#5e7a15",
-      bg2: "#445910",
-      title1: "#6b8919",
-      title2: "#4c6312",
-      border: "#b9cf7f",
-      text: "#ffffff",
-      chipBg: "rgba(255,255,255,0.12)",
-      chipBorder: "rgba(255,255,255,0.22)"
-    };
-  }
-
-  if (isWinterWatch(alert)) {
-    return {
-      bg1: "#adb3ba",
-      bg2: "#888f97",
-      title1: "#bcc1c8",
-      title2: "#949ca4",
-      border: "#e8ecf0",
-      text: "#111111",
-      chipBg: "rgba(0,0,0,0.06)",
-      chipBorder: "rgba(0,0,0,0.12)"
-    };
-  }
-
-  if (isCivilMessage(alert)) {
-    return {
-      bg1: "#1c1c1c",
-      bg2: "#000000",
-      title1: "#2a2a2a",
-      title2: "#101010",
-      border: "#5d5d5d",
-      text: "#ffffff",
-      chipBg: "rgba(255,255,255,0.10)",
-      chipBorder: "rgba(255,255,255,0.18)"
     };
   }
 
@@ -442,22 +371,6 @@ function getShortAlertLabel(alert) {
   if (isDestructiveSevere(alert)) return "DESTRUCTIVE SVR T-STORM WARNING";
   if (isConsiderableSevere(alert)) return "CONSIDERABLE SVR T-STORM WARNING";
   if (lower.includes("severe thunderstorm warning")) return "SVR T-STORM WARNING";
-  if (lower.includes("flash flood warning")) return "FLASH FLOOD WARNING";
-  if (lower.includes("flood warning")) return "FLOOD WARNING";
-  if (lower.includes("flood advisory")) return "FLOOD ADVISORY";
-  if (lower.includes("winter storm warning")) return "WINTER STORM WARNING";
-  if (lower.includes("blizzard warning")) return "BLIZZARD WARNING";
-  if (lower.includes("ice storm warning")) return "ICE STORM WARNING";
-  if (lower.includes("tornado watch") && isPds(alert)) return "PDS TORNADO WATCH";
-  if (lower.includes("tornado watch")) return "TORNADO WATCH";
-  if (lower.includes("severe thunderstorm watch")) return "SVR T-STORM WATCH";
-  if (lower.includes("flash flood watch")) return "FLASH FLOOD WATCH";
-  if (lower.includes("flood watch")) return "FLOOD WATCH";
-  if (lower.includes("wind advisory")) return "WIND ADVISORY";
-  if (lower.includes("winter weather advisory")) return "WINTER WX ADVISORY";
-  if (lower.includes("civil danger warning")) return "CIVIL DANGER WARNING";
-  if (lower.includes("civil emergency message")) return "CIVIL EMERGENCY MESSAGE";
-
   return event.toUpperCase() || "ALERT";
 }
 
@@ -479,6 +392,8 @@ function getSortedAlerts(alerts) {
     return getShortAlertLabel(a).localeCompare(getShortAlertLabel(b));
   });
 }
+
+/* -------------------- main dashboard rendering -------------------- */
 
 function applyAlertTheme(alerts) {
   const activeBar = document.getElementById("active-alerts-bar");
@@ -870,6 +785,8 @@ function renderAll() {
   updateClock();
 }
 
+/* -------------------- live data -------------------- */
+
 async function updateLiveTempestCurrent() {
   try {
     const response = await fetch("http://localhost:3000/api/tempest/current");
@@ -898,6 +815,7 @@ async function updateLiveTempestCurrent() {
     renderCurrentConditions();
     renderWindPanel();
     renderRainPanel();
+    renderSubscreenCurrent();
   } catch (error) {
     console.error("Failed to load live Tempest current data:", error);
 
@@ -920,6 +838,7 @@ async function updateLiveTempestCurrent() {
     renderCurrentConditions();
     renderWindPanel();
     renderRainPanel();
+    renderSubscreenCurrent();
   }
 }
 
@@ -954,6 +873,7 @@ async function updateLiveLightning() {
       live.disclaimer || "Lightning data is subject to interference and detection limits.";
 
     renderLightningPanel();
+    renderSubscreenCurrent();
 
     const nextMs = live.fastPolling ? 3000 : 30000;
     scheduleLightningRefresh(nextMs);
@@ -969,6 +889,7 @@ async function updateLiveLightning() {
     data.lightning.todayCount = null;
 
     renderLightningPanel();
+    renderSubscreenCurrent();
     scheduleLightningRefresh(30000);
   }
 }
@@ -981,23 +902,548 @@ async function updateLiveNwsAlerts() {
     const live = await response.json();
     data.alerts = Array.isArray(live.alerts) ? live.alerts : [];
     renderWarnings(false);
+    renderSubscreenAlert();
   } catch (error) {
     console.error("Failed to load NWS alerts:", error);
     data.alerts = [];
     renderWarnings(false);
+    renderSubscreenAlert();
   }
 }
 
+/* -------------------- subscreen prototype graphs -------------------- */
+
+function clamp(num, min, max) {
+  return Math.min(Math.max(num, min), max);
+}
+
+function buildPrototypeTempSeries() {
+  const now = new Date();
+  const currentHour = now.getHours() + (now.getMinutes() / 60);
+  const currentTemp = typeof data.current.temp === "number" ? data.current.temp : 72;
+  const highTemp = typeof data.today.high === "number" ? data.today.high : Math.max(currentTemp + 4, 76);
+  const lowTemp = typeof data.today.low === "number" ? data.today.low : Math.min(currentTemp - 10, 52);
+
+  const points = [];
+  const intervalHours = 0.5;
+
+  for (let h = 0; h <= 24; h += intervalHours) {
+    let val;
+    if (h <= currentHour) {
+      const wave = Math.sin(((h - 7) / 24) * Math.PI * 2);
+      const normalized = (wave + 1) / 2;
+      val = lowTemp + (highTemp - lowTemp) * normalized;
+      if (h > currentHour - 1 && typeof data.current.temp === "number") {
+        const blend = clamp((h - (currentHour - 1)) / 1, 0, 1);
+        val = (val * (1 - blend)) + (currentTemp * blend);
+      }
+    } else {
+      val = null;
+    }
+
+    points.push({
+      hour: h,
+      value: typeof val === "number" ? Number(val.toFixed(1)) : null
+    });
+  }
+
+  return points;
+}
+
+function buildPrototypePressureSeries() {
+  const currentPressure = typeof data.current.pressureIn === "number" ? data.current.pressureIn : 29.01;
+  const now = new Date();
+  const currentHour = now.getHours() + (now.getMinutes() / 60);
+  const points = [];
+  const hoursBack = 6;
+  const intervalHours = 0.25;
+
+  for (let h = 0; h <= hoursBack; h += intervalHours) {
+    const progress = h / hoursBack;
+    let val = currentPressure;
+
+    if (data.current.pressureTrend === "down") {
+      val = currentPressure + ((hoursBack - h) * 0.012);
+      if (data.current.pressureRapidDrop) {
+        val += (hoursBack - h) * 0.003;
+      }
+    } else if (data.current.pressureTrend === "up") {
+      val = currentPressure - ((hoursBack - h) * 0.010);
+    } else {
+      val = currentPressure + Math.sin(progress * Math.PI * 2) * 0.01;
+    }
+
+    points.push({
+      hourOffset: hoursBack - h,
+      value: Number(val.toFixed(2))
+    });
+  }
+
+  return points;
+}
+
+function createSvgEl(name, attrs = {}) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+  Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+  return el;
+}
+
+function drawTempGraph() {
+  const svg = document.getElementById("temp-graph");
+  if (!svg) return;
+
+  svg.innerHTML = "";
+
+  const width = 1200;
+  const height = 420;
+  const pad = { top: 34, right: 34, bottom: 52, left: 56 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+
+  const points = buildPrototypeTempSeries();
+  const drawnPoints = points.filter(p => typeof p.value === "number");
+
+  const minVal = Math.floor((Math.min(...drawnPoints.map(p => p.value)) - 2) / 2) * 2;
+  const maxVal = Math.ceil((Math.max(...drawnPoints.map(p => p.value)) + 2) / 2) * 2;
+
+  const x = (hour) => pad.left + (hour / 24) * chartW;
+  const y = (val) => pad.top + ((maxVal - val) / (maxVal - minVal || 1)) * chartH;
+
+  const defs = createSvgEl("defs");
+  const strokeGrad = createSvgEl("linearGradient", { id: "tempStrokeGradient", x1: "0%", y1: "0%", x2: "100%", y2: "0%" });
+  strokeGrad.append(
+    createSvgEl("stop", { offset: "0%", "stop-color": "#6fd0ff" }),
+    createSvgEl("stop", { offset: "45%", "stop-color": "#eaf7ff" }),
+    createSvgEl("stop", { offset: "80%", "stop-color": "#ffb060" }),
+    createSvgEl("stop", { offset: "100%", "stop-color": "#ff7a45" })
+  );
+  const fillGrad = createSvgEl("linearGradient", { id: "tempFillGradient", x1: "0%", y1: "0%", x2: "0%", y2: "100%" });
+  fillGrad.append(
+    createSvgEl("stop", { offset: "0%", "stop-color": "rgba(120,190,255,0.24)" }),
+    createSvgEl("stop", { offset: "58%", "stop-color": "rgba(120,190,255,0.10)" }),
+    createSvgEl("stop", { offset: "100%", "stop-color": "rgba(120,190,255,0.00)" })
+  );
+  defs.append(strokeGrad, fillGrad);
+  svg.appendChild(defs);
+
+  for (let i = 0; i <= 6; i++) {
+    const val = minVal + ((maxVal - minVal) * i / 6);
+    const line = createSvgEl("line", {
+      x1: pad.left,
+      y1: y(val),
+      x2: width - pad.right,
+      y2: y(val),
+      class: "graph-grid-line"
+    });
+    svg.appendChild(line);
+
+    const label = createSvgEl("text", {
+      x: pad.left - 10,
+      y: y(val) + 4,
+      "text-anchor": "end",
+      class: "graph-axis-label"
+    });
+    label.textContent = `${Math.round(val)}°`;
+    svg.appendChild(label);
+  }
+
+  for (let hour = 0; hour <= 24; hour += 3) {
+    const line = createSvgEl("line", {
+      x1: x(hour),
+      y1: pad.top,
+      x2: x(hour),
+      y2: pad.top + chartH,
+      class: "graph-grid-line"
+    });
+    svg.appendChild(line);
+
+    const label = createSvgEl("text", {
+      x: x(hour),
+      y: height - 18,
+      "text-anchor": "middle",
+      class: "graph-axis-label-small"
+    });
+    if (hour === 0 || hour === 24) label.textContent = "12a";
+    else if (hour < 12) label.textContent = `${hour}a`;
+    else if (hour === 12) label.textContent = "12p";
+    else label.textContent = `${hour - 12}p`;
+    svg.appendChild(label);
+  }
+
+  let d = "";
+  drawnPoints.forEach((p, i) => {
+    d += `${i === 0 ? "M" : "L"} ${x(p.hour)} ${y(p.value)} `;
+  });
+
+  let fillD = d;
+  const last = drawnPoints[drawnPoints.length - 1];
+  const first = drawnPoints[0];
+  fillD += `L ${x(last.hour)} ${pad.top + chartH} L ${x(first.hour)} ${pad.top + chartH} Z`;
+
+  const fillPath = createSvgEl("path", { d: fillD, class: "graph-temp-fill" });
+  const linePath = createSvgEl("path", { d, class: "graph-temp-line" });
+  svg.appendChild(fillPath);
+  svg.appendChild(linePath);
+
+  const highPoint = drawnPoints.reduce((a, b) => b.value > a.value ? b : a);
+  const lowPoint = drawnPoints.reduce((a, b) => b.value < a.value ? b : a);
+
+  const currentPoint = drawnPoints[drawnPoints.length - 1];
+
+  drawGraphCallout(svg, x(highPoint.hour), y(highPoint.value), `HIGH ${Math.round(highPoint.value)}°`, hourToDisplay(highPoint.hour), "high");
+  drawGraphCallout(svg, x(lowPoint.hour), y(lowPoint.value), `LOW ${Math.round(lowPoint.value)}°`, hourToDisplay(lowPoint.hour), "low");
+
+  const nowDot = createSvgEl("circle", {
+    cx: x(currentPoint.hour),
+    cy: y(currentPoint.value),
+    r: 7,
+    class: "graph-point-now"
+  });
+  svg.appendChild(nowDot);
+
+  const nowText = createSvgEl("text", {
+    x: x(currentPoint.hour) - 8,
+    y: y(currentPoint.value) - 14,
+    "text-anchor": "end",
+    class: "graph-label-text-sub"
+  });
+  nowText.textContent = "NOW";
+  svg.appendChild(nowText);
+}
+
+function drawPressureGraph() {
+  const svg = document.getElementById("pressure-graph");
+  if (!svg) return;
+
+  svg.innerHTML = "";
+
+  const width = 1200;
+  const height = 250;
+  const pad = { top: 24, right: 34, bottom: 46, left: 70 };
+  const chartW = width - pad.left - pad.right;
+  const chartH = height - pad.top - pad.bottom;
+
+  const points = buildPrototypePressureSeries();
+  const minVal = Math.min(...points.map(p => p.value));
+  const maxVal = Math.max(...points.map(p => p.value));
+  const paddedMin = Number((minVal - 0.02).toFixed(2));
+  const paddedMax = Number((maxVal + 0.02).toFixed(2));
+
+  const x = (idx) => pad.left + (idx / (points.length - 1)) * chartW;
+  const y = (val) => pad.top + ((paddedMax - val) / (paddedMax - paddedMin || 1)) * chartH;
+
+  for (let i = 0; i <= 4; i++) {
+    const val = paddedMin + ((paddedMax - paddedMin) * i / 4);
+    const line = createSvgEl("line", {
+      x1: pad.left,
+      y1: y(val),
+      x2: width - pad.right,
+      y2: y(val),
+      class: "graph-grid-line"
+    });
+    svg.appendChild(line);
+
+    const label = createSvgEl("text", {
+      x: pad.left - 10,
+      y: y(val) + 4,
+      "text-anchor": "end",
+      class: "graph-axis-label"
+    });
+    label.textContent = `${val.toFixed(2)}`;
+    svg.appendChild(label);
+  }
+
+  for (let i = 0; i <= 6; i++) {
+    const idx = Math.round((points.length - 1) * i / 6);
+    const line = createSvgEl("line", {
+      x1: x(idx),
+      y1: pad.top,
+      x2: x(idx),
+      y2: pad.top + chartH,
+      class: "graph-grid-line"
+    });
+    svg.appendChild(line);
+
+    const date = new Date();
+    date.setMinutes(0, 0, 0);
+    date.setHours(date.getHours() - (6 - i));
+    const label = createSvgEl("text", {
+      x: x(idx),
+      y: height - 16,
+      "text-anchor": "middle",
+      class: "graph-axis-label-small"
+    });
+    label.textContent = date.toLocaleTimeString([], { hour: "numeric", hour12: true }).toLowerCase().replace(" ", "");
+    svg.appendChild(label);
+  }
+
+  let d = "";
+  points.forEach((p, i) => {
+    d += `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.value)} `;
+  });
+
+  const linePath = createSvgEl("path", { d, class: "graph-pressure-line" });
+  svg.appendChild(linePath);
+
+  const currentPoint = points[points.length - 1];
+  const nowDot = createSvgEl("circle", {
+    cx: x(points.length - 1),
+    cy: y(currentPoint.value),
+    r: 6,
+    class: "graph-point-now"
+  });
+  svg.appendChild(nowDot);
+
+  const nowText = createSvgEl("text", {
+    x: x(points.length - 1) - 10,
+    y: y(currentPoint.value) - 12,
+    "text-anchor": "end",
+    class: "graph-label-text-sub"
+  });
+  nowText.textContent = "NOW";
+  svg.appendChild(nowText);
+}
+
+function drawGraphCallout(svg, cx, cy, main, sub, type) {
+  const boxWidth = main.length * 8 + 22;
+  const boxHeight = 40;
+  const bx = type === "high" ? cx + 10 : cx + 10;
+  const by = type === "high" ? cy - 54 : cy - 20;
+
+  const rect = createSvgEl("rect", {
+    x: bx,
+    y: by,
+    width: boxWidth,
+    height: boxHeight,
+    class: "graph-label-box"
+  });
+  svg.appendChild(rect);
+
+  const dot = createSvgEl("circle", {
+    cx,
+    cy,
+    r: 7,
+    class: type === "high" ? "graph-point-high" : "graph-point-low"
+  });
+  svg.appendChild(dot);
+
+  const t1 = createSvgEl("text", {
+    x: bx + 12,
+    y: by + 16,
+    class: "graph-label-text-main"
+  });
+  t1.textContent = main;
+  svg.appendChild(t1);
+
+  const t2 = createSvgEl("text", {
+    x: bx + 12,
+    y: by + 31,
+    class: "graph-label-text-sub"
+  });
+  t2.textContent = sub;
+  svg.appendChild(t2);
+}
+
+function hourToDisplay(hour) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setMinutes(hour * 60);
+  return formatShortTime(d);
+}
+
+/* -------------------- subscreen conditions bar -------------------- */
+
+function getSubscreenConditionSets() {
+  const tempArrow = data.current.tempTrend === "up"
+    ? `<span class="subscreen-condition-up">▲</span>`
+    : data.current.tempTrend === "down"
+      ? `<span class="subscreen-condition-down">▼</span>`
+      : "";
+
+  const pressureArrow = data.current.pressureTrend === "up"
+    ? `<span class="subscreen-condition-pressure-up">▲</span>`
+    : data.current.pressureTrend === "down"
+      ? `<span class="subscreen-condition-pressure-down">▼</span>`
+      : "";
+
+  const lightningText =
+    typeof data.lightning.hourCount === "number"
+      ? `${data.lightning.hourCount} within 10 mi`
+      : "None within 10 mi";
+
+  return [
+    `
+      <span class="subscreen-condition-temp">${formatFixed(data.current.temp, 1, "°")} ${tempArrow}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Feels ${formatValue(data.current.feelsLike, "°")}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Wind ${degToCompass(data.wind.directionDeg)} ${formatValue(data.wind.speed)}G${formatValue(data.wind.gust)}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Humidity ${formatValue(data.current.humidity, "%")}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Pressure ${typeof data.current.pressureIn === "number" ? `${data.current.pressureIn.toFixed(2)}"` : "N/A"} ${pressureArrow}</span>
+    `,
+    `
+      <span>Dewpoint ${formatValue(data.current.dew, "°")}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Rain Today ${typeof data.rainfall.daily === "number" ? `${data.rainfall.daily.toFixed(2)}"` : `0.00"`}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Rain Rate ${typeof data.rainfall.rate === "number" ? `${data.rainfall.rate.toFixed(2)}"/hr` : `0.00"/hr`}</span>
+      <span class="subscreen-condition-sep">|</span>
+      <span>Lightning ${lightningText}</span>
+    `
+  ];
+}
+
+function showSubscreenConditionSet(index) {
+  const track = document.getElementById("subscreen-conditions-track");
+  if (!track) return;
+
+  const sets = getSubscreenConditionSets();
+  const html = sets[index % sets.length];
+
+  const nextLine = document.createElement("div");
+  nextLine.className = "subscreen-condition-line";
+  nextLine.innerHTML = html;
+
+  track.appendChild(nextLine);
+
+  requestAnimationFrame(() => {
+    nextLine.classList.add("is-active");
+    if (activeConditionLine) {
+      activeConditionLine.classList.remove("is-active");
+      activeConditionLine.classList.add("is-exit");
+      setTimeout(() => {
+        if (activeConditionLine && activeConditionLine.parentNode) {
+          activeConditionLine.parentNode.removeChild(activeConditionLine);
+        }
+      }, 650);
+    }
+    activeConditionLine = nextLine;
+  });
+}
+
+function startSubscreenConditionRotation() {
+  const track = document.getElementById("subscreen-conditions-track");
+  if (!track) return;
+
+  track.innerHTML = "";
+  activeConditionLine = null;
+  subscreenConditionSetIndex = 0;
+  showSubscreenConditionSet(subscreenConditionSetIndex);
+
+  if (subscreenConditionTimer) clearInterval(subscreenConditionTimer);
+  subscreenConditionTimer = setInterval(() => {
+    subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
+    showSubscreenConditionSet(subscreenConditionSetIndex);
+  }, CONDITION_ROTATE_MS);
+}
+
+function renderSubscreenAlert() {
+  const ribbon = document.getElementById("subscreen-alert-ribbon");
+  const text = document.getElementById("subscreen-alert-text");
+  if (!ribbon || !text) return;
+
+  const eligible = (Array.isArray(data.alerts) ? data.alerts : []).filter((alert) => {
+    const event = String(alert.event || "").toLowerCase();
+    return (
+      event.includes("tornado emergency") ||
+      event.includes("tornado warning") ||
+      event.includes("severe thunderstorm warning")
+    );
+  });
+
+  if (!eligible.length) {
+    ribbon.style.display = "none";
+    text.textContent = "";
+    return;
+  }
+
+  const highest = getSortedAlerts(eligible)[0];
+  const theme = getAlertTheme(highest);
+
+  ribbon.style.display = "block";
+  ribbon.style.background = `linear-gradient(180deg, ${theme.bg1}, ${theme.bg2})`;
+  ribbon.style.borderColor = theme.border;
+  text.style.color = theme.text;
+  text.textContent = `⚠ ${getShortAlertLabel(highest)} • ${normalizeAlertText(highest.area || "Rush County")} • ${formatMinutesUntil(highest.expires)}`;
+}
+
+function renderSubscreenCurrent() {
+  if (!document.getElementById("temp-graph")) return;
+
+  drawTempGraph();
+  drawPressureGraph();
+
+  const pressureTrendEl = document.getElementById("subscreen-pressure-trend");
+  if (pressureTrendEl) {
+    pressureTrendEl.textContent =
+      data.current.pressureTrend === "up" ? "▲" :
+      data.current.pressureTrend === "down" ? "▼" :
+      "";
+  }
+
+  renderSubscreenAlert();
+}
+
+/* -------------------- page rotation -------------------- */
+
+function getNextScreenHref() {
+  const path = window.location.pathname.toLowerCase();
+  if (path.endsWith("subscreen-current.html")) return "index.html";
+  return "subscreen-current.html";
+}
+
+function schedulePageRotation() {
+  setTimeout(() => {
+    document.body.classList.add("page-fade-out");
+    setTimeout(() => {
+      window.location.href = getNextScreenHref();
+    }, SCREEN_FADE_MS);
+  }, SCREEN_ROTATE_MS);
+}
+
+/* -------------------- init -------------------- */
+
 window.addEventListener("resize", () => {
   renderWarnings(true);
+  renderSubscreenCurrent();
 });
 
-renderAll();
-updateClock();
-updateLiveTempestCurrent();
-updateLiveNwsAlerts();
-updateLiveLightning();
+function initMainDashboardPage() {
+  renderAll();
+  updateClock();
+  updateLiveTempestCurrent();
+  updateLiveNwsAlerts();
+  updateLiveLightning();
 
-setInterval(updateClock, 1000);
-setInterval(updateLiveTempestCurrent, 30000);
-setInterval(updateLiveNwsAlerts, 60000);
+  setInterval(updateClock, 1000);
+  setInterval(updateLiveTempestCurrent, 30000);
+  setInterval(updateLiveNwsAlerts, 60000);
+
+  schedulePageRotation();
+}
+
+function initSubscreenCurrentPage() {
+  updateClock();
+  renderSubscreenCurrent();
+  updateLiveTempestCurrent();
+  updateLiveNwsAlerts();
+  updateLiveLightning();
+  startSubscreenConditionRotation();
+
+  setInterval(updateClock, 1000);
+  setInterval(updateLiveTempestCurrent, 30000);
+  setInterval(updateLiveNwsAlerts, 60000);
+
+  schedulePageRotation();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const isSubscreen = !!document.querySelector(".subscreen-current");
+  if (isSubscreen) {
+    initSubscreenCurrentPage();
+  } else {
+    initMainDashboardPage();
+  }
+});
