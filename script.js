@@ -10,7 +10,9 @@ const data = {
     pressureIn: null,
     pressureMb: null,
     pressureTrend: "steady",
-    pressureRapidDrop: false
+    pressureRapidDrop: false,
+    todayHigh: null,
+    todayLow: null
   },
   wind: {
     speed: null,
@@ -32,16 +34,20 @@ const data = {
     countsRadiusMiles: 10,
     disclaimer: "Lightning data is subject to interference and detection limits."
   },
-  today: {
-    high: 75,
-    low: 51
-  },
   forecast: [
     { high: 70, low: 44, cond: "Storm", pop: 40 },
     { high: 62, low: 45, cond: "Storm", pop: 30 },
     { high: 68, low: 50, cond: "Storm", pop: 20 }
   ],
-  alerts: []
+  alerts: [],
+  history: {
+    temperature: [],
+    pressure: [],
+    startOfDayMs: null,
+    endOfDayMs: null,
+    pressureStartMs: null,
+    pressureEndMs: null
+  }
 };
 
 let tickerTimer = null;
@@ -55,21 +61,90 @@ let activeConditionLine = null;
 
 const SCREEN_ROTATE_MS = 10000;
 const SCREEN_FADE_MS = 250;
-const CONDITION_ROTATE_MS = 10000;
+const CONDITION_ROTATE_MS = 5000;
 
-/* -------------------- shared helpers -------------------- */
+/* -------------------- helpers -------------------- */
 
 function tempColor(temp) {
   if (typeof temp !== "number") return "#ffffff";
-  if (temp <= 30) return "#70C0FF";
-  if (temp <= 40) return "#60B0FF";
-  if (temp <= 50) return "#50A0FF";
-  if (temp <= 60) return "#70D0A0";
-  if (temp <= 70) return "#FFC8C8";
-  if (temp <= 80) return "#FFB060";
-  if (temp <= 90) return "#FF9040";
-  if (temp <= 100) return "#FF7040";
+  if (temp <= 29) return "#70C0FF";
+  if (temp <= 39) return "#60B0FF";
+  if (temp <= 49) return "#50A0FF";
+  if (temp <= 59) return "#70D0A0";
+  if (temp <= 69) return "#FFC8C8";
+  if (temp <= 79) return "#FFB060";
+  if (temp <= 89) return "#FF9040";
+  if (temp <= 99) return "#FF7040";
   return "#FF5030";
+}
+
+function tempBandStops() {
+  return [
+    { start: -20, end: 29, color: "#70C0FF" },
+    { start: 30, end: 39, color: "#60B0FF" },
+    { start: 40, end: 49, color: "#50A0FF" },
+    { start: 50, end: 59, color: "#70D0A0" },
+    { start: 60, end: 69, color: "#FFC8C8" },
+    { start: 70, end: 79, color: "#FFB060" },
+    { start: 80, end: 89, color: "#FF9040" },
+    { start: 90, end: 99, color: "#FF7040" },
+    { start: 100, end: 140, color: "#FF5030" }
+  ];
+}
+
+function hexToRgb(hex) {
+  const normalized = hex.replace("#", "");
+  const value = normalized.length === 3
+    ? normalized.split("").map((c) => c + c).join("")
+    : normalized;
+  const num = parseInt(value, 16);
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255
+  };
+}
+
+function rgbToHex({ r, g, b }) {
+  const toHex = (n) => n.toString(16).padStart(2, "0");
+  return `#${toHex(Math.round(r))}${toHex(Math.round(g))}${toHex(Math.round(b))}`;
+}
+
+function interpolateColor(c1, c2, ratio) {
+  const a = hexToRgb(c1);
+  const b = hexToRgb(c2);
+  return rgbToHex({
+    r: a.r + (b.r - a.r) * ratio,
+    g: a.g + (b.g - a.g) * ratio,
+    b: a.b + (b.b - a.b) * ratio
+  });
+}
+
+function getBlendedTempColor(temp) {
+  if (typeof temp !== "number") return "#7be7ff";
+  const stops = tempBandStops();
+
+  for (let i = 0; i < stops.length; i++) {
+    const stop = stops[i];
+    if (temp >= stop.start && temp <= stop.end) {
+      const next = stops[i + 1];
+      const prev = stops[i - 1];
+
+      if (next && temp >= stop.end - 1) {
+        const ratio = (temp - (stop.end - 1)) / 2;
+        return interpolateColor(stop.color, next.color, Math.max(0, Math.min(ratio, 1)));
+      }
+
+      if (prev && temp <= stop.start + 1) {
+        const ratio = 1 - ((temp - (stop.start - 1)) / 2);
+        return interpolateColor(prev.color, stop.color, Math.max(0, Math.min(ratio, 1)));
+      }
+
+      return stop.color;
+    }
+  }
+
+  return tempColor(temp);
 }
 
 function applyTempColor(el, temp) {
@@ -155,12 +230,7 @@ function updateClock() {
     timeZoneName: "short"
   });
   setText("clock", str);
-  setText("subscreen-clock", now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-    timeZoneName: "short"
-  }));
+  setText("subscreen-clock", str);
 }
 
 function getRainIntensity(rate) {
@@ -205,13 +275,13 @@ function isPds(alert) {
 
 function isDestructiveSevere(alert) {
   const blob = alertBlob(alert);
-  return (alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
+  return String(alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
     (blob.includes("destructive") || (blob.includes("damage threat") && blob.includes("destructive")));
 }
 
 function isConsiderableSevere(alert) {
   const blob = alertBlob(alert);
-  return (alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
+  return String(alert.event || "").toLowerCase().includes("severe thunderstorm warning") &&
     (blob.includes("considerable") || (blob.includes("damage threat") && blob.includes("considerable")));
 }
 
@@ -393,7 +463,7 @@ function getSortedAlerts(alerts) {
   });
 }
 
-/* -------------------- main dashboard rendering -------------------- */
+/* -------------------- dashboard rendering -------------------- */
 
 function applyAlertTheme(alerts) {
   const activeBar = document.getElementById("active-alerts-bar");
@@ -456,7 +526,6 @@ function startTickerCycle(sortedAlerts) {
     priorityTrack.style.paddingLeft = "100%";
 
     void priorityTrack.offsetWidth;
-
     priorityTrack.style.animation = `ticker ${duration}s linear 1`;
 
     tickerTimer = setTimeout(() => {
@@ -529,11 +598,6 @@ function renderActiveAlertChips(sortedAlerts) {
 
     while (list.scrollWidth > maxWidth && list.children.length > 1) {
       list.removeChild(list.children[list.children.length - 2]);
-    }
-
-    if (list.scrollWidth > maxWidth && list.children.length === 1) {
-      list.innerHTML = "";
-      list.appendChild(createChip("+"));
     }
   }
 }
@@ -683,9 +747,7 @@ function renderTrendArrow(el, direction, rapid, kind) {
   el.textContent = "";
   el.className = kind === "temp" ? "temp-trend" : "pressure-trend";
 
-  if (direction !== "up" && direction !== "down") {
-    return;
-  }
+  if (direction !== "up" && direction !== "down") return;
 
   el.textContent = direction === "up" ? "▲" : "▼";
 
@@ -774,10 +836,11 @@ function renderAll() {
   renderWindPanel();
   renderRainPanel();
 
-  setText("today-high", `${data.today.high}°`);
-  setText("today-low", `${data.today.low}°`);
-  applyTempColor(document.getElementById("today-high"), data.today.high);
-  applyTempColor(document.getElementById("today-low"), data.today.low);
+  setText("today-high", typeof data.current.todayHigh === "number" ? `${Math.round(data.current.todayHigh)}°` : "N/A");
+  setText("today-low", typeof data.current.todayLow === "number" ? `${Math.round(data.current.todayLow)}°` : "N/A");
+
+  applyTempColor(document.getElementById("today-high"), data.current.todayHigh);
+  applyTempColor(document.getElementById("today-low"), data.current.todayLow);
 
   renderForecast();
   renderWarnings(true);
@@ -785,7 +848,7 @@ function renderAll() {
   updateClock();
 }
 
-/* -------------------- live data -------------------- */
+/* -------------------- data fetches -------------------- */
 
 async function updateLiveTempestCurrent() {
   try {
@@ -804,6 +867,8 @@ async function updateLiveTempestCurrent() {
     data.current.pressureMb = typeof live.pressureMb === "number" ? live.pressureMb : null;
     data.current.pressureTrend = live.pressureTrend || "steady";
     data.current.pressureRapidDrop = Boolean(live.pressureRapidDrop);
+    data.current.todayHigh = typeof live.todayHighF === "number" ? live.todayHighF : null;
+    data.current.todayLow = typeof live.todayLowF === "number" ? live.todayLowF : null;
 
     data.wind.speed = typeof live.windSpeed === "number" ? live.windSpeed : null;
     data.wind.gust = typeof live.windGust === "number" ? live.windGust : null;
@@ -815,30 +880,41 @@ async function updateLiveTempestCurrent() {
     renderCurrentConditions();
     renderWindPanel();
     renderRainPanel();
-    renderSubscreenCurrent();
+    renderCenterConditionsPanel();
   } catch (error) {
     console.error("Failed to load live Tempest current data:", error);
+  }
+}
 
-    data.current.temp = null;
-    data.current.feelsLike = null;
-    data.current.tempTrend = "steady";
-    data.current.tempRapid = false;
-    data.current.dew = null;
-    data.current.humidity = null;
-    data.current.pressureIn = null;
-    data.current.pressureMb = null;
-    data.current.pressureTrend = "steady";
-    data.current.pressureRapidDrop = false;
-    data.wind.speed = null;
-    data.wind.gust = null;
-    data.wind.directionDeg = null;
-    data.rainfall.daily = null;
-    data.rainfall.rate = null;
+async function updateGraphHistory() {
+  try {
+    const [tempResp, pressureResp] = await Promise.all([
+      fetch("http://localhost:3000/api/history/temperature"),
+      fetch("http://localhost:3000/api/history/pressure")
+    ]);
 
-    renderCurrentConditions();
-    renderWindPanel();
-    renderRainPanel();
-    renderSubscreenCurrent();
+    if (!tempResp.ok || !pressureResp.ok) throw new Error("History fetch failed");
+
+    const tempJson = await tempResp.json();
+    const pressureJson = await pressureResp.json();
+
+    data.history.temperature = Array.isArray(tempJson.points) ? tempJson.points : [];
+    data.history.startOfDayMs = tempJson.startOfDayMs;
+    data.history.endOfDayMs = tempJson.endOfDayMs;
+
+    if (typeof tempJson.todayHighF === "number") data.current.todayHigh = tempJson.todayHighF;
+    if (typeof tempJson.todayLowF === "number") data.current.todayLow = tempJson.todayLowF;
+
+    data.history.pressure = Array.isArray(pressureJson.points) ? pressureJson.points : [];
+    data.history.pressureStartMs = pressureJson.startMs;
+    data.history.pressureEndMs = pressureJson.endMs;
+
+    drawTempGraph();
+    drawPressureGraph();
+    drawTempRing();
+    renderCenterConditionsPanel();
+  } catch (error) {
+    console.error("Failed to load graph history:", error);
   }
 }
 
@@ -873,23 +949,11 @@ async function updateLiveLightning() {
       live.disclaimer || "Lightning data is subject to interference and detection limits.";
 
     renderLightningPanel();
-    renderSubscreenCurrent();
 
     const nextMs = live.fastPolling ? 3000 : 30000;
     scheduleLightningRefresh(nextMs);
   } catch (error) {
     console.error("Failed to load live lightning data:", error);
-
-    data.lightning.lastStrikeEpoch = null;
-    data.lightning.lastStrikeDistanceMiles = null;
-    data.lightning.lastStrikeDirection = null;
-    data.lightning.minuteCount = null;
-    data.lightning.fifteenMinuteCount = null;
-    data.lightning.hourCount = null;
-    data.lightning.todayCount = null;
-
-    renderLightningPanel();
-    renderSubscreenCurrent();
     scheduleLightningRefresh(30000);
   }
 }
@@ -911,76 +975,7 @@ async function updateLiveNwsAlerts() {
   }
 }
 
-/* -------------------- subscreen prototype graphs -------------------- */
-
-function clamp(num, min, max) {
-  return Math.min(Math.max(num, min), max);
-}
-
-function buildPrototypeTempSeries() {
-  const now = new Date();
-  const currentHour = now.getHours() + (now.getMinutes() / 60);
-  const currentTemp = typeof data.current.temp === "number" ? data.current.temp : 72;
-  const highTemp = typeof data.today.high === "number" ? data.today.high : Math.max(currentTemp + 4, 76);
-  const lowTemp = typeof data.today.low === "number" ? data.today.low : Math.min(currentTemp - 10, 52);
-
-  const points = [];
-  const intervalHours = 0.5;
-
-  for (let h = 0; h <= 24; h += intervalHours) {
-    let val;
-    if (h <= currentHour) {
-      const wave = Math.sin(((h - 7) / 24) * Math.PI * 2);
-      const normalized = (wave + 1) / 2;
-      val = lowTemp + (highTemp - lowTemp) * normalized;
-      if (h > currentHour - 1 && typeof data.current.temp === "number") {
-        const blend = clamp((h - (currentHour - 1)) / 1, 0, 1);
-        val = (val * (1 - blend)) + (currentTemp * blend);
-      }
-    } else {
-      val = null;
-    }
-
-    points.push({
-      hour: h,
-      value: typeof val === "number" ? Number(val.toFixed(1)) : null
-    });
-  }
-
-  return points;
-}
-
-function buildPrototypePressureSeries() {
-  const currentPressure = typeof data.current.pressureIn === "number" ? data.current.pressureIn : 29.01;
-  const now = new Date();
-  const currentHour = now.getHours() + (now.getMinutes() / 60);
-  const points = [];
-  const hoursBack = 6;
-  const intervalHours = 0.25;
-
-  for (let h = 0; h <= hoursBack; h += intervalHours) {
-    const progress = h / hoursBack;
-    let val = currentPressure;
-
-    if (data.current.pressureTrend === "down") {
-      val = currentPressure + ((hoursBack - h) * 0.012);
-      if (data.current.pressureRapidDrop) {
-        val += (hoursBack - h) * 0.003;
-      }
-    } else if (data.current.pressureTrend === "up") {
-      val = currentPressure - ((hoursBack - h) * 0.010);
-    } else {
-      val = currentPressure + Math.sin(progress * Math.PI * 2) * 0.01;
-    }
-
-    points.push({
-      hourOffset: hoursBack - h,
-      value: Number(val.toFixed(2))
-    });
-  }
-
-  return points;
-}
+/* -------------------- graph drawing -------------------- */
 
 function createSvgEl(name, attrs = {}) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -988,57 +983,82 @@ function createSvgEl(name, attrs = {}) {
   return el;
 }
 
+function getSmoothPath(points) {
+  if (!points.length) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? i : i - 1];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
+
 function drawTempGraph() {
   const svg = document.getElementById("temp-graph");
   if (!svg) return;
-
   svg.innerHTML = "";
 
-  const width = 1200;
-  const height = 420;
-  const pad = { top: 34, right: 34, bottom: 52, left: 56 };
+  const width = 860;
+  const height = 360;
+  const pad = { top: 20, right: 20, bottom: 42, left: 46 };
   const chartW = width - pad.left - pad.right;
   const chartH = height - pad.top - pad.bottom;
 
-  const points = buildPrototypeTempSeries();
-  const drawnPoints = points.filter(p => typeof p.value === "number");
+  const points = data.history.temperature || [];
+  if (!points.length || !data.history.startOfDayMs || !data.history.endOfDayMs) return;
 
-  const minVal = Math.floor((Math.min(...drawnPoints.map(p => p.value)) - 2) / 2) * 2;
-  const maxVal = Math.ceil((Math.max(...drawnPoints.map(p => p.value)) + 2) / 2) * 2;
+  const startMs = data.history.startOfDayMs;
+  const endMs = data.history.endOfDayMs;
 
-  const x = (hour) => pad.left + (hour / 24) * chartW;
+  const valid = points.filter((p) => typeof p.value === "number");
+  if (!valid.length) return;
+
+  const minVal = Math.floor((Math.min(...valid.map((p) => p.value)) - 2) / 2) * 2;
+  const maxVal = Math.ceil((Math.max(...valid.map((p) => p.value)) + 2) / 2) * 2;
+
+  const x = (ms) => pad.left + ((ms - startMs) / (endMs - startMs || 1)) * chartW;
   const y = (val) => pad.top + ((maxVal - val) / (maxVal - minVal || 1)) * chartH;
 
   const defs = createSvgEl("defs");
   const strokeGrad = createSvgEl("linearGradient", { id: "tempStrokeGradient", x1: "0%", y1: "0%", x2: "100%", y2: "0%" });
   strokeGrad.append(
     createSvgEl("stop", { offset: "0%", "stop-color": "#6fd0ff" }),
-    createSvgEl("stop", { offset: "45%", "stop-color": "#eaf7ff" }),
-    createSvgEl("stop", { offset: "80%", "stop-color": "#ffb060" }),
+    createSvgEl("stop", { offset: "42%", "stop-color": "#eaf7ff" }),
+    createSvgEl("stop", { offset: "78%", "stop-color": "#ffb060" }),
     createSvgEl("stop", { offset: "100%", "stop-color": "#ff7a45" })
   );
   const fillGrad = createSvgEl("linearGradient", { id: "tempFillGradient", x1: "0%", y1: "0%", x2: "0%", y2: "100%" });
   fillGrad.append(
-    createSvgEl("stop", { offset: "0%", "stop-color": "rgba(120,190,255,0.24)" }),
-    createSvgEl("stop", { offset: "58%", "stop-color": "rgba(120,190,255,0.10)" }),
-    createSvgEl("stop", { offset: "100%", "stop-color": "rgba(120,190,255,0.00)" })
+    createSvgEl("stop", { offset: "0%", "stop-color": "#84c9ff", "stop-opacity": ".22" }),
+    createSvgEl("stop", { offset: "55%", "stop-color": "#84c9ff", "stop-opacity": ".08" }),
+    createSvgEl("stop", { offset: "100%", "stop-color": "#84c9ff", "stop-opacity": "0" })
   );
   defs.append(strokeGrad, fillGrad);
   svg.appendChild(defs);
 
-  for (let i = 0; i <= 6; i++) {
-    const val = minVal + ((maxVal - minVal) * i / 6);
-    const line = createSvgEl("line", {
+  for (let i = 0; i <= 4; i++) {
+    const val = minVal + ((maxVal - minVal) * i / 4);
+    svg.appendChild(createSvgEl("line", {
       x1: pad.left,
       y1: y(val),
       x2: width - pad.right,
       y2: y(val),
       class: "graph-grid-line"
-    });
-    svg.appendChild(line);
+    }));
 
     const label = createSvgEl("text", {
-      x: pad.left - 10,
+      x: pad.left - 8,
       y: y(val) + 4,
       "text-anchor": "end",
       class: "graph-axis-label"
@@ -1048,18 +1068,18 @@ function drawTempGraph() {
   }
 
   for (let hour = 0; hour <= 24; hour += 3) {
-    const line = createSvgEl("line", {
-      x1: x(hour),
+    const ms = startMs + hour * 60 * 60 * 1000;
+    svg.appendChild(createSvgEl("line", {
+      x1: x(ms),
       y1: pad.top,
-      x2: x(hour),
+      x2: x(ms),
       y2: pad.top + chartH,
       class: "graph-grid-line"
-    });
-    svg.appendChild(line);
+    }));
 
     const label = createSvgEl("text", {
-      x: x(hour),
-      y: height - 18,
+      x: x(ms),
+      y: height - 14,
       "text-anchor": "middle",
       class: "graph-axis-label-small"
     });
@@ -1070,40 +1090,32 @@ function drawTempGraph() {
     svg.appendChild(label);
   }
 
-  let d = "";
-  drawnPoints.forEach((p, i) => {
-    d += `${i === 0 ? "M" : "L"} ${x(p.hour)} ${y(p.value)} `;
-  });
+  const plotPoints = valid.map((p) => ({ x: x(p.epochMs), y: y(p.value), value: p.value, epochMs: p.epochMs }));
+  const lineD = getSmoothPath(plotPoints);
 
-  let fillD = d;
-  const last = drawnPoints[drawnPoints.length - 1];
-  const first = drawnPoints[0];
-  fillD += `L ${x(last.hour)} ${pad.top + chartH} L ${x(first.hour)} ${pad.top + chartH} Z`;
+  const first = plotPoints[0];
+  const last = plotPoints[plotPoints.length - 1];
+  const fillD = `${lineD} L ${last.x} ${pad.top + chartH} L ${first.x} ${pad.top + chartH} Z`;
 
-  const fillPath = createSvgEl("path", { d: fillD, class: "graph-temp-fill" });
-  const linePath = createSvgEl("path", { d, class: "graph-temp-line" });
-  svg.appendChild(fillPath);
-  svg.appendChild(linePath);
+  svg.appendChild(createSvgEl("path", { d: fillD, class: "graph-temp-fill" }));
+  svg.appendChild(createSvgEl("path", { d: lineD, class: "graph-temp-line" }));
 
-  const highPoint = drawnPoints.reduce((a, b) => b.value > a.value ? b : a);
-  const lowPoint = drawnPoints.reduce((a, b) => b.value < a.value ? b : a);
+  const highPoint = plotPoints.reduce((a, b) => b.value > a.value ? b : a);
+  const lowPoint = plotPoints.reduce((a, b) => b.value < a.value ? b : a);
 
-  const currentPoint = drawnPoints[drawnPoints.length - 1];
+  drawGraphCallout(svg, highPoint.x, highPoint.y, `HIGH ${Math.round(highPoint.value)}°`, formatShortTime(new Date(highPoint.epochMs)), "high");
+  drawGraphCallout(svg, lowPoint.x, lowPoint.y, `LOW ${Math.round(lowPoint.value)}°`, formatShortTime(new Date(lowPoint.epochMs)), "low");
 
-  drawGraphCallout(svg, x(highPoint.hour), y(highPoint.value), `HIGH ${Math.round(highPoint.value)}°`, hourToDisplay(highPoint.hour), "high");
-  drawGraphCallout(svg, x(lowPoint.hour), y(lowPoint.value), `LOW ${Math.round(lowPoint.value)}°`, hourToDisplay(lowPoint.hour), "low");
-
-  const nowDot = createSvgEl("circle", {
-    cx: x(currentPoint.hour),
-    cy: y(currentPoint.value),
-    r: 7,
+  svg.appendChild(createSvgEl("circle", {
+    cx: last.x,
+    cy: last.y,
+    r: 6,
     class: "graph-point-now"
-  });
-  svg.appendChild(nowDot);
+  }));
 
   const nowText = createSvgEl("text", {
-    x: x(currentPoint.hour) - 8,
-    y: y(currentPoint.value) - 14,
+    x: last.x - 8,
+    y: last.y - 14,
     "text-anchor": "end",
     class: "graph-label-text-sub"
   });
@@ -1114,37 +1126,43 @@ function drawTempGraph() {
 function drawPressureGraph() {
   const svg = document.getElementById("pressure-graph");
   if (!svg) return;
-
   svg.innerHTML = "";
 
-  const width = 1200;
-  const height = 250;
-  const pad = { top: 24, right: 34, bottom: 46, left: 70 };
+  const width = 860;
+  const height = 360;
+  const pad = { top: 20, right: 20, bottom: 42, left: 60 };
   const chartW = width - pad.left - pad.right;
   const chartH = height - pad.top - pad.bottom;
 
-  const points = buildPrototypePressureSeries();
-  const minVal = Math.min(...points.map(p => p.value));
-  const maxVal = Math.max(...points.map(p => p.value));
+  const points = data.history.pressure || [];
+  if (!points.length || !data.history.pressureStartMs || !data.history.pressureEndMs) return;
+
+  const startMs = data.history.pressureStartMs;
+  const endMs = data.history.pressureEndMs;
+
+  const valid = points.filter((p) => typeof p.value === "number");
+  if (!valid.length) return;
+
+  const minVal = Math.min(...valid.map((p) => p.value));
+  const maxVal = Math.max(...valid.map((p) => p.value));
   const paddedMin = Number((minVal - 0.02).toFixed(2));
   const paddedMax = Number((maxVal + 0.02).toFixed(2));
 
-  const x = (idx) => pad.left + (idx / (points.length - 1)) * chartW;
+  const x = (ms) => pad.left + ((ms - startMs) / (endMs - startMs || 1)) * chartW;
   const y = (val) => pad.top + ((paddedMax - val) / (paddedMax - paddedMin || 1)) * chartH;
 
   for (let i = 0; i <= 4; i++) {
     const val = paddedMin + ((paddedMax - paddedMin) * i / 4);
-    const line = createSvgEl("line", {
+    svg.appendChild(createSvgEl("line", {
       x1: pad.left,
       y1: y(val),
       x2: width - pad.right,
       y2: y(val),
       class: "graph-grid-line"
-    });
-    svg.appendChild(line);
+    }));
 
     const label = createSvgEl("text", {
-      x: pad.left - 10,
+      x: pad.left - 8,
       y: y(val) + 4,
       "text-anchor": "end",
       class: "graph-axis-label"
@@ -1154,49 +1172,41 @@ function drawPressureGraph() {
   }
 
   for (let i = 0; i <= 6; i++) {
-    const idx = Math.round((points.length - 1) * i / 6);
-    const line = createSvgEl("line", {
-      x1: x(idx),
+    const ms = startMs + ((endMs - startMs) * i / 6);
+    svg.appendChild(createSvgEl("line", {
+      x1: x(ms),
       y1: pad.top,
-      x2: x(idx),
+      x2: x(ms),
       y2: pad.top + chartH,
       class: "graph-grid-line"
-    });
-    svg.appendChild(line);
+    }));
 
-    const date = new Date();
-    date.setMinutes(0, 0, 0);
-    date.setHours(date.getHours() - (6 - i));
     const label = createSvgEl("text", {
-      x: x(idx),
-      y: height - 16,
+      x: x(ms),
+      y: height - 14,
       "text-anchor": "middle",
       class: "graph-axis-label-small"
     });
-    label.textContent = date.toLocaleTimeString([], { hour: "numeric", hour12: true }).toLowerCase().replace(" ", "");
+    label.textContent = new Date(ms).toLocaleTimeString([], { hour: "numeric", hour12: true }).toLowerCase().replace(" ", "");
     svg.appendChild(label);
   }
 
-  let d = "";
-  points.forEach((p, i) => {
-    d += `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.value)} `;
-  });
+  const plotPoints = valid.map((p) => ({ x: x(p.epochMs), y: y(p.value), value: p.value, epochMs: p.epochMs }));
+  const lineD = getSmoothPath(plotPoints);
 
-  const linePath = createSvgEl("path", { d, class: "graph-pressure-line" });
-  svg.appendChild(linePath);
+  svg.appendChild(createSvgEl("path", { d: lineD, class: "graph-pressure-line" }));
 
-  const currentPoint = points[points.length - 1];
-  const nowDot = createSvgEl("circle", {
-    cx: x(points.length - 1),
-    cy: y(currentPoint.value),
+  const last = plotPoints[plotPoints.length - 1];
+  svg.appendChild(createSvgEl("circle", {
+    cx: last.x,
+    cy: last.y,
     r: 6,
     class: "graph-point-now"
-  });
-  svg.appendChild(nowDot);
+  }));
 
   const nowText = createSvgEl("text", {
-    x: x(points.length - 1) - 10,
-    y: y(currentPoint.value) - 12,
+    x: last.x - 8,
+    y: last.y - 14,
     "text-anchor": "end",
     class: "graph-label-text-sub"
   });
@@ -1205,53 +1215,143 @@ function drawPressureGraph() {
 }
 
 function drawGraphCallout(svg, cx, cy, main, sub, type) {
-  const boxWidth = main.length * 8 + 22;
-  const boxHeight = 40;
-  const bx = type === "high" ? cx + 10 : cx + 10;
-  const by = type === "high" ? cy - 54 : cy - 20;
+  const boxWidth = Math.max(124, main.length * 7 + 22);
+  const boxHeight = 38;
+  const bx = Math.min(Math.max(cx + 12, 16), 860 - boxWidth - 10);
+  const by = type === "high" ? cy - 52 : cy - 18;
 
-  const rect = createSvgEl("rect", {
+  svg.appendChild(createSvgEl("rect", {
     x: bx,
     y: by,
     width: boxWidth,
     height: boxHeight,
     class: "graph-label-box"
-  });
-  svg.appendChild(rect);
+  }));
 
-  const dot = createSvgEl("circle", {
+  svg.appendChild(createSvgEl("circle", {
     cx,
     cy,
-    r: 7,
+    r: 6,
     class: type === "high" ? "graph-point-high" : "graph-point-low"
-  });
-  svg.appendChild(dot);
+  }));
 
   const t1 = createSvgEl("text", {
-    x: bx + 12,
-    y: by + 16,
+    x: bx + 10,
+    y: by + 15,
     class: "graph-label-text-main"
   });
   t1.textContent = main;
   svg.appendChild(t1);
 
   const t2 = createSvgEl("text", {
-    x: bx + 12,
-    y: by + 31,
+    x: bx + 10,
+    y: by + 28,
     class: "graph-label-text-sub"
   });
   t2.textContent = sub;
   svg.appendChild(t2);
 }
 
-function hourToDisplay(hour) {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  d.setMinutes(hour * 60);
-  return formatShortTime(d);
+function drawTempRing() {
+  const svg = document.getElementById("temp-ring-svg");
+  if (!svg) return;
+  svg.innerHTML = "";
+
+  const size = 360;
+  const center = 180;
+  const radius = 126;
+  const stroke = 18;
+
+  const high = typeof data.current.todayHigh === "number" ? data.current.todayHigh : data.current.temp;
+  const low = typeof data.current.todayLow === "number" ? data.current.todayLow : data.current.temp;
+  const current = typeof data.current.temp === "number" ? data.current.temp : null;
+
+  if (typeof current !== "number" || typeof high !== "number" || typeof low !== "number") return;
+
+  const startAngle = 135;
+  const endAngle = 405;
+  const span = endAngle - startAngle;
+
+  let pct = 0.5;
+  if (high !== low) {
+    pct = (current - low) / (high - low);
+  }
+  pct = Math.max(0, Math.min(1, pct));
+
+  const activeEnd = startAngle + span * pct;
+  const color = getBlendedTempColor(current);
+
+  svg.appendChild(createArcPath(center, center, radius, startAngle, endAngle, "temp-ring-base", stroke));
+  const activeArc = createArcPath(center, center, radius, startAngle, activeEnd, "temp-ring-active", stroke);
+  activeArc.setAttribute("stroke", color);
+  svg.appendChild(activeArc);
+
+  setText("ring-high-temp", `${Math.round(high)}°`);
+  setText("ring-low-temp", `${Math.round(low)}°`);
+  setText("ring-current-temp", `${current.toFixed(1)}°`);
+  setText("ring-feels-like", typeof data.current.feelsLike === "number" ? `Feels Like ${data.current.feelsLike}°` : "Feels Like N/A");
+
+  const trendEl = document.getElementById("ring-temp-trend");
+  if (trendEl) {
+    trendEl.textContent = "";
+    trendEl.className = "ring-temp-trend";
+    if (data.current.tempTrend === "up") {
+      trendEl.textContent = "▲";
+      trendEl.classList.add("visible", "up");
+    } else if (data.current.tempTrend === "down") {
+      trendEl.textContent = "▼";
+      trendEl.classList.add("visible", "down");
+    }
+  }
 }
 
-/* -------------------- subscreen conditions bar -------------------- */
+function polarToCartesian(cx, cy, r, angleDeg) {
+  const angleRad = (angleDeg - 90) * Math.PI / 180;
+  return {
+    x: cx + r * Math.cos(angleRad),
+    y: cy + r * Math.sin(angleRad)
+  };
+}
+
+function createArcPath(cx, cy, r, startAngle, endAngle, className, strokeWidth) {
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+
+  return createSvgEl("path", {
+    d: [
+      "M", start.x, start.y,
+      "A", r, r, 0, largeArcFlag, 0, end.x, end.y
+    ].join(" "),
+    class: className,
+    "stroke-width": strokeWidth
+  });
+}
+
+/* -------------------- subscreen center + wipe -------------------- */
+
+function renderCenterConditionsPanel() {
+  if (!document.getElementById("ring-current-temp")) return;
+
+  drawTempRing();
+  setText("center-dew", formatValue(data.current.dew, "°"));
+  setText("center-humidity", formatValue(data.current.humidity, "%"));
+  setText("center-wind", `${degToCompass(data.wind.directionDeg)} ${formatValue(data.wind.speed)}G${formatValue(data.wind.gust)}`);
+  setText(
+    "center-pressure",
+    typeof data.current.pressureIn === "number"
+      ? `${data.current.pressureIn.toFixed(2)}" ${data.current.pressureTrend === "up" ? "▲" : data.current.pressureTrend === "down" ? "▼" : ""}`
+      : "N/A"
+  );
+
+  const pressureTrendEl = document.getElementById("subscreen-pressure-trend");
+  if (pressureTrendEl) {
+    pressureTrendEl.textContent =
+      data.current.pressureTrend === "up" ? "▲" :
+      data.current.pressureTrend === "down" ? "▼" :
+      "";
+  }
+}
 
 function getSubscreenConditionSets() {
   const tempArrow = data.current.tempTrend === "up"
@@ -1317,7 +1417,7 @@ function showSubscreenConditionSet(index) {
         if (activeConditionLine && activeConditionLine.parentNode) {
           activeConditionLine.parentNode.removeChild(activeConditionLine);
         }
-      }, 650);
+      }, 420);
     }
     activeConditionLine = nextLine;
   });
@@ -1369,23 +1469,6 @@ function renderSubscreenAlert() {
   text.textContent = `⚠ ${getShortAlertLabel(highest)} • ${normalizeAlertText(highest.area || "Rush County")} • ${formatMinutesUntil(highest.expires)}`;
 }
 
-function renderSubscreenCurrent() {
-  if (!document.getElementById("temp-graph")) return;
-
-  drawTempGraph();
-  drawPressureGraph();
-
-  const pressureTrendEl = document.getElementById("subscreen-pressure-trend");
-  if (pressureTrendEl) {
-    pressureTrendEl.textContent =
-      data.current.pressureTrend === "up" ? "▲" :
-      data.current.pressureTrend === "down" ? "▼" :
-      "";
-  }
-
-  renderSubscreenAlert();
-}
-
 /* -------------------- page rotation -------------------- */
 
 function getNextScreenHref() {
@@ -1407,18 +1490,22 @@ function schedulePageRotation() {
 
 window.addEventListener("resize", () => {
   renderWarnings(true);
-  renderSubscreenCurrent();
+  drawTempGraph();
+  drawPressureGraph();
+  drawTempRing();
 });
 
 function initMainDashboardPage() {
   renderAll();
   updateClock();
   updateLiveTempestCurrent();
+  updateGraphHistory();
   updateLiveNwsAlerts();
   updateLiveLightning();
 
   setInterval(updateClock, 1000);
   setInterval(updateLiveTempestCurrent, 30000);
+  setInterval(updateGraphHistory, 60000);
   setInterval(updateLiveNwsAlerts, 60000);
 
   schedulePageRotation();
@@ -1426,21 +1513,26 @@ function initMainDashboardPage() {
 
 function initSubscreenCurrentPage() {
   updateClock();
-  renderSubscreenCurrent();
+  renderCenterConditionsPanel();
+  drawTempGraph();
+  drawPressureGraph();
+  drawTempRing();
   updateLiveTempestCurrent();
+  updateGraphHistory();
   updateLiveNwsAlerts();
   updateLiveLightning();
   startSubscreenConditionRotation();
 
   setInterval(updateClock, 1000);
   setInterval(updateLiveTempestCurrent, 30000);
+  setInterval(updateGraphHistory, 60000);
   setInterval(updateLiveNwsAlerts, 60000);
 
   schedulePageRotation();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const isSubscreen = !!document.querySelector(".subscreen-current");
+  const isSubscreen = !!document.querySelector(".subscreen-current-v2");
   if (isSubscreen) {
     initSubscreenCurrentPage();
   } else {
