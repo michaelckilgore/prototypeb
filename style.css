@@ -197,7 +197,8 @@ body{
   color:var(--title);
 }
 
-/* HERO PANELS BY POSITION */
+/* HERO PANELS */
+
 .dashboard .panel:nth-child(1){
   min-height:255px;
 }
@@ -206,7 +207,8 @@ body{
   min-height:255px;
 }
 
-.dashboard .panel:nth-child(5){
+.radar-panel{
+  grid-column:span 2;
   min-height:255px;
 }
 
@@ -334,26 +336,63 @@ body{
   color:#9de0ff;
 }
 
-/* COMBINED WIND + RAIN */
+/* WIND + RAIN */
 
 .surface-panel{
   display:grid;
-  gap:14px;
-  min-height:170px;
+  gap:12px;
 }
 
 .surface-top{
   display:grid;
-  grid-template-columns:minmax(0, 1.15fr) 300px;
+  grid-template-columns:minmax(0,1.12fr) 300px;
   gap:18px;
-  align-items:center;
+  align-items:start;
+}
+
+.surface-left{
+  display:grid;
+  gap:10px;
 }
 
 .surface-metrics{
   display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:14px 18px;
+  grid-template-columns:repeat(2, minmax(140px,1fr));
+  gap:12px 22px;
   align-items:start;
+}
+
+.surface-metrics .stat-label{
+  white-space:nowrap;
+}
+
+.surface-metrics .stat-value{
+  font-size:26px;
+  white-space:nowrap;
+}
+
+.today-so-far{
+  border-top:1px solid rgba(95,227,255,.16);
+  padding-top:8px;
+}
+
+.today-so-far-title{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.9px;
+  color:#ffffff;
+  margin-bottom:6px;
+}
+
+.today-so-far-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(120px,1fr));
+  gap:12px 22px;
+}
+
+.today-so-far .stat-value{
+  font-size:26px;
+  white-space:nowrap;
 }
 
 .surface-right{
@@ -519,10 +558,10 @@ body{
   left:25px;
 }
 
-/* RAIN METER */
+/* RAIN */
 
 .rain-meter{
-  margin-top:4px;
+  margin-top:2px;
 }
 
 .meter-labels{
@@ -553,19 +592,101 @@ body{
 
 /* RADAR */
 
-.radar{
+.radar-shell{
+  position:relative;
+  height:100%;
   min-height:180px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px dashed rgba(255,255,255,.28);
+  border:1px solid rgba(255,255,255,.18);
   border-radius:12px;
-  color:#d7e5f5;
+  overflow:hidden;
   background:
     radial-gradient(circle at center, rgba(255,255,255,.04), rgba(255,255,255,.01)),
     linear-gradient(180deg, rgba(9,15,26,.45), rgba(11,18,30,.75));
-  font-weight:700;
+}
+
+#radar-map{
+  position:absolute;
+  inset:0;
+  background:#0a1220;
+}
+
+#radar-map .leaflet-control-attribution{
+  display:none;
+}
+
+.radar-status{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  z-index:800;
+  padding:5px 8px;
+  border-radius:8px;
+  background:rgba(6,12,22,.74);
+  border:1px solid rgba(95,227,255,.22);
+  color:#eefbff;
+  font-size:11px;
+  font-weight:800;
   letter-spacing:.4px;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  pointer-events:none;
+}
+
+.radar-credit{
+  position:absolute;
+  right:10px;
+  top:10px;
+  z-index:800;
+  padding:5px 8px;
+  border-radius:8px;
+  background:rgba(6,12,22,.62);
+  border:1px solid rgba(95,227,255,.16);
+  color:#d8efff;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.5px;
+  pointer-events:none;
+}
+
+.radar-city-label{
+  color:#ffffff;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.2px;
+  text-shadow:
+    0 0 3px rgba(0,0,0,.95),
+    0 0 6px rgba(0,0,0,.75);
+  white-space:nowrap;
+}
+
+.radar-highway-label{
+  color:#c8ecff;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.35px;
+  text-shadow:
+    0 0 3px rgba(0,0,0,.95),
+    0 0 6px rgba(0,0,0,.75);
+  white-space:nowrap;
+}
+
+.radar-station-label{
+  color:#7be7ff;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.3px;
+  text-shadow:
+    0 0 3px rgba(0,0,0,.98),
+    0 0 8px rgba(0,0,0,.82);
+  white-space:nowrap;
+}
+
+.radar-station-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#7be7ff;
+  border:2px solid #ffffff;
+  box-shadow:0 0 10px rgba(123,231,255,.45);
 }
 
 /* LIGHTNING */
@@ -618,13 +739,6 @@ body{
   margin-top:4px;
 }
 
-/* TODAY'S OBS */
-
-#today-high,
-#today-low{
-  display:block;
-}
-
 /* RESPONSIVE */
 
 @media (max-width: 1200px){
@@ -632,12 +746,12 @@ body{
     grid-template-columns:1fr 1fr;
   }
 
-  .surface-top{
-    grid-template-columns:1fr;
+  .radar-panel{
+    grid-column:span 2;
   }
 
-  .surface-right{
-    grid-template-columns:150px 1fr;
+  .surface-top{
+    grid-template-columns:1fr;
   }
 }
 
@@ -650,13 +764,18 @@ body{
     grid-template-columns:1fr;
   }
 
-  .forecast,
-  .lightning-top,
+  .radar-panel{
+    grid-column:auto;
+  }
+
   .current,
   .current-stats,
-  .surface-metrics,
+  .forecast,
+  .lightning-top,
   .surface-top,
-  .surface-right{
+  .surface-metrics,
+  .surface-right,
+  .today-so-far-grid{
     grid-template-columns:1fr;
   }
 
@@ -695,5 +814,13 @@ body{
   .surface-extra-slot{
     width:100%;
     min-height:80px;
+  }
+
+  .radar-city-label{
+    font-size:10px;
+  }
+
+  .radar-highway-label{
+    font-size:9px;
   }
 }
