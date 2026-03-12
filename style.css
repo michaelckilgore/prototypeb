@@ -20,6 +20,10 @@
   --shadow:0 12px 30px rgba(0,0,0,.35);
   --glow:0 0 18px rgba(95,227,255,.16);
   --radius:16px;
+  --temp-up:#ffb060;
+  --temp-down:#6fd0ff;
+  --trend-neutral:#9fc3df;
+  --pressure-accent:#7be7ff;
 }
 
 html,body{
@@ -241,12 +245,77 @@ body{
   justify-content:flex-start;
 }
 
+.temp-stack{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+
+.big-temp-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+}
+
 .big-temp{
   font-size:82px;
   font-weight:900;
   line-height:.95;
   letter-spacing:-2px;
   text-shadow:0 0 18px rgba(255,255,255,.08);
+}
+
+.temp-trend{
+  min-width:24px;
+  margin-left:10px;
+  font-size:28px;
+  font-weight:900;
+  line-height:1;
+  transform:translateY(10px);
+  opacity:0;
+}
+
+.temp-trend.temp-trend-visible{
+  opacity:1;
+}
+
+.temp-trend.temp-trend-up{
+  color:var(--temp-up);
+}
+
+.temp-trend.temp-trend-down{
+  color:var(--temp-down);
+}
+
+.feels-like{
+  margin-top:4px;
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:.2px;
+  color:var(--muted);
+  text-align:left;
+}
+
+@keyframes tempPulse{
+  0%{
+    transform:translateY(10px) scale(1);
+    opacity:.82;
+    filter:drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+  50%{
+    transform:translateY(10px) scale(1.18);
+    opacity:1;
+    filter:drop-shadow(0 0 10px rgba(255,255,255,.18));
+  }
+  100%{
+    transform:translateY(10px) scale(1);
+    opacity:.82;
+    filter:drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+}
+
+.temp-trend.temp-trend-rapid{
+  animation:tempPulse 1.2s ease-in-out infinite;
 }
 
 .current-stats{
@@ -276,9 +345,55 @@ body{
   line-height:1.15;
 }
 
-#current-pressure{
+.pressure-value{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
   white-space:nowrap;
   font-size:20px;
+}
+
+.pressure-trend{
+  min-width:14px;
+  font-size:16px;
+  font-weight:900;
+  line-height:1;
+  opacity:0;
+}
+
+.pressure-trend.pressure-trend-visible{
+  opacity:1;
+}
+
+.pressure-trend.pressure-trend-up{
+  color:var(--pressure-accent);
+}
+
+.pressure-trend.pressure-trend-down{
+  color:var(--pressure-accent);
+}
+
+@keyframes pressureRapidFlash{
+  0%{
+    opacity:.35;
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(123,231,255,0));
+  }
+  50%{
+    opacity:1;
+    transform:scale(1.16);
+    filter:drop-shadow(0 0 10px rgba(123,231,255,.45));
+  }
+  100%{
+    opacity:.35;
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(123,231,255,0));
+  }
+}
+
+.pressure-trend.pressure-trend-rapid-down{
+  animation:pressureRapidFlash .9s ease-in-out infinite;
 }
 
 /* FORECAST */
@@ -591,87 +706,26 @@ body{
   border:1px solid rgba(255,255,255,.18);
   border-radius:12px;
   overflow:hidden;
-  background:radial-gradient(circle at center, rgba(255,255,255,.04), rgba(255,255,255,.01)),
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,.04), rgba(255,255,255,.01)),
     linear-gradient(180deg, rgba(9,15,26,.45), rgba(11,18,30,.75));
 }
 
-#radar-map{
+.radar-placeholder{
   position:absolute;
   inset:0;
-  background:#0a1220;
-}
-
-#radar-map .leaflet-control-attribution{
-  display:none;
-}
-
-.radar-status{
-  position:absolute;
-  left:10px;
-  bottom:10px;
-  z-index:800;
-  padding:5px 8px;
-  border-radius:8px;
-  background:rgba(6,12,22,.74);
-  border:1px solid rgba(95,227,255,.22);
-  color:#eefbff;
-  font-size:11px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:20px;
   font-weight:800;
-  letter-spacing:.4px;
-  box-shadow:0 4px 12px rgba(0,0,0,.25);
-  pointer-events:none;
-}
-
-.radar-credit{
-  position:absolute;
-  right:10px;
-  top:10px;
-  z-index:800;
-  padding:5px 8px;
-  border-radius:8px;
-  background:rgba(6,12,22,.62);
-  border:1px solid rgba(95,227,255,.16);
-  color:#d8efff;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.5px;
-  pointer-events:none;
-}
-
-.radar-city-label{
-  color:#ffffff;
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:.2px;
-  text-shadow:0 0 3px rgba(0,0,0,.95), 0 0 6px rgba(0,0,0,.75);
-  white-space:nowrap;
-}
-
-.radar-highway-label{
-  color:#c8ecff;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.35px;
-  text-shadow:0 0 3px rgba(0,0,0,.95), 0 0 6px rgba(0,0,0,.75);
-  white-space:nowrap;
-}
-
-.radar-station-label{
+  letter-spacing:1px;
+  text-transform:uppercase;
   color:#7be7ff;
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:.3px;
-  text-shadow:0 0 3px rgba(0,0,0,.98), 0 0 8px rgba(0,0,0,.82);
-  white-space:nowrap;
-}
-
-.radar-station-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:#7be7ff;
-  border:2px solid #ffffff;
-  box-shadow:0 0 10px rgba(123,231,255,.45);
+  background:
+    radial-gradient(circle at center, rgba(123,231,255,.08), rgba(10,18,32,.9));
+  text-shadow:0 0 14px rgba(123,231,255,.14);
 }
 
 /* LIGHTNING */
@@ -788,6 +842,15 @@ body{
     font-size:64px;
   }
 
+  .temp-trend{
+    font-size:22px;
+    transform:translateY(8px);
+  }
+
+  .feels-like{
+    font-size:16px;
+  }
+
   .alert-bar{
     grid-template-columns:1fr;
   }
@@ -799,13 +862,5 @@ body{
   .surface-extra-slot{
     width:100%;
     min-height:80px;
-  }
-
-  .radar-city-label{
-    font-size:10px;
-  }
-
-  .radar-highway-label{
-    font-size:9px;
   }
 }
