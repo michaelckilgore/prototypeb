@@ -1,319 +1,339 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Sugar Hill Reporting Station</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Sugar Hill Reporting Station</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <header class="header">
+<header class="header">
 
-    <div class="station">
-      SUGAR HILL REPORTING STATION
-    </div>
+<div class="station">
+SUGAR HILL REPORTING STATION
+</div>
 
-    <div class="location">
-      Rushville, Indiana
-    </div>
+<div class="location">
+Rushville, Indiana
+</div>
 
-    <div id="clock" class="clock">
-      --:--
-    </div>
+<div id="clock" class="clock">
+--:--
+</div>
 
-  </header>
+</header>
 
-  <section class="alerts">
 
-    <div id="active-alerts-bar" class="alert-bar">
+<section class="alerts">
 
-      <div class="alert-title">
-        Active Warnings
-      </div>
+<div id="active-alerts-bar" class="alert-bar">
 
-      <div id="active-alerts-list" class="alert-text"></div>
+<div class="alert-title">
+Active Warnings
+</div>
 
-    </div>
+<div id="active-alerts-list" class="alert-text"></div>
 
-    <div id="priority-alerts-bar" class="alert-bar">
+</div>
 
-      <div class="alert-title">
-        Warning Text
-      </div>
 
-      <div class="ticker">
-        <div id="priority-alerts-track"></div>
-      </div>
+<div id="priority-alerts-bar" class="alert-bar">
 
-    </div>
+<div class="alert-title">
+Warning Text
+</div>
 
-  </section>
+<div class="ticker">
+<div id="priority-alerts-track"></div>
+</div>
 
-  <main class="dashboard">
+</div>
 
-    <section class="panel">
+</section>
 
-      <h2>Current Conditions</h2>
 
-      <div class="current">
 
-        <div class="current-left">
+<main class="dashboard">
 
-          <img src="images/storm.svg" class="current-icon" alt="Current condition icon">
 
-          <div id="current-condition">
-            Storm
-          </div>
+<section class="panel">
 
-        </div>
+<h2>Current Conditions</h2>
 
-        <div class="current-right">
+<div class="current">
 
-          <div id="current-temp" class="big-temp">
-            74.2°
-          </div>
+<div class="current-left">
 
-        </div>
+<img src="images/storm.svg" class="current-icon">
 
-      </div>
+<div id="current-condition">
+Storm
+</div>
 
-      <div class="current-stats">
+</div>
 
-        <div class="stat">
-          <div class="stat-label">Dew Point</div>
-          <div id="current-dew" class="stat-value">65°</div>
-        </div>
+<div class="current-right">
 
-        <div class="stat">
-          <div class="stat-label">Humidity</div>
-          <div id="current-humidity" class="stat-value">57%</div>
-        </div>
+<div id="current-temp" class="big-temp">
+74.2°
+</div>
 
-        <div class="stat">
-          <div class="stat-label">Pressure</div>
-          <div id="current-pressure" class="stat-value">28.97" / 981 MB</div>
-        </div>
+</div>
 
-      </div>
+</div>
 
-    </section>
 
-    <section class="panel wind-panel-legacy" aria-hidden="true"></section>
+<div class="current-stats">
 
-    <section class="panel">
+<div class="stat">
+<div class="stat-label">Dew Point</div>
+<div id="current-dew" class="stat-value">65°</div>
+</div>
 
-      <h2>Three Day Forecast</h2>
+<div class="stat">
+<div class="stat-label">Humidity</div>
+<div id="current-humidity" class="stat-value">57%</div>
+</div>
 
-      <div class="forecast">
+<div class="stat">
+<div class="stat-label">Pressure</div>
+<div id="current-pressure" class="stat-value">28.97" / 981 MB</div>
+</div>
 
-        <div class="forecast-day">
+</div>
 
-          <div id="f0-label">Today</div>
-          <div id="f0-high" class="forecast-high">70°</div>
-          <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
-          <div id="f0-cond">Storm</div>
-          <div id="f0-low" class="forecast-low">44°</div>
-          <div id="f0-pop" class="forecast-pop">40%</div>
+</section>
 
-        </div>
 
-        <div class="forecast-day">
 
-          <div id="f1-label">Mon</div>
-          <div id="f1-high" class="forecast-high">62°</div>
-          <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
-          <div id="f1-cond">Storm</div>
-          <div id="f1-low" class="forecast-low">45°</div>
-          <div id="f1-pop" class="forecast-pop">30%</div>
+<section class="panel">
 
-        </div>
+<h2>Wind & Rainfall</h2>
 
-        <div class="forecast-day">
+<div class="surface-panel">
 
-          <div id="f2-label">Tue</div>
-          <div id="f2-high" class="forecast-high">68°</div>
-          <img src="images/storm.svg" class="forecast-icon" alt="Forecast icon">
-          <div id="f2-cond">Storm</div>
-          <div id="f2-low" class="forecast-low">50°</div>
-          <div id="f2-pop" class="forecast-pop">20%</div>
+<div class="surface-top">
 
-        </div>
+<div class="surface-metrics">
 
-      </div>
+<div class="stat">
+<div class="stat-label">Wind Speed</div>
+<div id="wind-speed" class="stat-value">12 mph</div>
+</div>
 
-    </section>
+<div class="stat">
+<div class="stat-label">Wind Gust</div>
+<div id="wind-gust" class="stat-value">18 mph</div>
+</div>
 
-    <section class="panel">
+<div class="stat">
+<div class="stat-label">Direction</div>
+<div id="wind-dir-text" class="stat-value">SE</div>
+</div>
 
-      <h2>Wind &amp; Rainfall</h2>
+<div class="stat">
+<div class="stat-label">Daily Total</div>
+<div id="rain-daily" class="stat-value">0.30"</div>
+</div>
 
-      <div class="surface-panel">
+<div class="stat">
+<div class="stat-label">Rain Rate</div>
+<div id="rain-rate" class="stat-value">0.05"/hr</div>
+</div>
 
-        <div class="surface-top">
+<div class="stat">
+<div class="stat-label">Intensity</div>
+<div id="rain-intensity" class="stat-value">Light Rain</div>
+</div>
 
-          <div class="surface-metrics">
+<div class="stat">
+<div class="stat-label">Today So Far High</div>
+<div id="today-high-sofar" class="stat-value">75°</div>
+</div>
 
-            <div class="stat">
-              <div class="stat-label">Wind Speed</div>
-              <div id="wind-speed" class="stat-value">12 mph</div>
-            </div>
+<div class="stat">
+<div class="stat-label">Today So Far Low</div>
+<div id="today-low-sofar" class="stat-value">51°</div>
+</div>
 
-            <div class="stat">
-              <div class="stat-label">Daily Total</div>
-              <div id="rain-daily" class="stat-value">0.30"</div>
-            </div>
+</div>
 
-            <div class="stat">
-              <div class="stat-label">Wind Gust</div>
-              <div id="wind-gust" class="stat-value">18 mph</div>
-            </div>
 
-            <div class="stat">
-              <div class="stat-label">Rain Rate</div>
-              <div id="rain-rate" class="stat-value">0.05"/hr</div>
-            </div>
+<div class="surface-right">
 
-            <div class="stat">
-              <div class="stat-label">Direction</div>
-              <div id="wind-dir-text" class="stat-value">SE</div>
-            </div>
+<div class="wind-dial-wrap">
 
-            <div class="stat">
-              <div class="stat-label">Intensity</div>
-              <div id="rain-intensity" class="stat-value">Light Rain</div>
-            </div>
+<div class="wind-dial">
 
-          </div>
+<div class="wind-dial-center"></div>
 
-          <div class="surface-right">
+<div id="wind-arrow" class="wind-dial-arrow"></div>
 
-            <div class="wind-dial-wrap">
-              <div class="wind-dial">
-                <span class="dial-cardinal dial-n">N</span>
-                <span class="dial-cardinal dial-e">E</span>
-                <span class="dial-cardinal dial-s">S</span>
-                <span class="dial-cardinal dial-w">W</span>
+<span class="dial-cardinal dial-n">N</span>
+<span class="dial-cardinal dial-e">E</span>
+<span class="dial-cardinal dial-s">S</span>
+<span class="dial-cardinal dial-w">W</span>
 
-                <span class="dial-ordinal dial-ne">NE</span>
-                <span class="dial-ordinal dial-se">SE</span>
-                <span class="dial-ordinal dial-sw">SW</span>
-                <span class="dial-ordinal dial-nw">NW</span>
+<span class="dial-ordinal dial-ne">NE</span>
+<span class="dial-ordinal dial-se">SE</span>
+<span class="dial-ordinal dial-sw">SW</span>
+<span class="dial-ordinal dial-nw">NW</span>
 
-                <div id="wind-arrow" class="wind-dial-arrow"></div>
-                <div class="wind-dial-center"></div>
-              </div>
-            </div>
+</div>
 
-            <div class="surface-extra-slot"></div>
+</div>
 
-          </div>
+<div class="surface-extra-slot"></div>
 
-        </div>
+</div>
 
-        <div class="rain-meter">
+</div>
 
-          <div class="meter-labels">
-            <span>0</span>
-            <span>0.25</span>
-            <span>0.50+</span>
-          </div>
+<div class="rain-meter">
 
-          <div class="meter-track">
-            <div id="rain-meter-fill"></div>
-          </div>
+<div class="meter-labels">
+<span>0</span>
+<span>0.25</span>
+<span>0.50+</span>
+</div>
 
-        </div>
+<div class="meter-track">
+<div id="rain-meter-fill"></div>
+</div>
 
-      </div>
+</div>
 
-    </section>
+</div>
 
-    <section class="panel">
+</section>
 
-      <h2>Radar</h2>
 
-      <div class="radar">
-        Radar Image Here
-      </div>
 
-    </section>
+<section class="panel">
 
-    <section class="panel">
+<h2>Three Day Forecast</h2>
 
-      <h2>Lightning</h2>
+<div class="forecast">
 
-      <div id="lightning-warning" class="lightning-warning"></div>
+<div class="forecast-day">
 
-      <div class="lightning-top">
+<div id="f0-label">Today</div>
+<div id="f0-high" class="forecast-high">70°</div>
+<img src="images/storm.svg" class="forecast-icon">
+<div id="f0-cond">Storm</div>
+<div id="f0-low" class="forecast-low">44°</div>
+<div id="f0-pop" class="forecast-pop">40%</div>
 
-        <div class="stat">
-          <div class="stat-label">Last Strike</div>
-          <div id="lt-last" class="stat-value">--</div>
-        </div>
+</div>
 
-        <div class="stat">
-          <div class="stat-label">Distance</div>
-          <div id="lt-distance" class="stat-value">--</div>
-        </div>
 
-        <div class="stat">
-          <div class="stat-label">Direction</div>
-          <div id="lt-direction" class="stat-value">--</div>
-        </div>
+<div class="forecast-day">
 
-      </div>
+<div id="f1-label">Mon</div>
+<div id="f1-high" class="forecast-high">62°</div>
+<img src="images/storm.svg" class="forecast-icon">
+<div id="f1-cond">Storm</div>
+<div id="f1-low" class="forecast-low">45°</div>
+<div id="f1-pop" class="forecast-pop">30%</div>
 
-      <div class="lightning-history">
+</div>
 
-        <div class="history-box">
-          <div class="history-label">1 Min</div>
-          <div id="lt-minute" class="history-value">0</div>
-        </div>
 
-        <div class="history-box">
-          <div class="history-label">15 Min</div>
-          <div id="lt-fifteen" class="history-value">0</div>
-        </div>
+<div class="forecast-day">
 
-        <div class="history-box">
-          <div class="history-label">1 Hour</div>
-          <div id="lt-hour" class="history-value">0</div>
-        </div>
+<div id="f2-label">Tue</div>
+<div id="f2-high" class="forecast-high">68°</div>
+<img src="images/storm.svg" class="forecast-icon">
+<div id="f2-cond">Storm</div>
+<div id="f2-low" class="forecast-low">50°</div>
+<div id="f2-pop" class="forecast-pop">20%</div>
 
-        <div class="history-box">
-          <div class="history-label">Today</div>
-          <div id="lt-midnight" class="history-value">0</div>
-        </div>
+</div>
 
-      </div>
+</div>
 
-    </section>
+</section>
 
-    <section class="panel">
 
-      <h2>Today's Observations</h2>
 
-      <div class="stat">
-        <div class="stat-label">High</div>
-        <div id="today-high" class="stat-value">75°</div>
-      </div>
+<section class="panel">
 
-      <div class="stat">
-        <div class="stat-label">Low</div>
-        <div id="today-low" class="stat-value">51°</div>
-      </div>
+<h2>Lightning</h2>
 
-    </section>
+<div id="lightning-warning" class="lightning-warning"></div>
 
-    <section class="panel indoor-panel" aria-hidden="true"></section>
+<div class="lightning-top">
 
-    <section class="panel sunmoon-panel" aria-hidden="true"></section>
+<div class="stat">
+<div class="stat-label">Last Strike</div>
+<div id="lt-last" class="stat-value">--</div>
+</div>
 
-  </main>
+<div class="stat">
+<div class="stat-label">Distance</div>
+<div id="lt-distance" class="stat-value">--</div>
+</div>
 
-  <script src="script.js"></script>
+<div class="stat">
+<div class="stat-label">Direction</div>
+<div id="lt-direction" class="stat-value">--</div>
+</div>
+
+</div>
+
+
+<div class="lightning-history">
+
+<div class="history-box">
+<div class="history-label">1 Min</div>
+<div id="lt-minute" class="history-value">0</div>
+</div>
+
+<div class="history-box">
+<div class="history-label">15 Min</div>
+<div id="lt-fifteen" class="history-value">0</div>
+</div>
+
+<div class="history-box">
+<div class="history-label">1 Hour</div>
+<div id="lt-hour" class="history-value">0</div>
+</div>
+
+<div class="history-box">
+<div class="history-label">Today</div>
+<div id="lt-midnight" class="history-value">0</div>
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="panel radar">
+
+<h2>Radar</h2>
+
+Radar Image Here
+
+</section>
+
+
+
+<section class="panel radar">
+
+<h2>Radar</h2>
+
+Radar Image Here
+
+</section>
+
+
+</main>
+
+<script src="script.js"></script>
 
 </body>
 </html>
