@@ -1435,3 +1435,51 @@ body{
     font-size:26px;
   }
 }
+
+/* =========================
+   REGIONAL MAP SCREEN
+   ========================= */
+
+.regional-map-shell{
+  margin-top:12px;
+  height:calc(100vh - 120px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.regional-asof{
+  font-size:20px;
+  font-weight:800;
+  color:#e6f7ff;
+  margin-bottom:10px;
+  letter-spacing:.5px;
+}
+
+.regional-map-frame{
+  position:relative;
+  width:900px;
+  max-width:95%;
+}
+
+.regional-map-base{
+  width:100%;
+  display:block;
+}
+
+#regional-temps-layer{
+  position:absolute;
+  inset:0;
+}
+
+.regional-temp{
+  position:absolute;
+  font-size:32px;
+  font-weight:900;
+  color:white;
+  text-shadow:
+    0 0 12px rgba(0,0,0,.8),
+    0 0 8px rgba(0,0,0,.6);
+  transform:translate(-50%,-50%);
+}
