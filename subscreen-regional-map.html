@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Regional Temperatures</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="page-fade subscreen-body">
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-gradient"></div>
+  <div class="bg-orb bg-orb-left"></div>
+  <div class="bg-orb bg-orb-right"></div>
+  <div class="bg-wave-layer bg-wave-back"></div>
+  <div class="bg-wave-layer bg-wave-front"></div>
+  <div class="bg-vignette"></div>
+</div>
+
+<div class="page-fade-overlay"></div>
+
+<div class="subscreen-header-bar">
+  <div class="subscreen-header-title">Regional Temperatures</div>
+  <div id="regional-clock" class="subscreen-header-clock">--:--</div>
+</div>
+
+<div class="regional-map-shell">
+
+  <div id="regional-asof" class="regional-asof">
+    As of: --
+  </div>
+
+  <div class="regional-map-frame">
+
+    <img src="images/indiana-base-map.svg" class="regional-map-base">
+
+    <div id="regional-temps-layer"></div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
