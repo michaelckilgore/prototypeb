@@ -749,35 +749,56 @@ async function updateLiveNwsAlerts() {
   }
 }
 
-async function loadRegionalTemps() {
+async function loadRegionalTemps(){
+
   const layer = document.getElementById("regional-temps-layer");
-  if (!layer) return;
-  try {
-    const response = await fetch("http://localhost:3000/api/regional-temps");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const regional = await response.json();
-    data.regionalTemps.updatedAt = regional.updatedAt || null;
-    data.regionalTemps.asOfLabel = regional.asOfLabel || "As of: --";
-    data.regionalTemps.cities = Array.isArray(regional.cities) ? regional.cities : [];
-    setText("regional-asof", data.regionalTemps.asOfLabel);
+  if(!layer) return;
+
+  try{
+
+    const r = await fetch("http://localhost:3000/api/regional-temps");
+    const data = await r.json();
+
+    document.getElementById("regional-asof").textContent = data.asOfLabel;
+
     layer.innerHTML = "";
-    data.regionalTemps.cities.forEach((city) => {
-      if (typeof city.tempF !== "number") return;
-      const ll = REGIONAL_CITY_LATLON[city.id];
-      if (!ll) return;
-      const projected = projectRegionalLatLon(ll.lat, ll.lon);
+
+    const MAP_WIDTH = 900;
+    const MAP_HEIGHT = 700;
+
+    const NORTH = 41.760293;
+    const SOUTH = 37.771742;
+    const WEST = -87.531745;
+    const EAST = -84.805880;
+
+    data.cities.forEach(city => {
+
+      if(city.tempF === null) return;
+
+      const x = ((city.lon - WEST) / (EAST - WEST)) * MAP_WIDTH;
+      const y = ((NORTH - city.lat) / (NORTH - SOUTH)) * MAP_HEIGHT;
+
       const el = document.createElement("div");
+
       el.className = "regional-temp";
-      el.style.left = `${projected.x}px`;
-      el.style.top = `${projected.y}px`;
-      el.style.color = getBlendedTempColor(city.tempF);
-      el.textContent = `${city.tempF}°`;
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+
+      el.textContent = city.tempF + "°";
+
       layer.appendChild(el);
+
     });
-  } catch (error) {
-    console.error("Regional temp load failed", error);
+
+  }catch(e){
+
+    console.error("Regional temp load failed",e);
+
   }
+
 }
+
+
 
 function createSvgEl(name, attrs = {}) {
   const el = document.createElementNS("http://www.w3.org/2000/svg", name);
