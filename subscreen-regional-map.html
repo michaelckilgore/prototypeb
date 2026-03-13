@@ -43,5 +43,16 @@
 
 <script src="script.js"></script>
 
+  <script>
+const map = document.querySelector(".regional-map-frame");
+
+map.addEventListener("click", (e) => {
+  const rect = map.getBoundingClientRect();
+  const x = Math.round(e.clientX - rect.left);
+  const y = Math.round(e.clientY - rect.top);
+
+  alert("x:" + x + "  y:" + y);
+});
+</script>
 </body>
 </html>
