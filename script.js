@@ -68,6 +68,47 @@ const SCREEN_ROTATE_MS = 10000;
 const SCREEN_FADE_MS = 250;
 const CONDITION_ROTATE_MS = 5000;
 
+/* -------------------- regional map projection -------------------- */
+
+const REGIONAL_CITY_LATLON = {
+  "chicago":      { lat: 41.8781, lon: -87.6298 },
+  "south-bend":   { lat: 41.6764, lon: -86.2520 },
+  "fort-wayne":   { lat: 41.0793, lon: -85.1394 },
+  "lafayette":    { lat: 40.4167, lon: -86.8753 },
+  "muncie":       { lat: 40.1934, lon: -85.3864 },
+  "indianapolis": { lat: 39.7684, lon: -86.1581 },
+  "rushville":    { lat: 39.6092, lon: -85.4464 },
+  "cincinnati":   { lat: 39.1031, lon: -84.5120 },
+  "louisville":   { lat: 38.2527, lon: -85.7585 },
+  "evansville":   { lat: 37.9716, lon: -87.5711 }
+};
+
+/*
+  These bounds are for the full 900x700 regional frame, not just Indiana itself.
+  They are chosen to include Chicago, Cincinnati, Louisville, and Evansville
+  while keeping Indiana properly proportioned.
+*/
+const REGIONAL_MAP_BOUNDS = {
+  width: 900,
+  height: 700,
+  westLon: -88.20,
+  eastLon: -84.10,
+  northLat: 42.20,
+  southLat: 37.60
+};
+
+function projectRegionalLatLon(lat, lon) {
+  const { width, height, westLon, eastLon, northLat, southLat } = REGIONAL_MAP_BOUNDS;
+
+  const x = ((lon - westLon) / (eastLon - westLon)) * width;
+  const y = ((northLat - lat) / (northLat - southLat)) * height;
+
+  return {
+    x: Math.round(x),
+    y: Math.round(y)
+  };
+}
+
 /* -------------------- helpers -------------------- */
 
 function tempColor(temp) {
@@ -1004,10 +1045,15 @@ async function loadRegionalTemps() {
     data.regionalTemps.cities.forEach((city) => {
       if (typeof city.tempF !== "number") return;
 
+      const ll = REGIONAL_CITY_LATLON[city.id];
+      if (!ll) return;
+
+      const projected = projectRegionalLatLon(ll.lat, ll.lon);
+
       const el = document.createElement("div");
       el.className = "regional-temp";
-      el.style.left = `${city.x}px`;
-      el.style.top = `${city.y}px`;
+      el.style.left = `${projected.x}px`;
+      el.style.top = `${projected.y}px`;
       el.style.color = getBlendedTempColor(city.tempF);
       el.textContent = `${city.tempF}°`;
 
