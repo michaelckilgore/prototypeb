@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sugar Hill Weather Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <main class="dashboard-stage">
+      <section class="screen active" id="screen-current">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Sugar Hill Reporting Station</div>
+              <h1 class="panel-title">Current Conditions</h1>
+            </div>
+            <div class="panel-time" id="currentUpdated">Updating...</div>
+          </div>
+
+          <div class="current-layout">
+            <div class="current-temp-block">
+              <div class="current-temp-ring" id="currentTempRing">
+                <div class="current-temp-value" id="currentTemp">--°</div>
+              </div>
+            </div>
+
+            <div class="current-stats-grid">
+              <div class="stat-card">
+                <div class="stat-label">Humidity</div>
+                <div class="stat-value" id="currentHumidity">--%</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Pressure</div>
+                <div class="stat-value" id="currentPressure">--</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Wind</div>
+                <div class="stat-value" id="currentWind">--</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Gust</div>
+                <div class="stat-value" id="currentGust">--</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Rain Rate</div>
+                <div class="stat-value" id="currentRainRate">0.00 in/hr</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Rain Today</div>
+                <div class="stat-value" id="currentRainToday">0.00 in</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-regional">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow">Regional Temperatures</div>
+              <h1 class="panel-title">Indiana Control Cities</h1>
+            </div>
+            <div class="panel-time" id="regionalAsOf">As of: --</div>
+          </div>
+
+          <div class="regional-map-wrap">
+            <svg
+              id="regionalMap"
+              class="regional-map"
+              viewBox="0 0 1000 700"
+              preserveAspectRatio="xMidYMid meet"
+              aria-label="Indiana regional temperatures"
+            >
+              <defs>
+                <linearGradient id="panelMapBg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#0b1220"></stop>
+                  <stop offset="100%" stop-color="#0f1c31"></stop>
+                </linearGradient>
+
+                <filter id="glowTemp" x="-60%" y="-60%" width="220%" height="220%">
+                  <feGaussianBlur stdDeviation="6" result="blur"></feGaussianBlur>
+                  <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <rect x="10" y="10" width="980" height="680" rx="28" class="map-bg"></rect>
+              <rect x="10" y="10" width="980" height="680" rx="28" class="map-frame"></rect>
+
+              <!-- surrounding state border cues -->
+              <path class="surrounding-line" d="M56 86 L180 86 L180 182 L304 182 L304 90 L602 90 L602 205 L760 205 L760 124 L938 124"></path>
+              <path class="surrounding-line" d="M72 628 L232 628 L232 566 L516 566 L516 474 L786 474 L786 602 L934 602"></path>
+              <path class="surrounding-line" d="M180 86 L180 628"></path>
+              <path class="surrounding-line" d="M760 124 L760 602"></path>
+              <path class="surrounding-line" d="M304 90 L304 182"></path>
+              <path class="surrounding-line" d="M602 90 L602 205"></path>
+              <path class="surrounding-line" d="M232 566 L232 628"></path>
+              <path class="surrounding-line" d="M516 474 L516 566"></path>
+
+              <!-- Indiana outline -->
+              <path
+                class="indiana-line"
+                d="M308 138
+                   L612 138
+                   L612 502
+                   L576 508
+                   L576 554
+                   L512 554
+                   L496 572
+                   L436 572
+                   L422 590
+                   L332 590
+                   L308 564
+                   Z"
+              ></path>
+
+              <g id="regionalMarkers"></g>
+            </svg>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
