@@ -84,10 +84,10 @@ const REGIONAL_CITY_LATLON = {
 const REGIONAL_MAP_BOUNDS = {
   width: 900,
   height: 700,
-  westLon: -88.20,
-  eastLon: -84.10,
-  northLat: 42.20,
-  southLat: 37.60
+  const NORTH = 42.05;
+const SOUTH = 37.55;
+const WEST = -88.00;
+const EAST = -84.45;
 };
 
 function projectRegionalLatLon(lat, lon) {
