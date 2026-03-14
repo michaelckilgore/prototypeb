@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="190" viewBox="0 0 1600 190">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#071833"/>
+      <stop offset="30%" stop-color="#0b2f6c"/>
+      <stop offset="62%" stop-color="#1248a6"/>
+      <stop offset="100%" stop-color="#0a214b"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0e2858"/>
+      <stop offset="40%" stop-color="#1a57c4"/>
+      <stop offset="100%" stop-color="#14346f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="10%" r="90%">
+      <stop offset="0%" stop-color="#4db8ff" stop-opacity="0.9"/>
+      <stop offset="45%" stop-color="#1f6fff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#1f6fff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+    <filter id="sparkle" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <path d="M26 118 L70 56 L1516 56 L1568 6 L1582 6 L1532 70 L1522 118 Z" fill="url(#bg)" opacity="0.95"/>
+  <path d="M18 123 L61 62 L1510 62 L1563 10 L1587 10 L1538 74 L1528 123 Z" fill="none" stroke="#2fa8ff" stroke-opacity="0.65" stroke-width="2"/>
+  <path d="M25 118 L68 58 L1516 58 L1565 9" fill="none" stroke="#64d0ff" stroke-opacity="0.25" stroke-width="7" filter="url(#soft)"/>
+
+  <path d="M364 123 L425 58 L1516 58 L1468 123 Z" fill="url(#band)" opacity="0.95"/>
+  <ellipse cx="920" cy="70" rx="390" ry="38" fill="url(#glow)"/>
+  <path d="M364 123 L425 58 L1516 58 L1468 123 Z" fill="none" stroke="#82d6ff" stroke-opacity="0.35" stroke-width="2"/>
+  <path d="M385 132 L1462 132" stroke="#f2b233" stroke-width="5" stroke-linecap="round"/>
+  <path d="M389 128 L1458 128" stroke="#ffd970" stroke-width="1.2" stroke-linecap="round"/>
+
+  <path d="M45 157 L1520 157" stroke="#1e7af4" stroke-opacity="0.35" stroke-width="2"/>
+  <path d="M68 58 L343 58 L385 123 L30 123 Z" fill="#0a0f18" fill-opacity="0.28"/>
+  <circle cx="1456" cy="31" r="5" fill="#fff" filter="url(#sparkle)"/>
+  <path d="M1456 16 L1456 46 M1441 31 L1471 31 M1446 21 L1466 41 M1466 21 L1446 41" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.95" filter="url(#sparkle)"/>
+</svg>
