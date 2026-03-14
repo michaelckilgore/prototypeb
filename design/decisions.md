@@ -26,4 +26,11 @@ Forecast Screen
 
 Development Workflow
 --------------------
-• When files change, provide a ZIP containing only the changed files.
+• When files are updated, provide the COMPLETE replacement file whenever possible.
+• Partial edits should only be used when the change is 1–2 lines.
+• Avoid asking the developer to manually locate code blocks.
+
+Background Direction
+--------------------
+• Use a lighter-top to darker-bottom gradient.
+• Do not use decorative wave elements in the background.
