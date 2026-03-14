@@ -5,6 +5,111 @@
 <title>Current Conditions in Rushville</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="style.css">
+
+<style>
+  .current-hero-header{
+    position:relative;
+    height:140px;
+    overflow:visible;
+    z-index:20;
+  }
+
+  .current-hero-header-bg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:140px;
+    object-fit:cover;
+    display:block;
+  }
+
+  .current-hero-logo{
+    position:absolute;
+    left:18px;
+    top:10px;
+    width:250px;
+    height:auto;
+    z-index:2;
+  }
+
+  .current-hero-title{
+    position:absolute;
+    left:290px;
+    right:210px;
+    top:24px;
+    min-height:84px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:clamp(28px, 3vw, 46px);
+    line-height:1.02;
+    font-weight:900;
+    letter-spacing:.6px;
+    color:#ffffff;
+    text-shadow:0 0 10px rgba(255,255,255,.14);
+    z-index:2;
+  }
+
+  .current-hero-clock{
+    position:absolute;
+    right:28px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:24px;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:.4px;
+    color:#ffffff;
+    text-shadow:0 0 8px rgba(255,255,255,.20);
+    z-index:2;
+    white-space:nowrap;
+  }
+
+  @media (max-width: 1200px){
+    .current-hero-logo{
+      width:220px;
+      left:14px;
+      top:12px;
+    }
+
+    .current-hero-title{
+      left:255px;
+      right:180px;
+      font-size:clamp(24px, 2.7vw, 38px);
+    }
+  }
+
+  @media (max-width: 900px){
+    .current-hero-header{
+      height:112px;
+    }
+
+    .current-hero-header-bg{
+      height:112px;
+    }
+
+    .current-hero-logo{
+      width:160px;
+      left:10px;
+      top:12px;
+    }
+
+    .current-hero-title{
+      left:182px;
+      right:120px;
+      top:16px;
+      min-height:64px;
+      font-size:clamp(18px, 2.9vw, 28px);
+    }
+
+    .current-hero-clock{
+      right:16px;
+      font-size:18px;
+    }
+  }
+</style>
+
 </head>
 
 <body class="page-fade subscreen-body">
@@ -20,14 +125,11 @@
 <div class="page-fade-overlay"></div>
 
 <main class="subscreen-current-v2">
-  <section class="subscreen-header-bar">
-  <div class="subscreen-header-side subscreen-header-side-left">
-    <img src="assets/logo/sugar-hill-logo.png" class="subscreen-header-logo" alt="Sugar Hill logo">
-  </div>
-  <div class="subscreen-header-title">Current Conditions</div>
-  <div class="subscreen-header-side subscreen-header-side-right">
-    <div id="subscreen-clock" class="subscreen-header-clock">--:--</div>
-  </div>
+  <section class="current-hero-header" aria-label="Current Conditions Header">
+  <img class="current-hero-header-bg" src="assets/header/subscreen-header.png" alt="Subscreen Header">
+  <img class="current-hero-logo" src="assets/logo/sugar-hill-logo.png" alt="Sugar Hill logo">
+  <div class="current-hero-title">Current Conditions</div>
+  <div id="subscreen-clock" class="current-hero-clock">--:--</div>
 </section>
 
   <section class="subscreen-main-grid">
