@@ -19,123 +19,128 @@
 
 <div class="page-fade-overlay"></div>
 
-<main class="subscreen-forecast-page">
-  <section class="subscreen-header-bar">
-    <div class="subscreen-header-title">EXPANDED FORECAST</div>
-    <div id="subscreen-clock" class="subscreen-header-clock">--:--</div>
+<main class="forecast-screen-shell">
+  <section class="subscreen-header-bar forecast-header-bar">
+    <div class="forecast-header-left">
+      <div class="forecast-station-kicker">Sugar Hill Reporting Station</div>
+      <div class="forecast-title-row">
+        <div class="forecast-header-title">Expanded Forecast</div>
+        <div class="forecast-twinkle" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div id="forecast-clock" class="forecast-header-clock">--:--</div>
   </section>
 
-  <section class="forecast-expanded-shell">
-    <div class="forecast-expanded-grid">
+  <section class="forecast-content-shell">
+    <div class="forecast-period-list">
       <article class="forecast-period-card">
-        <div id="forecast-period-name-0" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-0" class="forecast-period-text">Forecast data is loading.</div>
+        <div class="forecast-period-icon-wrap">
+          <img id="forecast-period-icon-1" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
+        </div>
+        <div class="forecast-period-copy">
+          <div class="forecast-period-top">
+            <div id="forecast-period-name-1" class="forecast-period-name">Tonight</div>
+            <div id="forecast-period-temp-1" class="forecast-period-temp">--</div>
+          </div>
+          <div id="forecast-period-text-1" class="forecast-period-text">Forecast loading...</div>
+        </div>
       </article>
+
       <article class="forecast-period-card">
-        <div id="forecast-period-name-1" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-1" class="forecast-period-text">Forecast data is loading.</div>
+        <div class="forecast-period-icon-wrap">
+          <img id="forecast-period-icon-2" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
+        </div>
+        <div class="forecast-period-copy">
+          <div class="forecast-period-top">
+            <div id="forecast-period-name-2" class="forecast-period-name">Friday</div>
+            <div id="forecast-period-temp-2" class="forecast-period-temp">--</div>
+          </div>
+          <div id="forecast-period-text-2" class="forecast-period-text"></div>
+        </div>
       </article>
+
       <article class="forecast-period-card">
-        <div id="forecast-period-name-2" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-2" class="forecast-period-text">Forecast data is loading.</div>
+        <div class="forecast-period-icon-wrap">
+          <img id="forecast-period-icon-3" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
+        </div>
+        <div class="forecast-period-copy">
+          <div class="forecast-period-top">
+            <div id="forecast-period-name-3" class="forecast-period-name">Friday Night</div>
+            <div id="forecast-period-temp-3" class="forecast-period-temp">--</div>
+          </div>
+          <div id="forecast-period-text-3" class="forecast-period-text"></div>
+        </div>
       </article>
+
       <article class="forecast-period-card">
-        <div id="forecast-period-name-3" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-3" class="forecast-period-text">Forecast data is loading.</div>
+        <div class="forecast-period-icon-wrap">
+          <img id="forecast-period-icon-4" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
+        </div>
+        <div class="forecast-period-copy">
+          <div class="forecast-period-top">
+            <div id="forecast-period-name-4" class="forecast-period-name">Saturday</div>
+            <div id="forecast-period-temp-4" class="forecast-period-temp">--</div>
+          </div>
+          <div id="forecast-period-text-4" class="forecast-period-text"></div>
+        </div>
       </article>
     </div>
-  </section>
 
-  <section class="forecast-seven-day-shell">
-    <div class="forecast-seven-day-title">THE 7-DAY FORECAST</div>
-    <div class="forecast-seven-day-row">
+    <section class="forecast-seven-day-shell">
+      <div class="forecast-seven-day-label">The 7-Day Forecast</div>
+      <div class="forecast-seven-day-grid">
+        <div id="seven-day-1" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+        <div id="seven-day-2" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+        <div id="seven-day-3" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+        <div id="seven-day-4" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+        <div id="seven-day-5" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+        <div id="seven-day-6" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+        <div id="seven-day-7" class="forecast-mini-card">
+          <div class="forecast-mini-day">--</div>
+          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
+          <div class="forecast-mini-temps">--/--</div>
+          <div class="forecast-mini-pop">--%</div>
+        </div>
+      </div>
+      <div class="forecast-confidence-note">Forecast confidence decreases with time.</div>
+    </section>
 
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-0" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-0" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-0" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-0" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-0" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-0" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-1" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-1" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-1" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-1" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-1" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-1" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-2" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-2" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-2" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-2" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-2" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-2" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-3" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-3" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-3" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-3" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-3" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-3" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-4" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-4" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-4" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-4" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-4" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-4" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-5" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-5" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-5" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-5" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-5" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-5" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-6" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-6" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-6" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-6" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-6" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-6" class="forecast-seven-day-pop">--</div>
-      </article>
-    </div>
-  </section>
-
-  <section class="forecast-disclaimer-shell">
-    <div class="forecast-disclaimer-text">Forecast confidence decreases with time.</div>
-  </section>
-
-  <section class="subscreen-conditions-shell">
-    <div class="subscreen-conditions-title">Current Conditions</div>
-    <div class="subscreen-conditions-window">
-      <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
-    </div>
-  </section>
-
-  <section id="subscreen-alert-ribbon" class="subscreen-alert-ribbon" style="display:none;">
-    <div id="subscreen-alert-text" class="subscreen-alert-text"></div>
+    <section class="subscreen-conditions-shell fast-wipe-shell">
+      <div class="subscreen-conditions-title">Current Conditions</div>
+      <div class="subscreen-conditions-window">
+        <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
+      </div>
+    </section>
   </section>
 </main>
 
