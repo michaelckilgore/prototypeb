@@ -6,361 +6,240 @@
   <title>Expanded Forecast</title>
   <style>
     :root{
-      --bg1:#031126;
-      --bg2:#071d3f;
-      --panel:#071524cc;
-      --line:#51b7ff55;
-      --line2:#f0b339;
-      --text:#f7fbff;
-      --soft:#d9e9fb;
-      --muted:#93abca;
-      --glow:0 0 18px rgba(78,178,255,.18);
+      --bg-top:#041124;
+      --bg-mid:#071a38;
+      --bg-bot:#06101d;
+      --panel:#061326d4;
+      --line:rgba(86,185,255,.38);
+      --line-soft:rgba(86,185,255,.22);
+      --gold:#f0b339;
+      --text:#f5fbff;
+      --soft:#d7e7fb;
+      --muted:#a9c3e2;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:
-      radial-gradient(circle at 50% 0%, rgba(42,96,194,.30), transparent 42%),
-      linear-gradient(180deg, #041124 0%, #061732 36%, #061223 100%);
-      color:var(--text); font-family:Arial, Helvetica, sans-serif;}
-    body{display:flex;justify-content:center;align-items:flex-start}
-    .screen{
-      width:100vw;height:100vh;position:relative;overflow:hidden;
+    html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#041124;color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    body{
       background:
-       radial-gradient(circle at 80% 10%, rgba(64,149,255,.14), transparent 18%),
-       linear-gradient(180deg, rgba(255,255,255,.03), transparent 22%),
-       linear-gradient(180deg, #041124 0%, #071b38 36%, #040d19 100%);
+        radial-gradient(circle at 50% 0%, rgba(42,96,194,.28), transparent 40%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 38%, var(--bg-bot) 100%);
     }
-    .screen::before{
-      content:"";position:absolute;inset:0;
-      background:
-        linear-gradient(90deg, transparent 0%, rgba(255,255,255,.035) 50%, transparent 100%),
-        radial-gradient(circle at 72% 78%, rgba(255,183,40,.10), transparent 25%);
-      pointer-events:none;
-    }
-
-    .subscreen-header{
-      position:relative; width:100%; height:12.3vw; max-height:132px; min-height:100px;
-      z-index:5; overflow:visible;
-    }
-    .subscreen-header .header-bg{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:fill;
-      opacity:.98;
-    }
-    .subscreen-header .header-logo{
-      position:absolute; left:2.7vw; top:0.55vw; width:23vw; max-width:338px; min-width:250px;
-      height:auto; z-index:4; filter:drop-shadow(0 2px 5px rgba(0,0,0,.5));
-    }
-    .subscreen-header .header-title{
-      position:absolute; left:37vw; top:2.2vw; z-index:4;
-      font-size:4vw; line-height:1; font-weight:700; letter-spacing:.12vw;
-      font-style:italic; text-transform:uppercase; color:#fff;
-      text-shadow:0 0 12px rgba(255,255,255,.13), 0 2px 2px rgba(0,0,0,.45);
+    .screen{position:relative;width:100vw;height:100vh;overflow:hidden}
+    .header{position:absolute;inset:0 0 auto 0;height:12.8vw;max-height:132px;min-height:96px;z-index:5}
+    .header img.bg{width:100%;height:100%;display:block;object-fit:fill}
+    .clock{
+      position:absolute;right:2.6vw;top:2.2vw;
+      font-size:2.25vw;font-weight:700;letter-spacing:.04vw;
+      text-shadow:0 0 10px rgba(255,255,255,.18),0 2px 4px rgba(0,0,0,.45);
       white-space:nowrap;
     }
-    .subscreen-header .header-clock{
-      position:absolute; right:2.8vw; top:2.0vw; z-index:4;
-      font-size:2.45vw; line-height:1; font-weight:700; letter-spacing:.06vw; color:#f7fbff;
-      text-shadow:0 0 10px rgba(255,255,255,.12);
-      white-space:nowrap;
-    }
-    .subscreen-header .header-station{
-      position:absolute; left:37.2vw; top:6.55vw; z-index:4;
-      font-size:1.15vw; letter-spacing:.13vw; text-transform:uppercase; color:#d9e7f6; opacity:.88;
-      white-space:nowrap;
-    }
-
     .alert-badge{
-      position:absolute; right:2.8vw; top:5.1vw; z-index:6;
-      width:18vw; min-width:220px; max-width:310px;
-      border:1px solid rgba(255,255,255,.30); border-radius:8px; overflow:hidden;
-      box-shadow:0 8px 22px rgba(0,0,0,.32);
-      display:none;
-      backdrop-filter: blur(3px);
+      position:absolute;right:2.2vw;top:5.3vw;display:none;overflow:hidden;
+      min-width:220px;max-width:320px;border-radius:8px;border:1px solid rgba(255,255,255,.35);
+      box-shadow:0 8px 24px rgba(0,0,0,.32);backdrop-filter:blur(2px);
     }
     .alert-badge.show{display:block}
-    .alert-badge .alert-top{
-      padding:.45vw .8vw; font-size:1.15vw; font-weight:700; text-transform:uppercase;
-      letter-spacing:.06vw; color:#fff; text-align:center;
-      text-shadow:0 1px 2px rgba(0,0,0,.45);
-    }
-    .alert-badge .alert-bottom{
-      background:rgba(8,16,30,.56);
-      padding:.42vw .8vw; font-size:1vw; font-weight:600; text-align:center; color:#eef5ff;
-    }
+    .alert-top{padding:.35vw .75vw;color:#fff;font-size:1.05vw;font-weight:800;text-transform:uppercase;letter-spacing:.04vw;text-align:center}
+    .alert-bottom{padding:.33vw .75vw;background:rgba(5,12,23,.58);font-size:.95vw;font-weight:700;text-align:center;color:#eef5ff}
     .alert-badge.pulse{animation:alertPulse 5s ease-in-out infinite}
-    @keyframes alertPulse{
-      0%,82%,100%{box-shadow:0 8px 22px rgba(0,0,0,.32), 0 0 0 rgba(255,0,0,0)}
-      88%{box-shadow:0 8px 22px rgba(0,0,0,.32), 0 0 18px rgba(255,72,72,.42)}
-    }
+    @keyframes alertPulse{0%,82%,100%{box-shadow:0 8px 24px rgba(0,0,0,.32),0 0 0 rgba(255,0,0,0)}88%{box-shadow:0 8px 24px rgba(0,0,0,.32),0 0 16px rgba(255,78,78,.42)}}
 
-    .forecast-shell{
-      position:absolute; left:3.6vw; right:3.6vw; top:11.8vh; bottom:11.6vh;
-      display:flex; flex-direction:column; gap:1.05vh;
-    }
-    .forecast-list{
-      flex:1; display:grid; grid-template-rows:repeat(4, 1fr); gap:1vh;
-      min-height:0;
-    }
+    .main{position:absolute;left:3.6vw;right:3.6vw;top:12.3vh;bottom:10.2vh;display:flex;flex-direction:column;gap:1vh}
+    .forecast-list{flex:1;display:grid;grid-template-rows:repeat(4,1fr);gap:1vh;min-height:0}
     .forecast-row{
-      background:linear-gradient(90deg, rgba(3,10,21,.86), rgba(6,20,40,.78) 56%, rgba(9,30,63,.65));
-      border:1px solid var(--line); border-left:4px solid rgba(61,163,255,.7);
-      box-shadow:var(--glow), inset 0 1px 0 rgba(255,255,255,.05);
-      display:grid; grid-template-columns:10.8vw 1fr 11vw; align-items:center;
-      padding:0 1.2vw 0 .8vw; position:relative; overflow:hidden;
+      display:grid;grid-template-columns:10.8vw 1fr 10.2vw;align-items:center;
+      background:linear-gradient(90deg, rgba(4,10,20,.9), rgba(6,19,38,.82) 54%, rgba(6,24,49,.7));
+      border:1px solid var(--line);border-left:4px solid rgba(76,171,255,.78);
+      box-shadow:0 0 18px rgba(53,136,255,.14), inset 0 1px 0 rgba(255,255,255,.05);
+      overflow:hidden;position:relative;padding:0 1.1vw 0 .75vw;
     }
     .forecast-row::after{
-      content:""; position:absolute; inset:auto 0 0 0; height:2px;
-      background:linear-gradient(90deg, rgba(64,162,255,.0), rgba(64,162,255,.65), rgba(242,179,57,.85), rgba(64,162,255,.0));
-      opacity:.55;
+      content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+      background:linear-gradient(90deg, rgba(63,162,255,0), rgba(63,162,255,.72), rgba(240,179,57,.86), rgba(63,162,255,0));
+      opacity:.52;
     }
-    .forecast-icon-wrap{display:flex; justify-content:center; align-items:center;}
-    .forecast-icon{
-      width:7.2vw; height:7.2vw; max-width:92px; max-height:92px; min-width:62px; min-height:62px;
-      object-fit:contain; filter:drop-shadow(0 0 12px rgba(35,135,255,.18));
-    }
-    .forecast-copy{min-width:0; padding-right:1vw;}
-    .forecast-name{
-      font-size:2.55vw; line-height:1; font-weight:800; letter-spacing:.11vw;
-      text-transform:uppercase; color:#ffffff; margin-bottom:.55vh;
-      text-shadow:0 0 8px rgba(255,255,255,.14);
-    }
-    .forecast-text{
-      font-size:2.05vw; line-height:1.13; color:var(--soft); font-weight:500;
-    }
-    .forecast-temp{
-      justify-self:end; text-align:right; padding-right:.3vw;
-      font-size:5.3vw; line-height:.95; font-weight:800; color:#fff;
-      text-shadow:0 0 16px rgba(255,255,255,.14), 0 0 24px rgba(67,145,255,.18);
-      letter-spacing:-.12vw;
-      min-width:8vw;
-    }
+    .forecast-icon-wrap{display:flex;justify-content:center;align-items:center}
+    .forecast-icon{width:7.3vw;height:7.3vw;max-width:92px;max-height:92px;min-width:62px;min-height:62px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(55,138,255,.2))}
+    .forecast-copy{min-width:0;padding-right:.8vw}
+    .forecast-name{font-size:2.5vw;line-height:1;font-weight:800;text-transform:uppercase;letter-spacing:.1vw;margin-bottom:.52vh;text-shadow:0 0 8px rgba(255,255,255,.15)}
+    .forecast-text{font-size:2vw;line-height:1.13;color:var(--soft);font-weight:500}
+    .forecast-temp{justify-self:end;text-align:right;font-size:5vw;line-height:.95;font-weight:800;letter-spacing:-.1vw;text-shadow:0 0 15px rgba(255,255,255,.12)}
 
     .seven-day{
-      height:12.7vh; min-height:94px; max-height:118px; display:grid;
-      grid-template-columns:11.2vw repeat(7, 1fr);
-      background:linear-gradient(180deg, rgba(8,16,31,.78), rgba(8,16,31,.62));
-      border:1px solid var(--line); box-shadow:var(--glow);
-      overflow:hidden;
+      height:12.4vh;min-height:90px;max-height:116px;display:grid;grid-template-columns:10.8vw repeat(7,1fr);
+      background:linear-gradient(180deg, rgba(7,15,28,.82), rgba(8,16,31,.64));
+      border:1px solid var(--line);box-shadow:0 0 18px rgba(53,136,255,.14);overflow:hidden;
     }
-    .seven-day-title{
-      background:linear-gradient(180deg, rgba(6,16,34,.9), rgba(6,16,34,.66));
-      border-right:1px solid rgba(82,183,255,.28);
-      display:flex; align-items:center; justify-content:center;
-      font-size:2.15vw; line-height:1.02; letter-spacing:.08vw; font-weight:800;
-      text-transform:uppercase; text-align:center; color:#f5fbff;
-      padding:0 .8vw;
-    }
-    .seven-day-item{
-      display:grid; grid-template-rows:auto 1fr auto auto;
-      align-items:center; justify-items:center;
-      border-left:1px solid rgba(82,183,255,.22);
-      padding:.22vh .2vw .4vh;
-      position:relative;
-    }
-    .seven-day-item:nth-child(odd){background:rgba(255,255,255,.015)}
-    .seven-day-name{
-      font-size:1.95vw; line-height:1; font-weight:800; text-transform:uppercase; letter-spacing:.1vw;
-      color:#fff;
-    }
-    .seven-day-icon{
-      width:4.65vw; height:4.65vw; max-width:66px; max-height:66px; min-width:40px; min-height:40px;
-      object-fit:contain;
-      margin:-.2vh 0;
-    }
-    .seven-day-hi{
-      font-size:2.55vw; line-height:.95; font-weight:800; color:#fff;
-    }
-    .seven-day-lo{
-      font-size:1.7vw; line-height:1; font-weight:700; color:#bfd8ff;
-      margin-top:-.15vh;
-    }
+    .seven-day-title{display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(180deg, rgba(5,13,28,.92), rgba(6,15,31,.68));border-right:1px solid var(--line-soft);font-size:2.05vw;font-weight:800;line-height:1.02;text-transform:uppercase;letter-spacing:.08vw;padding:0 .7vw}
+    .day{display:grid;grid-template-rows:auto 1fr auto auto;justify-items:center;align-items:center;border-left:1px solid var(--line-soft);padding:.2vh .18vw .38vh;position:relative}
+    .day:nth-child(odd){background:rgba(255,255,255,.012)}
+    .day-name{font-size:1.85vw;font-weight:800;line-height:1;text-transform:uppercase;letter-spacing:.09vw}
+    .day-icon{width:4.7vw;height:4.7vw;max-width:66px;max-height:66px;min-width:40px;min-height:40px;object-fit:contain;margin:-.15vh 0}
+    .day-hi{font-size:2.45vw;font-weight:800;line-height:.95}
+    .day-lo{font-size:1.62vw;font-weight:700;line-height:1;color:#bfd8ff;margin-top:-.14vh}
 
-    .footer-bar{
-      position:absolute; left:0; right:0; bottom:0;
-      height:9.2vh; min-height:66px;
-      background:linear-gradient(180deg, rgba(5,15,30,.96), rgba(2,8,19,.96));
-      border-top:1px solid rgba(80,182,255,.26);
-      display:flex; align-items:center; justify-content:center;
-      z-index:4;
-      box-shadow:0 -8px 24px rgba(0,0,0,.22);
-    }
-    .footer-scroll{
-      width:94%; overflow:hidden; position:relative; height:100%;
-      display:flex; align-items:center;
-    }
-    .footer-track{
-      position:absolute; white-space:nowrap; will-change:transform;
-      font-size:2.15vw; font-weight:700; color:#eef5ff;
-      text-shadow:0 1px 2px rgba(0,0,0,.45);
-    }
-    .footer-item{display:inline-flex; align-items:center; margin-right:3.4vw;}
-    .footer-item .label{
-      font-size:1.1vw; letter-spacing:.11vw; text-transform:uppercase; color:#9ab6d8; margin-right:.55vw; font-weight:700;
-    }
-    .footer-item .value{
-      font-size:2.1vw; font-weight:800; color:#fff;
-    }
+    .footer{position:absolute;left:0;right:0;bottom:0;height:9.2vh;min-height:66px;background:linear-gradient(180deg, rgba(5,15,30,.96), rgba(2,8,19,.96));border-top:1px solid rgba(80,182,255,.28);display:flex;align-items:center;justify-content:center;box-shadow:0 -8px 24px rgba(0,0,0,.22);z-index:4}
+    .footer-scroll{width:94%;height:100%;overflow:hidden;position:relative;display:flex;align-items:center}
+    .footer-track{position:absolute;white-space:nowrap;will-change:transform;font-size:2.05vw;font-weight:700;color:#eef5ff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+    .footer-item{display:inline-flex;align-items:center;margin-right:3.2vw}
+    .footer-item .label{font-size:1.05vw;font-weight:700;letter-spacing:.1vw;text-transform:uppercase;color:#9ab6d8;margin-right:.5vw}
+    .footer-item .value{font-size:2.02vw;font-weight:800;color:#fff}
 
-    @media (max-width: 1280px){
-      .subscreen-header .header-title{font-size:4.2vw}
-      .forecast-name{font-size:2.75vw}
-      .forecast-text{font-size:2.15vw}
-      .forecast-temp{font-size:5.6vw}
-      .seven-day-title{font-size:2.3vw}
-    }
+    .error-note{position:absolute;left:4vw;bottom:11.2vh;padding:.35vw .6vw;background:rgba(130,0,0,.18);border:1px solid rgba(255,120,120,.32);border-radius:6px;color:#ffd2d2;font-size:.9vw;display:none;z-index:8}
+    .error-note.show{display:block}
   </style>
 </head>
 <body>
 <div class="screen">
-  <header class="subscreen-header">
-    <img class="header-bg" src="assets/header/subscreen-header.svg" onerror="this.src='assets/header/subscreen-header.png'" alt="">
-    <img class="header-logo" src="assets/logo/shwn-logo.svg" onerror="this.src='assets/logo/shwn-logo.png'" alt="Sugar Hill Weather Network">
-    <div class="header-title" id="headerTitle">Expanded Forecast</div>
-    <div class="header-station">Sugar Hill Reporting Station</div>
-    <div class="header-clock" id="headerClock">--:-- --</div>
-
+  <header class="header">
+    <img class="bg" src="assets/header/subscreen-bar.png" alt="">
+    <div class="clock" id="headerClock">--:-- --</div>
     <div class="alert-badge" id="alertBadge">
       <div class="alert-top" id="alertTop">Alert</div>
       <div class="alert-bottom" id="alertBottom">Expires --:-- --</div>
     </div>
   </header>
 
-  <main class="forecast-shell">
+  <main class="main">
     <section class="forecast-list" id="forecastList"></section>
-
-    <section class="seven-day">
+    <section class="seven-day" id="sevenDay">
       <div class="seven-day-title">7-Day<br>Outlook</div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
-      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
+      <div class="day"><div class="day-name">--</div><img class="day-icon" alt=""><div class="day-hi"></div><div class="day-lo"></div></div>
     </section>
   </main>
 
-  <footer class="footer-bar">
-    <div class="footer-scroll">
-      <div class="footer-track" id="footerTrack"></div>
-    </div>
+  <footer class="footer">
+    <div class="footer-scroll"><div class="footer-track" id="footerTrack"></div></div>
   </footer>
+  <div class="error-note" id="errorNote"></div>
 </div>
 
 <script>
-const titleText = "Expanded Forecast";
-document.getElementById("headerTitle").textContent = titleText;
+const LAT = 39.6092;
+const LON = -85.4464;
 
-const footerSequence = [];
-const footerState = {
-  pxPerSecond: 90,
-  lastTs: null,
-  x: 0,
-  width: 0,
-  initialized: false
-};
+const footerState = { pxPerSecond: 90, lastTs: null, x: 0, width: 0, initialized: false };
+const errorNote = document.getElementById('errorNote');
 
-function updateClock() {
-  const now = new Date();
-  document.getElementById("headerClock").textContent = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "America/Indiana/Indianapolis"
-  }).format(now);
+function showError(msg){
+  errorNote.textContent = msg;
+  errorNote.className = 'error-note show';
+}
+function clearError(){ errorNote.className = 'error-note'; }
+
+function updateClock(){
+  document.getElementById('headerClock').textContent = new Intl.DateTimeFormat('en-US', {
+    hour:'numeric', minute:'2-digit', hour12:true, timeZone:'America/Indiana/Indianapolis'
+  }).format(new Date());
 }
 
-function iconToAsset(url) {
-  if (!url) return "";
+function formatTemp(v){ return Number.isFinite(v) ? `${Math.round(v)}°` : '--'; }
+function sentence(t){ return String(t || '').replace(/\s+/g, ' ').trim(); }
+function iconToAsset(url){
+  if (!url) return '';
   try {
     const u = new URL(url, window.location.origin);
-    const path = u.pathname;
-    const match = path.match(/\/icons\/land\/(day|night)\/([a-z_]+),?(\d+)?/i);
-    if (!match) return url;
-    return `images/weathericons/${match[1]}/${match[2]}.svg`;
-  } catch {
-    return url;
+    const m = u.pathname.match(/\/icons\/land\/(day|night)\/([a-z_]+),?(\d+)?/i);
+    if (m) return `images/weathericons/${m[1]}/${m[2]}.svg`;
+  } catch {}
+  return url;
+}
+
+function endpoints(path){
+  const list = [path];
+  if (window.location.origin && !window.location.origin.startsWith('file:')) list.push(`http://localhost:3000${path}`);
+  return [...new Set(list)];
+}
+
+async function fetchJsonWithFallback(paths){
+  let lastErr = null;
+  for (const p of paths){
+    try {
+      const r = await fetch(p, { cache: 'no-store' });
+      if (!r.ok) throw new Error(`${p} -> HTTP ${r.status}`);
+      return await r.json();
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Fetch failed');
+}
+
+async function loadForecast(){
+  try {
+    const data = await fetchJsonWithFallback(endpoints('/api/nws-forecast-detailed'));
+    if (!data || !Array.isArray(data.periods) || !data.periods.length) throw new Error('No forecast periods returned');
+    buildForecastRows(data.periods.slice(0,4));
+    buildSevenDay(data.periods);
+    clearError();
+  } catch (e) {
+    buildForecastRows([]);
+    buildSevenDay([]);
+    showError(`Forecast unavailable: ${e.message}`);
   }
 }
 
-function stripToSentence(text) {
-  return String(text || "").replace(/\s+/g, " ").trim();
-}
-
-function selectFourPeriods(periods) {
-  return (periods || []).slice(0,4);
-}
-
-function buildForecastRows(periods) {
-  const list = document.getElementById("forecastList");
-  list.innerHTML = "";
-  selectFourPeriods(periods).forEach((p) => {
-    const row = document.createElement("article");
-    row.className = "forecast-row";
+function buildForecastRows(periods){
+  const list = document.getElementById('forecastList');
+  list.innerHTML = '';
+  const rows = periods.length ? periods : Array.from({length:4}, (_,i)=>({name:'--', detailedForecast:'Forecast unavailable.', temperature:null, icon:''}));
+  rows.forEach((p)=>{
+    const row = document.createElement('article');
+    row.className = 'forecast-row';
     row.innerHTML = `
-      <div class="forecast-icon-wrap">
-        <img class="forecast-icon" alt="" src="${iconToAsset(p.icon)}">
-      </div>
+      <div class="forecast-icon-wrap"><img class="forecast-icon" alt="" src="${iconToAsset(p.icon)}"></div>
       <div class="forecast-copy">
-        <div class="forecast-name">${p.name || ""}</div>
-        <div class="forecast-text">${stripToSentence(p.detailedForecast || p.shortForecast || "")}</div>
+        <div class="forecast-name">${p.name || '--'}</div>
+        <div class="forecast-text">${sentence(p.detailedForecast || p.shortForecast || 'Forecast unavailable.')}</div>
       </div>
-      <div class="forecast-temp">${Number.isFinite(p.temperature) ? `${Math.round(p.temperature)}°` : ""}</div>
-    `;
+      <div class="forecast-temp">${Number.isFinite(p.temperature) ? `${Math.round(p.temperature)}°` : ''}</div>`;
     list.appendChild(row);
   });
 }
 
-function buildSevenDay(periods) {
+function buildSevenDay(periods){
+  const days = [...document.querySelectorAll('#sevenDay .day')];
   const daytime = (periods || []).filter(p => p && p.isDaytime).slice(0,7);
-  const items = [...document.querySelectorAll(".seven-day-item")];
-  items.forEach((item, i) => {
+  days.forEach((item, i)=>{
     const p = daytime[i];
-    const nameEl = item.querySelector(".seven-day-name");
-    const iconEl = item.querySelector(".seven-day-icon");
-    const hiEl = item.querySelector(".seven-day-hi");
-    const loEl = item.querySelector(".seven-day-lo");
-    if (!p) {
-      nameEl.textContent = "--";
-      iconEl.removeAttribute("src");
-      hiEl.textContent = "";
-      loEl.textContent = "";
-      return;
+    const nameEl = item.querySelector('.day-name');
+    const iconEl = item.querySelector('.day-icon');
+    const hiEl = item.querySelector('.day-hi');
+    const loEl = item.querySelector('.day-lo');
+    if (!p){
+      nameEl.textContent = '--'; hiEl.textContent = ''; loEl.textContent = ''; iconEl.removeAttribute('src'); return;
     }
     const nextNight = periods.find(q => q.number === p.number + 1 && !q.isDaytime);
-    nameEl.textContent = (p.name || "").replace(/^This /, "");
+    nameEl.textContent = (p.name || '').replace(/^This\s+/,'');
     iconEl.src = iconToAsset(p.icon);
-    hiEl.textContent = Number.isFinite(p.temperature) ? `${Math.round(p.temperature)}°` : "";
-    loEl.textContent = nextNight && Number.isFinite(nextNight.temperature) ? `${Math.round(nextNight.temperature)}°` : "";
+    hiEl.textContent = formatTemp(p.temperature);
+    loEl.textContent = nextNight && Number.isFinite(nextNight.temperature) ? `${Math.round(nextNight.temperature)}°` : '';
   });
 }
 
-function footerDataFromCurrent(data) {
-  return [
-    ["Temp", data.tempF != null ? `${Math.round(data.tempF)}°` : "--"],
-    ["Feels Like", data.feelsLikeF != null ? `${Math.round(data.feelsLikeF)}°` : "--"],
-    ["Dewpoint", data.dewF != null ? `${Math.round(data.dewF)}°` : "--"],
-    ["Humidity", data.humidity != null ? `${Math.round(data.humidity)}%` : "--"],
-    ["Wind", data.windSpeed != null ? `${Math.round(data.windSpeed)} mph` : "--"],
-    ["Pressure", data.pressureIn != null ? `${Number(data.pressureIn).toFixed(2)} in` : "--"],
-    ["Rain Today", data.rainDailyIn != null ? `${Number(data.rainDailyIn).toFixed(2)} in` : "--"]
-  ];
-}
-
-function renderFooter(items) {
-  const track = document.getElementById("footerTrack");
-  track.innerHTML = items.map(([label, value]) =>
-    `<span class="footer-item"><span class="label">${label}</span><span class="value">${value}</span></span>`
-  ).join("");
+function renderFooter(items){
+  const track = document.getElementById('footerTrack');
+  track.innerHTML = items.map(([label, value]) => `<span class="footer-item"><span class="label">${label}</span><span class="value">${value}</span></span>`).join('');
   footerState.width = track.scrollWidth;
-  if (!footerState.initialized) {
-    footerState.x = document.querySelector(".footer-scroll").clientWidth;
+  if (!footerState.initialized){
+    footerState.x = document.querySelector('.footer-scroll').clientWidth;
     footerState.initialized = true;
   }
 }
-
-function animateFooter(ts) {
-  const track = document.getElementById("footerTrack");
-  const viewport = document.querySelector(".footer-scroll").clientWidth;
+function defaultFooter(){
+  renderFooter([
+    ['Temp','--'],['Feels Like','--'],['Dewpoint','--'],['Humidity','--'],['Wind','--'],['Pressure','--'],['Rain Today','--']
+  ]);
+}
+function animateFooter(ts){
+  const track = document.getElementById('footerTrack');
+  const viewport = document.querySelector('.footer-scroll').clientWidth;
   if (footerState.lastTs == null) footerState.lastTs = ts;
   const dt = (ts - footerState.lastTs) / 1000;
   footerState.lastTs = ts;
@@ -370,79 +249,70 @@ function animateFooter(ts) {
   requestAnimationFrame(animateFooter);
 }
 
-function colorForAlert(name = "") {
-  const n = name.toLowerCase();
-  if (n.includes("tornado emergency")) return "#7d2ab6";
-  if (n.includes("tornado warning")) return "#c8102e";
-  if (n.includes("severe thunderstorm warning")) return "#d66817";
-  if (n.includes("tornado watch")) return "#d7b112";
-  if (n.includes("severe thunderstorm watch")) return "#b99611";
-  return "#2d74d6";
+async function loadCurrent(){
+  try {
+    const data = await fetchJsonWithFallback(endpoints('/api/tempest/current'));
+    renderFooter([
+      ['Temp', formatTemp(data.tempF)],
+      ['Feels Like', formatTemp(data.feelsLikeF)],
+      ['Dewpoint', formatTemp(data.dewF)],
+      ['Humidity', data.humidity != null ? `${Math.round(data.humidity)}%` : '--'],
+      ['Wind', data.windSpeed != null ? `${Math.round(data.windSpeed)} mph` : '--'],
+      ['Pressure', data.pressureIn != null ? `${Number(data.pressureIn).toFixed(2)} in` : '--'],
+      ['Rain Today', data.rainDailyIn != null ? `${Number(data.rainDailyIn).toFixed(2)} in` : '--']
+    ]);
+  } catch (e) {
+    defaultFooter();
+    showError(`Current conditions unavailable: ${e.message}`);
+  }
 }
 
-function alertPriority(name = "") {
+function colorForAlert(name=''){
   const n = name.toLowerCase();
-  if (n.includes("tornado emergency")) return 5;
-  if (n.includes("tornado warning")) return 4;
-  if (n.includes("severe thunderstorm warning")) return 3;
-  if (n.includes("tornado watch")) return 2;
-  if (n.includes("severe thunderstorm watch")) return 1;
+  if (n.includes('tornado emergency')) return '#7d2ab6';
+  if (n.includes('tornado warning')) return '#c8102e';
+  if (n.includes('severe thunderstorm warning')) return '#d66817';
+  if (n.includes('tornado watch')) return '#d7b112';
+  if (n.includes('severe thunderstorm watch')) return '#b99611';
+  return '#2d74d6';
+}
+function alertPriority(name=''){
+  const n = name.toLowerCase();
+  if (n.includes('tornado emergency')) return 5;
+  if (n.includes('tornado warning')) return 4;
+  if (n.includes('severe thunderstorm warning')) return 3;
+  if (n.includes('tornado watch')) return 2;
+  if (n.includes('severe thunderstorm watch')) return 1;
   return 0;
 }
-
-function formatExpires(iso) {
-  if (!iso) return "Expires --:-- --";
-  return "Expires " + new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "America/Indiana/Indianapolis"
-  }).format(new Date(iso));
+function formatExpires(iso){
+  if (!iso) return 'Expires --:-- --';
+  return 'Expires ' + new Intl.DateTimeFormat('en-US', { hour:'numeric', minute:'2-digit', hour12:true, timeZone:'America/Indiana/Indianapolis' }).format(new Date(iso));
 }
-
-async function loadAlerts() {
+async function loadAlerts(){
+  const badge = document.getElementById('alertBadge');
   try {
-    const r = await fetch("/api/nws-alerts");
-    const data = await r.json();
-    const alerts = Array.isArray(data.alerts) ? data.alerts : [];
-    const chosen = alerts.sort((a,b)=>alertPriority(b.event)-alertPriority(a.event))[0];
-    const badge = document.getElementById("alertBadge");
-    if (!chosen || alertPriority(chosen.event) < 1) {
-      badge.className = "alert-badge";
-      return;
-    }
-    document.getElementById("alertTop").textContent = chosen.event;
-    document.getElementById("alertBottom").textContent = formatExpires(chosen.expires || chosen.ends);
-    badge.querySelector(".alert-top").style.background = colorForAlert(chosen.event);
-    const severeGlow = alertPriority(chosen.event) >= 3;
-    badge.className = "alert-badge show" + (severeGlow ? " pulse" : "");
+    const data = await fetchJsonWithFallback(endpoints('/api/nws-alerts'));
+    const alerts = Array.isArray(data.alerts) ? data.alerts.slice().sort((a,b)=>alertPriority(b.event)-alertPriority(a.event)) : [];
+    const chosen = alerts[0];
+    if (!chosen || alertPriority(chosen.event) < 1){ badge.className = 'alert-badge'; return; }
+    document.getElementById('alertTop').textContent = chosen.event;
+    document.getElementById('alertBottom').textContent = formatExpires(chosen.expires || chosen.ends);
+    badge.querySelector('.alert-top').style.background = colorForAlert(chosen.event);
+    badge.className = 'alert-badge show' + (alertPriority(chosen.event) >= 3 ? ' pulse' : '');
   } catch {
-    document.getElementById("alertBadge").className = "alert-badge";
+    badge.className = 'alert-badge';
   }
-}
-
-async function loadForecast() {
-  const r = await fetch("/api/nws-forecast-detailed");
-  const data = await r.json();
-  if (data && Array.isArray(data.periods) && data.periods.length) {
-    buildForecastRows(data.periods);
-    buildSevenDay(data.periods);
-  }
-}
-
-async function loadCurrent() {
-  const r = await fetch("/api/tempest/current");
-  const data = await r.json();
-  renderFooter(footerDataFromCurrent(data));
 }
 
 updateClock();
 setInterval(updateClock, 15000);
+defaultFooter();
 loadForecast();
 loadCurrent();
 loadAlerts();
-setInterval(loadCurrent, 30000);
 setInterval(loadForecast, 300000);
+setInterval(loadCurrent, 30000);
 setInterval(loadAlerts, 60000);
 requestAnimationFrame(animateFooter);
 </script>
