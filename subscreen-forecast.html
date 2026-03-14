@@ -59,32 +59,46 @@
 
     .clock-mask {
       position: absolute;
-      right: 0;
-      top: 0;
-      width: 365px;
-      height: 78px;
-      background: linear-gradient(180deg, rgba(6,35,88,0.98) 0%, rgba(7,33,84,0.98) 62%, rgba(5,23,58,0.85) 100%);
-      clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
-      opacity: 0.96;
+      right: 14px;
+      top: 36px;
+      width: 286px;
+      height: 46px;
+      background: linear-gradient(180deg, rgba(8,31,74,0.84) 0%, rgba(4,20,53,0.84) 100%);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 6px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      opacity: 1;
+      z-index: 2;
+    }
+
+    .clock-mask::after {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 0;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(244,191,52,0.9), rgba(244,191,52,0.35));
+      border-radius: 2px;
     }
 
     .header-clock {
       position: absolute;
-      right: 26px;
-      top: 50px;
-      font-size: 34px;
+      right: 30px;
+      top: 46px;
+      font-size: 23px;
       line-height: 1;
       font-weight: 700;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.8px;
       color: #ffffff;
-      text-shadow: 0 0 8px rgba(255,255,255,0.28);
+      text-shadow: 0 0 8px rgba(255,255,255,0.18);
       z-index: 3;
     }
 
     .alert-box {
       position: absolute;
-      right: 20px;
-      top: 8px;
+      right: 14px;
+      top: 4px;
       width: 250px;
       border: 1px solid rgba(255,255,255,0.45);
       border-radius: 6px;
@@ -98,7 +112,7 @@
     .alert-box.visible { display: block; }
     .alert-top {
       padding: 7px 12px 6px;
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 800;
       line-height: 1;
       text-transform: uppercase;
@@ -123,10 +137,10 @@
       position: absolute;
       left: 24px;
       right: 24px;
-      top: 160px;
+      top: 152px;
       bottom: 52px;
       display: grid;
-      grid-template-rows: 1fr 110px;
+      grid-template-rows: 1fr 114px;
       gap: 8px;
     }
 
@@ -135,20 +149,20 @@
       grid-template-rows: repeat(4, 1fr);
       gap: 7px;
       min-height: 0;
-      padding-top: 4px;
+      padding-top: 0;
     }
 
     .period {
       position: relative;
       display: grid;
-      grid-template-columns: 122px 1fr 150px;
-      align-items: start;
-      gap: 18px;
+      grid-template-columns: 116px 1fr 144px;
+      align-items: center;
+      gap: 14px;
       background: var(--panel-grad);
       border: 1px solid var(--line);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 18px rgba(0,0,0,0.22);
       overflow: hidden;
-      padding: 10px 16px 8px 14px;
+      padding: 12px 16px 12px 12px;
     }
 
     .period::before {
@@ -161,11 +175,12 @@
 
     .icon-wrap {
       width: 104px;
-      height: 84px;
+      height: 82px;
       display: flex;
       align-items: center;
       justify-content: center;
       padding-top: 0;
+      align-self: center;
     }
 
     .icon-wrap svg {
@@ -179,25 +194,25 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      padding-top: 0;
+      padding-top: 2px;
       min-width: 0;
     }
 
     .period-name {
-      font-size: 21px;
-      line-height: 0.96;
+      font-size: 28px;
+      line-height: 0.95;
       font-weight: 800;
       letter-spacing: 0.8px;
       text-transform: uppercase;
-      color: #7EC8FF;
+      color: #7ec8ff;
       text-shadow: 0 0 6px rgba(126,200,255,0.16);
-      margin-bottom: 1px;
+      margin-bottom: 4px;
       white-space: nowrap;
     }
 
     .period-text {
-      font-size: 22px;
-      line-height: 1.08;
+      font-size: 21px;
+      line-height: 1.12;
       color: var(--text);
       max-width: 100%;
       overflow: hidden;
@@ -208,14 +223,13 @@
 
     .period-temp {
       justify-self: end;
-      align-self: start;
-      font-size: 78px;
+      align-self: center;
+      font-size: 80px;
       line-height: 0.9;
       font-weight: 800;
       letter-spacing: -2px;
       text-shadow: 0 0 10px rgba(255,255,255,0.12);
-      padding-right: 6px;
-      padding-top: 2px;
+      padding-right: 8px;
     }
 
     .temp-gradient {
@@ -226,7 +240,7 @@
 
     .seven-day {
       display: grid;
-      grid-template-columns: 114px repeat(7, 1fr);
+      grid-template-columns: 116px repeat(7, 1fr);
       background: linear-gradient(180deg, rgba(3,19,46,0.98), rgba(0,10,28,0.98));
       border: 1px solid var(--line);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
@@ -240,19 +254,19 @@
       justify-content: center;
       text-align: center;
       font-weight: 800;
-      font-size: 24px;
-      line-height: 1;
-      color: #7EC8FF;
+      font-size: 22px;
+      line-height: 1.02;
+      color: #7ec8ff;
       letter-spacing: 0.6px;
     }
 
     .day-card {
       display: grid;
-      grid-template-rows: 18px 38px 22px 18px 16px;
-      align-content: start;
+      grid-template-rows: 20px 34px 18px 14px;
+      align-content: center;
       justify-items: center;
-      align-items: start;
-      padding: 7px 2px 4px;
+      row-gap: 2px;
+      padding: 4px 3px 3px;
       border-right: 1px solid var(--line-soft);
       min-width: 0;
     }
@@ -260,37 +274,56 @@
     .day-card:last-child { border-right: 0; }
 
     .day-name {
-      font-size: 16px;
+      font-size: 18px;
       line-height: 1;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      color: #7EC8FF;
+      color: #7ec8ff;
+    }
+
+    .day-icon-row {
+      width: 100%;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+    }
+
+    .day-icon-row.has-pop {
+      justify-content: flex-start;
+      gap: 4px;
+      padding-left: 7px;
+    }
+
+    .day-icon-row.no-pop {
+      justify-content: center;
     }
 
     .day-icon svg {
       width: 34px;
       height: 34px;
+      display: block;
     }
 
     .day-temps {
       display: flex;
-      gap: 4px;
+      gap: 0;
       align-items: baseline;
+      justify-content: center;
       line-height: 1;
       white-space: nowrap;
     }
     .day-high {
-      font-size: 23px;
+      font-size: 18px;
       font-weight: 800;
     }
     .day-low {
       font-size: 18px;
-      font-weight: 700;
-      color: #bfd2e8;
+      font-weight: 800;
+      color: #7ec8ff;
     }
 
     .day-word {
-      font-size: 10px;
+      font-size: 11px;
       line-height: 1;
       color: #dbe7f6;
       text-transform: uppercase;
@@ -298,15 +331,14 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      letter-spacing: 0.25px;
+      letter-spacing: 0.2px;
     }
 
     .day-pop {
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1;
       color: #8ec9ff;
       font-weight: 700;
-      align-self: end;
     }
 
     .footer {
@@ -394,10 +426,10 @@
     }
 
     @media (max-width: 1600px) {
-      .period-name { font-size: 22px; }
-      .period-text { font-size: 20px; }
-      .period-temp { font-size: 70px; }
-      .day-name { font-size: 15px; }
+      .period-name { font-size: 25px; }
+      .period-text { font-size: 19px; }
+      .period-temp { font-size: 72px; }
+      .day-name { font-size: 16px; }
     }
   </style>
 </head>
@@ -491,7 +523,7 @@
 
     function precipChance(text) {
       const m = String(text || "").match(/(\d{1,3})\s?%/);
-      return m ? `${m[1]}%` : "--";
+      return m ? `${m[1]}%` : "";
     }
 
     function selectWeatherType(text) {
@@ -569,14 +601,26 @@
       throw lastErr;
     }
 
-    function parseHighLow(period) {
+    function parseHighLow(period, allPeriods = []) {
       const text = `${period.detailedForecast || ''} ${period.shortForecast || ''}`;
       const temp = Number(period.temperature);
-      const unit = period.temperatureUnit || '°';
       if (period.isDaytime) {
-        return { high: Number.isFinite(temp) ? `${Math.round(temp)}°` : '--', low: '', rawHigh: temp, rawLow: null };
+        let low = null;
+        const idx = allPeriods.indexOf(period);
+        const next = idx >= 0 ? allPeriods[idx + 1] : null;
+        if (next) {
+          const nextText = `${next.detailedForecast || ''} ${next.shortForecast || ''}`;
+          const lowMatch = nextText.match(/low(?:s)?\s+(?:around|near|in the)?\s*(\d{1,3})/i);
+          low = lowMatch ? Number(lowMatch[1]) : (Number.isFinite(next.temperature) ? Math.round(next.temperature) : null);
+        }
+        return {
+          high: Number.isFinite(temp) ? `${Math.round(temp)}°` : '--',
+          low: Number.isFinite(low) ? `${low}°` : '',
+          rawHigh: Number.isFinite(temp) ? Math.round(temp) : null,
+          rawLow: Number.isFinite(low) ? low : null
+        };
       }
-      const lowMatch = text.match(/low(?:s)?\s+(?:around|near)?\s*(\d{1,3})/i);
+      const lowMatch = text.match(/low(?:s)?\s+(?:around|near|in the)?\s*(\d{1,3})/i);
       const low = lowMatch ? Number(lowMatch[1]) : (Number.isFinite(temp) ? Math.round(temp) : null);
       return { high: '', low: Number.isFinite(low) ? `${low}°` : '--', rawHigh: null, rawLow: low };
     }
@@ -626,22 +670,22 @@
       const wrap = document.getElementById('daysWrap');
       wrap.innerHTML = '';
       const days = buildSevenDay(periods);
-      days.forEach((p) => {
+      days.forEach((p, idx) => {
         const type = selectWeatherType(`${p.shortForecast} ${p.detailedForecast} ${p.name}`);
         const word = summarizeCondition(p.shortForecast || p.detailedForecast);
-        const popRaw = precipChance(p.detailedForecast || p.shortForecast);
-        const pop = popRaw === '--' ? 'POP --' : `POP ${popRaw}`;
-        const hl = parseHighLow(p);
-        const high = Number.isFinite(hl.rawHigh) ? `<span class="day-high temp-gradient" style="background-image:${tempGradient(hl.rawHigh)}">${hl.high}</span>` : '';
+        const pop = precipChance(p.detailedForecast || p.shortForecast);
+        const hl = parseHighLow(p, periods);
+        const high = Number.isFinite(hl.rawHigh) ? `<span class="day-high temp-gradient" style="background-image:${tempGradient(hl.rawHigh)}">${hl.high}</span>` : '<span class="day-high">--</span>';
         const low = hl.low ? `<span class="day-low">/${hl.low}</span>` : '';
         const card = document.createElement('div');
         card.className = 'day-card';
+        const iconRowClass = pop ? 'day-icon-row has-pop' : 'day-icon-row no-pop';
+        const label = idx === 0 ? 'TODAY' : shortDay(p.name);
         card.innerHTML = `
-          <div class="day-name">${shortDay(p.name)}</div>
-          <div class="day-icon">${iconSvg(type, false)}</div>
-          <div class="day-temps">${high || '<span class="day-high">--</span>'}${low}</div>
+          <div class="day-name">${label}</div>
+          <div class="${iconRowClass}"><div class="day-icon">${iconSvg(type, false)}</div>${pop ? `<div class="day-pop">${pop}</div>` : ''}</div>
+          <div class="day-temps">${high}${low}</div>
           <div class="day-word">${word}</div>
-          <div class="day-pop">${pop}</div>
         `;
         wrap.appendChild(card);
       });
@@ -690,10 +734,15 @@
 
     function formatClock() {
       const dt = new Date();
-      return new Intl.DateTimeFormat('en-US', {
+      const time = new Intl.DateTimeFormat('en-US', {
         hour: 'numeric', minute: '2-digit', hour12: true,
         timeZone: 'America/Indiana/Indianapolis'
       }).format(dt);
+      const zone = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Indiana/Indianapolis',
+        timeZoneName: 'short'
+      }).formatToParts(dt).find(part => part.type === 'timeZoneName')?.value || 'ET';
+      return `${time} ${zone}`;
     }
 
     function startClock() {
