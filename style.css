@@ -1770,3 +1770,767 @@ body{
     font-size:15px;
   }
 }
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expanded Forecast</title>
+  <style>
+    :root {
+      --bg1: #03142f;
+      --bg2: #021126;
+      --line: rgba(76, 167, 255, 0.45);
+      --line-soft: rgba(76, 167, 255, 0.22);
+      --text: #eef6ff;
+      --text-soft: #d8e7f6;
+      --muted: #9db6d5;
+      --gold: #f4bf34;
+      --panel-grad: linear-gradient(90deg, rgba(4,22,49,0.98) 0%, rgba(1,13,33,0.98) 50%, rgba(2,26,64,0.98) 100%);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top, #0a2a56 0%, #03142f 36%, #021126 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(85, 160, 255, 0.14), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(30, 100, 200, 0.12), transparent 25%),
+        linear-gradient(180deg, #07204a 0%, #03142f 35%, #021126 100%);
+    }
+
+    .header {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      overflow: visible;
+      z-index: 30;
+    }
+
+    .header-bar {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .clock-mask {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 365px;
+      height: 78px;
+      background: linear-gradient(180deg, rgba(6,35,88,0.98) 0%, rgba(7,33,84,0.98) 62%, rgba(5,23,58,0.85) 100%);
+      clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
+      opacity: 0.96;
+    }
+
+    .header-clock {
+      position: absolute;
+      right: 26px;
+      top: 34px;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: #ffffff;
+      text-shadow: 0 0 8px rgba(255,255,255,0.28);
+      z-index: 3;
+    }
+
+    .alert-box {
+      position: absolute;
+      right: 20px;
+      top: 6px;
+      width: 250px;
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 6px;
+      overflow: hidden;
+      backdrop-filter: blur(2px);
+      box-shadow: 0 0 10px rgba(255,255,255,0.12);
+      display: none;
+      z-index: 5;
+    }
+
+    .alert-box.visible { display: block; }
+    .alert-top {
+      padding: 7px 12px 6px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
+      text-transform: uppercase;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+      white-space: nowrap;
+    }
+    .alert-bottom {
+      padding: 6px 12px 7px;
+      background: rgba(7, 17, 34, 0.74);
+      font-size: 15px;
+      color: #f6fbff;
+      line-height: 1;
+    }
+    .alert-box.pulse { animation: pulseGlow 4.5s ease-in-out infinite; }
+    @keyframes pulseGlow {
+      0%,100% { box-shadow: 0 0 10px rgba(255,255,255,0.12); }
+      50% { box-shadow: 0 0 18px rgba(255,255,255,0.30); }
+    }
+
+    .content {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      top: 140px;
+      bottom: 52px;
+      display: grid;
+      grid-template-rows: 1fr 114px;
+      gap: 8px;
+    }
+
+    .periods {
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 8px;
+      min-height: 0;
+      padding-top: 4px;
+    }
+
+    .period {
+      position: relative;
+      display: grid;
+      grid-template-columns: 122px 1fr 150px;
+      align-items: center;
+      gap: 18px;
+      background: var(--panel-grad);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 18px rgba(0,0,0,0.22);
+      overflow: hidden;
+      padding: 18px 18px 14px 16px;
+    }
+
+    .period::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(50,140,255,0.08), transparent 20%, transparent 80%, rgba(50,140,255,0.08));
+      pointer-events: none;
+    }
+
+    .icon-wrap {
+      width: 110px;
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 6px;
+    }
+
+    .icon-wrap svg {
+      width: 98px;
+      height: 98px;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.08));
+    }
+
+    .period-body {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 12px;
+      min-width: 0;
+    }
+
+    .period-name {
+      font-size: 38px;
+      line-height: 0.98;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 0 6px rgba(255,255,255,0.14);
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .period-text {
+      font-size: 27px;
+      line-height: 1.18;
+      color: var(--text);
+      max-width: 100%;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .period-temp {
+      justify-self: end;
+      align-self: center;
+      font-size: 86px;
+      line-height: 0.9;
+      font-weight: 800;
+      letter-spacing: -2px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.12);
+      padding-right: 8px;
+    }
+
+    .temp-gradient {
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .seven-day {
+      display: grid;
+      grid-template-columns: 158px repeat(7, 1fr);
+      background: linear-gradient(180deg, rgba(3,19,46,0.98), rgba(0,10,28,0.98));
+      border: 1px solid var(--line);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+
+    .seven-label {
+      border-right: 1px solid var(--line-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 800;
+      font-size: 28px;
+      line-height: 1.02;
+      color: #ffffff;
+      letter-spacing: 0.6px;
+    }
+
+    .day-card {
+      display: grid;
+      grid-template-rows: 24px 44px 22px 18px 16px;
+      align-content: center;
+      justify-items: center;
+      padding: 4px 4px 3px;
+      border-right: 1px solid var(--line-soft);
+      min-width: 0;
+    }
+
+    .day-card:last-child { border-right: 0; }
+
+    .day-name {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .day-icon svg {
+      width: 42px;
+      height: 42px;
+    }
+
+    .day-temps {
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .day-high {
+      font-size: 25px;
+      font-weight: 800;
+    }
+    .day-low {
+      font-size: 18px;
+      font-weight: 700;
+      color: #bfd2e8;
+    }
+
+    .day-word {
+      font-size: 12px;
+      line-height: 1;
+      color: #dbe7f6;
+      text-transform: uppercase;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.25px;
+    }
+
+    .day-pop {
+      font-size: 13px;
+      line-height: 1;
+      color: #8ec9ff;
+      font-weight: 700;
+    }
+
+    .footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 52px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      align-items: center;
+      gap: 0;
+      background: linear-gradient(180deg, rgba(2,17,43,0.98), rgba(0,9,24,0.98));
+      border-top: 1px solid rgba(58, 151, 247, 0.35);
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.22);
+      padding: 0 10px;
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+      padding: 0 10px;
+    }
+    .footer-label {
+      font-size: 13px;
+      color: #9db8d9;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      white-space: nowrap;
+    }
+    .footer-value {
+      font-size: 23px;
+      line-height: 1;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .condition-slot {
+      position: relative;
+      height: 24px;
+      overflow: hidden;
+      min-width: 0;
+      flex: 1;
+    }
+    .condition-entry {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 800;
+      color: #ffffff;
+      transform: translateY(110%);
+      opacity: 0;
+      transition: transform 420ms ease, opacity 420ms ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .condition-entry.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .condition-entry.exit {
+      transform: translateY(-110%);
+      opacity: 0;
+    }
+
+    .small-note {
+      position: absolute;
+      right: 28px;
+      bottom: 60px;
+      font-size: 14px;
+      color: #a7c3e2;
+      opacity: 0.82;
+      z-index: 15;
+    }
+
+    @media (max-width: 1600px) {
+      .period-name { font-size: 34px; }
+      .period-text { font-size: 24px; }
+      .period-temp { font-size: 76px; }
+      .day-name { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <div class="header">
+      <img class="header-bar" src="assets/header/expanded-forecast-bar.png" alt="Expanded Forecast Header" />
+      <div class="clock-mask"></div>
+      <div id="alertBox" class="alert-box">
+        <div id="alertTop" class="alert-top"></div>
+        <div id="alertBottom" class="alert-bottom"></div>
+      </div>
+      <div id="headerClock" class="header-clock">--:--</div>
+    </div>
+
+    <div class="content">
+      <div id="periods" class="periods"></div>
+      <div class="seven-day">
+        <div class="seven-label">7-DAY<br />OUTLOOK</div>
+        <div id="daysWrap" style="display: contents"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-item"><div class="footer-label">Temp</div><div id="fTemp" class="footer-value">--°</div></div>
+      <div class="footer-item"><div class="footer-label">Dewpoint</div><div id="fDew" class="footer-value">--°</div></div>
+      <div class="footer-item"><div class="footer-label">Humidity</div><div id="fHumidity" class="footer-value">--%</div></div>
+      <div class="footer-item"><div class="footer-label">Pressure</div><div id="fPressure" class="footer-value">-- in</div></div>
+      <div class="footer-item"><div class="footer-label">Wind</div><div id="fWind" class="footer-value">-- mph</div></div>
+      <div class="footer-item">
+        <div class="footer-label">Condition</div>
+        <div class="condition-slot" id="conditionSlot"></div>
+      </div>
+    </div>
+
+    <div id="errorNote" class="small-note" style="display:none"></div>
+  </div>
+
+  <script>
+    const API_BASES = ["", "http://localhost:3000"];
+    const gradientStops = [
+      { limit: 9, colors: ["#d9d9d9", "#f3f3f3"] },
+      { limit: 19, colors: ["#6fd0ff", "#b6f0ff"] },
+      { limit: 29, colors: ["#58c4ff", "#93e6ff"] },
+      { limit: 39, colors: ["#37a8ff", "#8dd2ff"] },
+      { limit: 49, colors: ["#2fd46f", "#b5ff8d"] },
+      { limit: 59, colors: ["#9be442", "#f5ff8a"] },
+      { limit: 69, colors: ["#ffd84a", "#fff29b"] },
+      { limit: 79, colors: ["#ffb347", "#ffe28a"] },
+      { limit: 89, colors: ["#ff7b47", "#ffd08a"] },
+      { limit: 99, colors: ["#ff5858", "#ffc28a"] },
+      { limit: 999, colors: ["#ff47c2", "#ffd0ff"] }
+    ];
+
+    const alertPriority = {
+      "Tornado Emergency": 5,
+      "Tornado Warning": 4,
+      "Severe Thunderstorm Warning": 3,
+      "Tornado Watch": 2,
+      "Severe Thunderstorm Watch": 1
+    };
+
+    function tempGradient(temp) {
+      const t = Number(temp);
+      const match = gradientStops.find(s => t <= s.limit) || gradientStops[gradientStops.length - 1];
+      return `linear-gradient(180deg, ${match.colors[0]}, ${match.colors[1]})`;
+    }
+
+    function shortDay(name) {
+      const map = {
+        Monday: "MON", Tuesday: "TUE", Wednesday: "WED", Thursday: "THU", Friday: "FRI", Saturday: "SAT", Sunday: "SUN",
+        Tonight: "TON", Overnight: "OVN", Today: "TOD"
+      };
+      return map[name] || String(name || "").slice(0,3).toUpperCase();
+    }
+
+    function summarizeCondition(text) {
+      const s = String(text || "").toLowerCase();
+      if (s.includes("thunder")) return "Storms";
+      if (s.includes("snow")) return "Snow";
+      if (s.includes("rain") || s.includes("showers")) return "Rain";
+      if (s.includes("partly sunny") || s.includes("partly cloudy")) return "Partly Cloudy";
+      if (s.includes("mostly sunny")) return "Mostly Sunny";
+      if (s.includes("sunny")) return "Sunny";
+      if (s.includes("mostly cloudy")) return "Mostly Cloudy";
+      if (s.includes("cloudy")) return "Cloudy";
+      if (s.includes("clear")) return "Clear";
+      if (s.includes("fog")) return "Fog";
+      return "Forecast";
+    }
+
+    function precipChance(text) {
+      const m = String(text || "").match(/(\d{1,3})\s?%/);
+      return m ? `${m[1]}%` : "--";
+    }
+
+    function selectWeatherType(text) {
+      const s = String(text || "").toLowerCase();
+      if (s.includes("thunder")) return "thunder";
+      if (s.includes("snow") || s.includes("flurr")) return "snow";
+      if (s.includes("rain") || s.includes("showers")) return "rain";
+      if (s.includes("partly sunny") || s.includes("partly cloudy")) return s.includes("night") ? "partly-night" : "partly-day";
+      if (s.includes("mostly sunny")) return "mostly-sunny";
+      if (s.includes("sunny")) return "sunny";
+      if (s.includes("clear")) return "clear-night";
+      if (s.includes("cloudy")) return "cloudy";
+      if (s.includes("fog") || s.includes("haze")) return "fog";
+      return "cloudy";
+    }
+
+    function iconSvg(type, large = false) {
+      const size = large ? 98 : 42;
+      const sun = `<circle cx="${size*0.35}" cy="${size*0.35}" r="${size*0.16}" fill="#ffd24b"/><g stroke="#ffc83a" stroke-width="${large ? 4 : 2.2}" stroke-linecap="round">
+        <line x1="${size*0.35}" y1="${size*0.08}" x2="${size*0.35}" y2="${size*0.18}" />
+        <line x1="${size*0.35}" y1="${size*0.52}" x2="${size*0.35}" y2="${size*0.62}" />
+        <line x1="${size*0.08}" y1="${size*0.35}" x2="${size*0.18}" y2="${size*0.35}" />
+        <line x1="${size*0.52}" y1="${size*0.35}" x2="${size*0.62}" y2="${size*0.35}" />
+        <line x1="${size*0.16}" y1="${size*0.16}" x2="${size*0.22}" y2="${size*0.22}" />
+        <line x1="${size*0.48}" y1="${size*0.48}" x2="${size*0.54}" y2="${size*0.54}" />
+        <line x1="${size*0.16}" y1="${size*0.54}" x2="${size*0.22}" y2="${size*0.48}" />
+        <line x1="${size*0.48}" y1="${size*0.22}" x2="${size*0.54}" y2="${size*0.16}" />
+      </g>`;
+      const cloud = `<g>
+        <ellipse cx="${size*0.58}" cy="${size*0.53}" rx="${size*0.18}" ry="${size*0.13}" fill="#eef5ff"/>
+        <ellipse cx="${size*0.43}" cy="${size*0.57}" rx="${size*0.16}" ry="${size*0.12}" fill="#eef5ff"/>
+        <ellipse cx="${size*0.72}" cy="${size*0.58}" rx="${size*0.16}" ry="${size*0.11}" fill="#eef5ff"/>
+        <rect x="${size*0.32}" y="${size*0.56}" width="${size*0.52}" height="${size*0.14}" rx="${size*0.07}" fill="#eef5ff"/>
+        <path d="M ${size*0.33} ${size*0.64} Q ${size*0.58} ${size*0.78} ${size*0.84} ${size*0.61}" fill="rgba(173,196,222,0.38)"/>
+      </g>`;
+      const moon = `<g>
+        <circle cx="${size*0.34}" cy="${size*0.34}" r="${size*0.17}" fill="#f2f5d8" />
+        <circle cx="${size*0.40}" cy="${size*0.30}" r="${size*0.17}" fill="#07204a" />
+      </g>`;
+      const rain = `<g stroke="#59b8ff" stroke-width="${large ? 4 : 2.3}" stroke-linecap="round">
+        <line x1="${size*0.43}" y1="${size*0.76}" x2="${size*0.38}" y2="${size*0.87}" />
+        <line x1="${size*0.57}" y1="${size*0.76}" x2="${size*0.52}" y2="${size*0.87}" />
+        <line x1="${size*0.71}" y1="${size*0.76}" x2="${size*0.66}" y2="${size*0.87}" />
+      </g>`;
+      const snow = `<g fill="#dff7ff"><circle cx="${size*0.47}" cy="${size*0.82}" r="${large ? 4 : 2}" /><circle cx="${size*0.60}" cy="${size*0.86}" r="${large ? 4 : 2}" /><circle cx="${size*0.70}" cy="${size*0.80}" r="${large ? 4 : 2}" /></g>`;
+      const bolt = `<polygon points="${size*0.54},${size*0.72} ${size*0.48},${size*0.88} ${size*0.58},${size*0.88} ${size*0.52},${size*0.98} ${size*0.68},${size*0.78} ${size*0.58},${size*0.78}" fill="#ffd24b"/>`;
+      const fog = `<g stroke="#d3e2f5" stroke-width="${large ? 4 : 2}" stroke-linecap="round" opacity="0.9">
+        <line x1="${size*0.28}" y1="${size*0.68}" x2="${size*0.76}" y2="${size*0.68}" />
+        <line x1="${size*0.34}" y1="${size*0.78}" x2="${size*0.82}" y2="${size*0.78}" />
+      </g>`;
+      let body = "";
+      if (type === "sunny" || type === "mostly-sunny") body = `${sun}${type === 'mostly-sunny' ? cloud : ''}`;
+      else if (type === "clear-night") body = `${moon}`;
+      else if (type === "partly-day") body = `${sun}${cloud}`;
+      else if (type === "partly-night") body = `${moon}${cloud}`;
+      else if (type === "rain") body = `${cloud}${rain}`;
+      else if (type === "snow") body = `${cloud}${snow}`;
+      else if (type === "thunder") body = `${cloud}${rain}${bolt}`;
+      else if (type === "fog") body = `${cloud}${fog}`;
+      else body = `${cloud}`;
+      return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
+    }
+
+    async function fetchJson(path) {
+      let lastErr;
+      for (const base of API_BASES) {
+        try {
+          const res = await fetch(`${base}${path}`, { cache: 'no-store' });
+          if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+          return await res.json();
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      throw lastErr;
+    }
+
+    function parseHighLow(period) {
+      const text = `${period.detailedForecast || ''} ${period.shortForecast || ''}`;
+      const temp = Number(period.temperature);
+      const unit = period.temperatureUnit || '°';
+      if (period.isDaytime) {
+        return { high: Number.isFinite(temp) ? `${Math.round(temp)}°` : '--', low: '', rawHigh: temp, rawLow: null };
+      }
+      const lowMatch = text.match(/low(?:s)?\s+(?:around|near)?\s*(\d{1,3})/i);
+      const low = lowMatch ? Number(lowMatch[1]) : (Number.isFinite(temp) ? Math.round(temp) : null);
+      return { high: '', low: Number.isFinite(low) ? `${low}°` : '--', rawHigh: null, rawLow: low };
+    }
+
+    function buildSevenDay(periods) {
+      const byDay = [];
+      for (const p of periods) {
+        if (p.name && /night|tonight|overnight/i.test(p.name)) continue;
+        if (!p.isDaytime && p.name && !/today/i.test(p.name)) continue;
+        byDay.push(p);
+        if (byDay.length === 7) break;
+      }
+      if (byDay.length < 7) {
+        for (const p of periods) {
+          if (byDay.includes(p)) continue;
+          byDay.push(p);
+          if (byDay.length === 7) break;
+        }
+      }
+      return byDay.slice(0, 7);
+    }
+
+    function buildPeriods(periods) {
+      const wrap = document.getElementById('periods');
+      wrap.innerHTML = '';
+      periods.slice(0, 4).forEach((p) => {
+        const type = selectWeatherType(`${p.shortForecast} ${p.detailedForecast} ${p.name}`);
+        const temp = Number.isFinite(p.temperature) ? Math.round(p.temperature) : null;
+        const el = document.createElement('div');
+        el.className = 'period';
+        const tempHtml = Number.isFinite(temp)
+          ? `<div class="period-temp temp-gradient" style="background-image:${tempGradient(temp)}">${temp}°</div>`
+          : `<div class="period-temp">--°</div>`;
+        el.innerHTML = `
+          <div class="icon-wrap">${iconSvg(type, true)}</div>
+          <div class="period-body">
+            <div class="period-name">${p.name || ''}</div>
+            <div class="period-text">${p.detailedForecast || p.shortForecast || ''}</div>
+          </div>
+          ${tempHtml}
+        `;
+        wrap.appendChild(el);
+      });
+    }
+
+    function buildDays(periods) {
+      const wrap = document.getElementById('daysWrap');
+      wrap.innerHTML = '';
+      const days = buildSevenDay(periods);
+      days.forEach((p) => {
+        const type = selectWeatherType(`${p.shortForecast} ${p.detailedForecast} ${p.name}`);
+        const word = summarizeCondition(p.shortForecast || p.detailedForecast);
+        const pop = precipChance(p.detailedForecast || p.shortForecast);
+        const hl = parseHighLow(p);
+        const high = Number.isFinite(hl.rawHigh) ? `<span class="day-high temp-gradient" style="background-image:${tempGradient(hl.rawHigh)}">${hl.high}</span>` : '';
+        const low = hl.low ? `<span class="day-low">/${hl.low}</span>` : '';
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        card.innerHTML = `
+          <div class="day-name">${shortDay(p.name)}</div>
+          <div class="day-icon">${iconSvg(type, false)}</div>
+          <div class="day-temps">${high || '<span class="day-high">--</span>'}${low}</div>
+          <div class="day-word">${word}</div>
+          <div class="day-pop">${pop}</div>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    function updateFooter(current) {
+      document.getElementById('fTemp').textContent = Number.isFinite(current.tempF) ? `${Math.round(current.tempF)}°` : '--°';
+      document.getElementById('fDew').textContent = Number.isFinite(current.dewF) ? `${Math.round(current.dewF)}°` : '--°';
+      document.getElementById('fHumidity').textContent = Number.isFinite(current.humidity) ? `${Math.round(current.humidity)}%` : '--%';
+      document.getElementById('fPressure').textContent = Number.isFinite(current.pressureIn) ? `${current.pressureIn.toFixed(2)} in` : '-- in';
+      document.getElementById('fWind').textContent = Number.isFinite(current.windSpeed) ? `${Math.round(current.windSpeed)} mph` : '-- mph';
+
+      const values = [
+        current.condition || 'Live Conditions',
+        Number.isFinite(current.feelsLikeF) ? `Feels Like ${Math.round(current.feelsLikeF)}°` : null,
+        Number.isFinite(current.windGust) ? `Gusts ${Math.round(current.windGust)} mph` : null,
+        Number.isFinite(current.rainDailyIn) ? `Rain Today ${current.rainDailyIn.toFixed(2)} in` : null
+      ].filter(Boolean);
+      startConditionRotation(values);
+    }
+
+    let conditionTimer = null;
+    function startConditionRotation(values) {
+      const slot = document.getElementById('conditionSlot');
+      slot.innerHTML = '';
+      if (!values.length) values = ['Live Conditions'];
+      values.forEach((text, idx) => {
+        const div = document.createElement('div');
+        div.className = 'condition-entry' + (idx === 0 ? ' active' : '');
+        div.textContent = text;
+        slot.appendChild(div);
+      });
+      if (conditionTimer) clearInterval(conditionTimer);
+      let active = 0;
+      const entries = [...slot.children];
+      conditionTimer = setInterval(() => {
+        const next = (active + 1) % entries.length;
+        entries[active].classList.remove('active');
+        entries[active].classList.add('exit');
+        entries[next].classList.remove('exit');
+        entries[next].classList.add('active');
+        setTimeout(() => entries[active].classList.remove('exit'), 430);
+        active = next;
+      }, 2600);
+    }
+
+    function formatClock() {
+      const dt = new Date();
+      return new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZone: 'America/Indiana/Indianapolis'
+      }).format(dt);
+    }
+
+    function startClock() {
+      const el = document.getElementById('headerClock');
+      const update = () => { el.textContent = formatClock(); };
+      update();
+      setInterval(update, 1000);
+    }
+
+    function formatExpire(iso) {
+      if (!iso) return 'Expires --';
+      const dt = new Date(iso);
+      return `Expires ${new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZone: 'America/Indiana/Indianapolis'
+      }).format(dt)}`;
+    }
+
+    function renderAlert(items) {
+      const box = document.getElementById('alertBox');
+      const eligible = (items || []).filter(a => alertPriority[a.event] > 0);
+      if (!eligible.length) {
+        box.className = 'alert-box';
+        return;
+      }
+      eligible.sort((a, b) => (alertPriority[b.event] || 0) - (alertPriority[a.event] || 0));
+      const alert = eligible[0];
+      const colors = {
+        'Tornado Emergency': '#7a2cff',
+        'Tornado Warning': '#d82020',
+        'Severe Thunderstorm Warning': '#ff8a1f',
+        'Tornado Watch': '#e2c21f',
+        'Severe Thunderstorm Watch': '#d9a519'
+      };
+      document.getElementById('alertTop').textContent = alert.event.toUpperCase();
+      document.getElementById('alertTop').style.background = colors[alert.event] || '#d82020';
+      document.getElementById('alertBottom').textContent = formatExpire(alert.expires || alert.ends);
+      box.className = 'alert-box visible' + (alertPriority[alert.event] >= 3 ? ' pulse' : '');
+    }
+
+    function showError(text) {
+      const n = document.getElementById('errorNote');
+      n.textContent = text;
+      n.style.display = 'block';
+    }
+
+    async function init() {
+      startClock();
+      try {
+        const [forecast, current, alerts] = await Promise.all([
+          fetchJson('/api/nws-forecast-detailed'),
+          fetchJson('/api/tempest/current'),
+          fetchJson('/api/nws-alerts')
+        ]);
+
+        if (!forecast || !Array.isArray(forecast.periods) || !forecast.periods.length) {
+          throw new Error('Forecast periods missing');
+        }
+        buildPeriods(forecast.periods);
+        buildDays(forecast.periods);
+        updateFooter(current || {});
+        renderAlert(alerts?.alerts || []);
+      } catch (err) {
+        console.error(err);
+        showError(`Forecast screen data issue: ${err.message}`);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
