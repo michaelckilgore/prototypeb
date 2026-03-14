@@ -177,36 +177,29 @@ body{
   100%{ transform:translate3d(-18px,-8px,0) scale(1.03); opacity:.58; }
 }
 
-/* PAGE TRANSITIONS */
+/* PAGE FADES */
 
 .page-fade{
-  opacity:0;
-  transform:translateY(32px);
-  transition:opacity .45s ease, transform .45s ease;
-}
-
-.page-fade.page-enter-ready{
   opacity:1;
-  transform:translateY(0);
+  transition:opacity .25s ease;
 }
 
 .page-fade.page-fade-out{
-  opacity:.04;
-  transform:translateY(-32px);
+  opacity:.02;
 }
 
 .page-fade-overlay{
   position:fixed;
   inset:0;
-  background:linear-gradient(180deg, rgba(5,9,19,.15), rgba(5,9,19,.82));
+  background:#050913;
   opacity:0;
   pointer-events:none;
   z-index:9999;
-  transition:opacity .45s ease;
+  transition:opacity .25s ease;
 }
 
 .page-fade.page-fade-out .page-fade-overlay{
-  opacity:.92;
+  opacity:.96;
 }
 
 /* MAIN PAGE */
@@ -1317,213 +1310,6 @@ body{
   color:#fff;
 }
 
-
-/* FORECAST SUBSCREEN */
-
-.subscreen-forecast-page{
-  display:grid;
-  grid-template-rows:auto 1fr auto auto auto;
-  gap:10px;
-  min-height:calc(100vh - 32px);
-}
-
-.forecast-expanded-shell,
-.forecast-seven-day-shell,
-.forecast-disclaimer-shell{
-  background:linear-gradient(180deg, rgba(22,37,62,.84), rgba(14,25,43,.86));
-  border:1px solid var(--line-soft);
-  border-radius:18px;
-  box-shadow:var(--shadow), var(--glow);
-  backdrop-filter:blur(4px);
-  position:relative;
-  overflow:hidden;
-}
-
-.forecast-expanded-shell::before,
-.forecast-seven-day-shell::before,
-.forecast-disclaimer-shell::before{
-  content:"";
-  position:absolute;
-  inset:0 0 auto 0;
-  height:3px;
-  background:linear-gradient(90deg, transparent, rgba(123,231,255,.82), transparent);
-  opacity:.82;
-}
-
-.forecast-expanded-shell{
-  padding:12px 16px 14px;
-}
-
-.forecast-expanded-grid{
-  display:grid;
-  grid-template-columns:minmax(0, 1fr);
-  grid-template-rows:repeat(4, minmax(0, 1fr));
-  gap:10px;
-  height:100%;
-}
-
-.forecast-period-card{
-  display:grid;
-  grid-template-columns:170px minmax(0, 1fr);
-  gap:16px;
-  align-items:start;
-  min-height:0;
-  padding:12px 14px;
-  border-radius:16px;
-  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
-  border:1px solid rgba(255,255,255,.06);
-}
-
-.forecast-period-name{
-  font-size:20px;
-  font-weight:900;
-  color:var(--title);
-  letter-spacing:.6px;
-  text-transform:uppercase;
-  line-height:1.05;
-  margin-bottom:0;
-}
-
-.forecast-period-text{
-  font-size:24px;
-  line-height:1.22;
-  font-weight:760;
-  color:#eef8ff;
-}
-
-.forecast-seven-day-shell{
-  padding:8px 12px 9px;
-}
-
-.forecast-seven-day-title{
-  font-size:14px;
-  font-weight:900;
-  color:var(--title);
-  letter-spacing:.8px;
-  text-transform:uppercase;
-  margin-bottom:6px;
-}
-
-.forecast-seven-day-row{
-  display:grid;
-  grid-template-columns:repeat(7, minmax(0, 1fr));
-  gap:8px;
-}
-
-.forecast-seven-day-card{
-  min-width:0;
-  padding:6px 6px 7px;
-  border-radius:14px;
-  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
-  border:1px solid rgba(255,255,255,.06);
-  text-align:center;
-}
-
-.forecast-seven-day-label{
-  font-size:12px;
-  font-weight:900;
-  color:var(--title);
-  text-transform:uppercase;
-  letter-spacing:.7px;
-}
-
-.forecast-seven-day-icon{
-  width:54px;
-  height:54px;
-  margin:2px auto 0;
-  display:block;
-  filter:drop-shadow(0 0 8px rgba(123,231,255,.12));
-}
-
-.forecast-seven-day-text{
-  min-height:24px;
-  font-size:10px;
-  line-height:1.08;
-  color:#d6ebfb;
-  font-weight:700;
-}
-
-.forecast-seven-day-temps{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin-top:2px;
-}
-
-.forecast-seven-day-high,
-.forecast-seven-day-low{
-  font-size:20px;
-  font-weight:900;
-}
-
-.forecast-seven-day-high{
-  color:#fff;
-}
-
-.forecast-seven-day-low{
-  color:#c7e4ff;
-}
-
-.forecast-seven-day-pop{
-  margin-top:1px;
-  font-size:11px;
-  font-weight:900;
-  color:#7be7ff;
-}
-
-.forecast-disclaimer-shell{
-  padding:6px 12px;
-}
-
-.forecast-disclaimer-text{
-  font-size:12px;
-  font-weight:700;
-  color:#b7d0e5;
-  letter-spacing:.2px;
-}
-
-@media (max-width: 1200px){
-  .forecast-period-card{
-    grid-template-columns:150px minmax(0, 1fr);
-  }
-
-  .forecast-period-text{
-    font-size:22px;
-  }
-
-  .forecast-seven-day-row{
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px){
-  .subscreen-forecast-page{
-    grid-template-rows:auto auto auto auto auto;
-  }
-
-  .forecast-period-card{
-    grid-template-columns:minmax(0, 1fr);
-    gap:8px;
-  }
-
-  .forecast-period-name{
-    font-size:18px;
-  }
-
-  .forecast-period-text{
-    font-size:20px;
-  }
-
-  .forecast-expanded-grid,
-  .forecast-seven-day-row{
-    grid-template-columns:repeat(2, minmax(0, 1fr));
-  }
-
-  .forecast-period-text{
-    font-size:17px;
-  }
-}
-
 /* RESPONSIVE */
 
 @media (max-width: 1200px){
@@ -1698,147 +1484,289 @@ body{
   transform:translate(-50%,-50%);
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Expanded Forecast</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-</head>
 
-<body class="page-fade subscreen-body">
-<div class="bg-scene" aria-hidden="true">
-  <div class="bg-gradient"></div>
-  <div class="bg-orb bg-orb-left"></div>
-  <div class="bg-orb bg-orb-right"></div>
-  <div class="bg-wave-layer bg-wave-back"></div>
-  <div class="bg-wave-layer bg-wave-front"></div>
-  <div class="bg-vignette"></div>
-</div>
+/* =========================
+   FORECAST SUBSCREEN
+   ========================= */
 
-<div class="page-fade-overlay"></div>
+.forecast-screen-shell{
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:12px;
+  min-height:calc(100vh - 32px);
+}
 
-<main class="subscreen-forecast-page">
-  <section class="subscreen-header-bar">
-    <div class="subscreen-header-title">EXPANDED FORECAST</div>
-    <div id="subscreen-clock" class="subscreen-header-clock">--:--</div>
-  </section>
+.forecast-header-bar{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:16px;
+  padding:12px 18px 14px;
+}
 
-  <section class="forecast-expanded-shell">
-    <div class="forecast-expanded-grid">
-      <article class="forecast-period-card">
-        <div id="forecast-period-name-0" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-0" class="forecast-period-text">Forecast data is loading.</div>
-      </article>
-      <article class="forecast-period-card">
-        <div id="forecast-period-name-1" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-1" class="forecast-period-text">Forecast data is loading.</div>
-      </article>
-      <article class="forecast-period-card">
-        <div id="forecast-period-name-2" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-2" class="forecast-period-text">Forecast data is loading.</div>
-      </article>
-      <article class="forecast-period-card">
-        <div id="forecast-period-name-3" class="forecast-period-name">Loading</div>
-        <div id="forecast-period-text-3" class="forecast-period-text">Forecast data is loading.</div>
-      </article>
-    </div>
-  </section>
+.forecast-header-left{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
 
-  <section class="forecast-seven-day-shell">
-    <div class="forecast-seven-day-title">THE 7-DAY FORECAST</div>
-    <div class="forecast-seven-day-row">
+.forecast-station-kicker{
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:#dbefff;
+  opacity:.9;
+}
 
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-0" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-0" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-0" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-0" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-0" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-0" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-1" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-1" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-1" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-1" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-1" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-1" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-2" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-2" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-2" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-2" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-2" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-2" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-3" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-3" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-3" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-3" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-3" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-3" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-4" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-4" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-4" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-4" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-4" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-4" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-5" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-5" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-5" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-5" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-5" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-5" class="forecast-seven-day-pop">--</div>
-      </article>
-      <article class="forecast-seven-day-card">
-        <div id="forecast7-label-6" class="forecast-seven-day-label">--</div>
-        <img id="forecast7-icon-6" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
-        <div id="forecast7-text-6" class="forecast-seven-day-text">--</div>
-        <div class="forecast-seven-day-temps">
-          <div id="forecast7-hi-6" class="forecast-seven-day-high">--</div>
-          <div id="forecast7-lo-6" class="forecast-seven-day-low">--</div>
-        </div>
-        <div id="forecast7-pop-6" class="forecast-seven-day-pop">--</div>
-      </article>
-    </div>
-  </section>
+.forecast-title-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
 
-  <section class="forecast-disclaimer-shell">
-    <div class="forecast-disclaimer-text">Forecast confidence decreases with time.</div>
-  </section>
+.forecast-header-title{
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:#ffffff;
+  text-shadow:0 0 10px rgba(123,231,255,.12);
+}
 
-  <section class="subscreen-conditions-shell">
-    <div class="subscreen-conditions-title">Current Conditions</div>
-    <div class="subscreen-conditions-window">
-      <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
-    </div>
-  </section>
+.forecast-twinkle{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(255,255,255,.65) 28%, rgba(123,231,255,.28) 58%, rgba(123,231,255,0) 100%);
+  box-shadow:0 0 12px rgba(255,255,255,.55), 0 0 18px rgba(123,231,255,.4);
+  transform:translateY(-2px);
+}
 
-  <section id="subscreen-alert-ribbon" class="subscreen-alert-ribbon" style="display:none;">
-    <div id="subscreen-alert-text" class="subscreen-alert-text"></div>
-  </section>
-</main>
+.forecast-header-clock{
+  justify-self:end;
+  font-size:22px;
+  font-weight:900;
+  color:#ffffff;
+  letter-spacing:.5px;
+}
 
-<script src="script.js"></script>
-</body>
-</html>
+.forecast-content-shell,
+.forecast-seven-day-shell{
+  background:linear-gradient(180deg, rgba(22,37,62,.84), rgba(14,25,43,.86));
+  border:1px solid var(--line-soft);
+  border-radius:18px;
+  box-shadow:var(--shadow), var(--glow);
+  backdrop-filter:blur(4px);
+  position:relative;
+  overflow:hidden;
+}
+
+.forecast-content-shell::before,
+.forecast-seven-day-shell::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:3px;
+  background:linear-gradient(90deg, transparent, rgba(123,231,255,.82), transparent);
+  opacity:.82;
+}
+
+.forecast-content-shell{
+  padding:18px 20px 14px;
+  display:grid;
+  grid-template-rows:1fr auto auto;
+  gap:12px;
+}
+
+.forecast-period-list{
+  display:grid;
+  grid-template-rows:repeat(4, minmax(0, 1fr));
+  gap:12px;
+  min-height:0;
+}
+
+.forecast-period-card{
+  display:grid;
+  grid-template-columns:100px 1fr;
+  gap:16px;
+  align-items:center;
+  padding:8px 12px;
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.forecast-period-icon-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.forecast-period-icon{
+  width:88px;
+  height:88px;
+  object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(123,231,255,.14));
+}
+
+.forecast-period-top{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:4px;
+}
+
+.forecast-period-name{
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color:#ffffff;
+  text-shadow:0 0 8px rgba(255,255,255,.12);
+}
+
+.forecast-period-temp{
+  font-size:32px;
+  font-weight:900;
+  color:#ffffff;
+  letter-spacing:-.5px;
+}
+
+.forecast-period-text{
+  font-size:21px;
+  line-height:1.22;
+  color:#dbe8f6;
+}
+
+.forecast-seven-day-shell{
+  padding:8px 12px 6px;
+}
+
+.forecast-seven-day-label{
+  margin-bottom:6px;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:#dff2ff;
+}
+
+.forecast-seven-day-grid{
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0, 1fr));
+  gap:8px;
+  align-items:start;
+}
+
+.forecast-mini-card{
+  text-align:center;
+  padding:4px 4px 6px;
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.01));
+  border:1px solid rgba(255,255,255,.045);
+}
+
+.forecast-mini-day{
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.8px;
+  color:#f0f8ff;
+  margin-bottom:2px;
+}
+
+.forecast-mini-icon{
+  width:54px;
+  height:54px;
+  object-fit:contain;
+  filter:drop-shadow(0 0 8px rgba(123,231,255,.12));
+}
+
+.forecast-mini-temps{
+  font-size:18px;
+  font-weight:900;
+  color:#ffffff;
+  line-height:1.1;
+  margin-top:2px;
+}
+
+.forecast-mini-pop{
+  font-size:13px;
+  font-weight:800;
+  color:#9fdfff;
+  margin-top:1px;
+}
+
+.forecast-confidence-note{
+  margin-top:6px;
+  font-size:11px;
+  font-weight:700;
+  color:#a8c6dc;
+  text-align:right;
+  letter-spacing:.25px;
+}
+
+@media (max-width: 1200px){
+  .forecast-period-card{
+    grid-template-columns:84px 1fr;
+  }
+
+  .forecast-period-icon{
+    width:76px;
+    height:76px;
+  }
+
+  .forecast-period-name{
+    font-size:24px;
+  }
+
+  .forecast-period-temp{
+    font-size:28px;
+  }
+
+  .forecast-period-text{
+    font-size:18px;
+  }
+}
+
+@media (max-width: 900px){
+  .forecast-header-title{
+    font-size:24px;
+  }
+
+  .forecast-station-kicker{
+    font-size:13px;
+  }
+
+  .forecast-period-card{
+    grid-template-columns:72px 1fr;
+    gap:12px;
+  }
+
+  .forecast-period-icon{
+    width:62px;
+    height:62px;
+  }
+
+  .forecast-period-name{
+    font-size:20px;
+  }
+
+  .forecast-period-temp{
+    font-size:24px;
+  }
+
+  .forecast-period-text{
+    font-size:16px;
+  }
+
+  .forecast-mini-icon{
+    width:42px;
+    height:42px;
+  }
+
+  .forecast-mini-temps{
+    font-size:15px;
+  }
+}
