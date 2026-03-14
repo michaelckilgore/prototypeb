@@ -148,16 +148,37 @@ body{
 
 .header{
   display:grid;
-  grid-template-columns:1.4fr 1fr .8fr;
+  grid-template-columns:minmax(0, 1fr) auto;
   align-items:center;
-  gap:14px;
-  padding:16px 22px;
+  gap:18px;
+  padding:14px 20px;
   margin-bottom:12px;
   border:1px solid var(--line-soft);
   border-radius:18px;
   background:linear-gradient(180deg, rgba(24,40,68,.94), rgba(15,27,47,.96));
   box-shadow:var(--shadow), var(--glow);
   backdrop-filter:blur(5px);
+}
+
+.header-brand{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  min-width:0;
+}
+
+.header-logo{
+  width:128px;
+  height:auto;
+  flex:0 0 auto;
+  display:block;
+}
+
+.header-brand-text{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
 }
 
 .station{
@@ -167,14 +188,16 @@ body{
   letter-spacing:1.6px;
   color:var(--title);
   text-transform:uppercase;
+  line-height:1.05;
 }
 
 .location{
-  text-align:center;
+  text-align:left;
   font-size:16px;
   font-weight:700;
   color:var(--accent);
   letter-spacing:.6px;
+  margin-top:6px;
 }
 
 .clock{
@@ -183,6 +206,7 @@ body{
   font-weight:800;
   color:#ffffff;
   letter-spacing:.8px;
+  white-space:nowrap;
 }
 
 .alerts{
@@ -1306,8 +1330,22 @@ body{
 
   .header{
     grid-template-columns:1fr;
-    gap:8px;
+    gap:10px;
     text-align:center;
+  }
+
+  .header-brand{
+    flex-direction:column;
+    gap:10px;
+    justify-content:center;
+  }
+
+  .header-logo{
+    width:110px;
+  }
+
+  .header-brand-text{
+    align-items:center;
   }
 
   .station,
