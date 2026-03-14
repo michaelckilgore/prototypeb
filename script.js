@@ -72,6 +72,7 @@ let activeConditionLine = null;
 const SCREEN_ROTATE_MS = 5000;
 const SCREEN_FADE_MS = 450;
 const CONDITION_ROTATE_MS = 5000;
+const SUBSCREEN_CONDITION_ANCHOR_KEY = "prototypebSubscreenConditionAnchorMs";
 const NWS_POINT_LAT = 39.6092;
 const NWS_POINT_LON = -85.4464;
 
@@ -1687,21 +1688,16 @@ function showSubscreenConditionSet(index) {
   });
 }
 
-function getForecastConditionRotationAnchorMs() {
+function getSubscreenConditionAnchorMs() {
   try {
-    const saved = Number(window.localStorage.getItem(FORECAST_CONDITION_ROTATION_KEY));
-    if (Number.isFinite(saved) && saved > 0) return saved;
+    const stored = Number(window.localStorage.getItem(SUBSCREEN_CONDITION_ANCHOR_KEY));
+    if (Number.isFinite(stored) && stored > 0) return stored;
+    const now = Date.now();
+    window.localStorage.setItem(SUBSCREEN_CONDITION_ANCHOR_KEY, String(now));
+    return now;
   } catch (error) {
-    console.warn("Forecast condition rotation state unavailable:", error);
+    return Date.now();
   }
-
-  const now = Date.now();
-  try {
-    window.localStorage.setItem(FORECAST_CONDITION_ROTATION_KEY, String(now));
-  } catch (error) {
-    console.warn("Forecast condition rotation state unavailable:", error);
-  }
-  return now;
 }
 
 function startSubscreenConditionRotation() {
@@ -1714,41 +1710,23 @@ function startSubscreenConditionRotation() {
   track.innerHTML = "";
   activeConditionLine = null;
 
-  if (subscreenConditionTimer) clearInterval(subscreenConditionTimer);
-  if (subscreenConditionTimeout) clearTimeout(subscreenConditionTimeout);
-
-  const isForecastPage = !!document.querySelector(".subscreen-forecast-page");
-
-  if (!isForecastPage) {
-    subscreenConditionSetIndex = 0;
-    showSubscreenConditionSet(subscreenConditionSetIndex);
-
-    subscreenConditionTimer = setInterval(() => {
-      subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
-      showSubscreenConditionSet(subscreenConditionSetIndex);
-    }, CONDITION_ROTATE_MS);
-    return;
-  }
-
-  const anchorMs = getForecastConditionRotationAnchorMs();
-  const nowMs = Date.now();
-  const elapsedMs = Math.max(0, nowMs - anchorMs);
-  const cycleCount = Math.floor(elapsedMs / CONDITION_ROTATE_MS);
-  const cycleProgressMs = elapsedMs % CONDITION_ROTATE_MS;
-  const msUntilNext = Math.max(250, CONDITION_ROTATE_MS - cycleProgressMs);
-
-  subscreenConditionSetIndex = cycleCount % sets.length;
+  const anchorMs = getSubscreenConditionAnchorMs();
+  const elapsedMs = Math.max(0, Date.now() - anchorMs);
+  subscreenConditionSetIndex = Math.floor(elapsedMs / CONDITION_ROTATE_MS) % sets.length;
   showSubscreenConditionSet(subscreenConditionSetIndex);
 
-  subscreenConditionTimeout = setTimeout(() => {
+  if (subscreenConditionTimer) clearTimeout(subscreenConditionTimer);
+
+  const msIntoCycle = elapsedMs % CONDITION_ROTATE_MS;
+  const firstDelay = Math.max(250, CONDITION_ROTATE_MS - msIntoCycle);
+
+  const continueRotation = () => {
     subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
     showSubscreenConditionSet(subscreenConditionSetIndex);
+    subscreenConditionTimer = setTimeout(continueRotation, CONDITION_ROTATE_MS);
+  };
 
-    subscreenConditionTimer = setInterval(() => {
-      subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
-      showSubscreenConditionSet(subscreenConditionSetIndex);
-    }, CONDITION_ROTATE_MS);
-  }, msUntilNext);
+  subscreenConditionTimer = setTimeout(continueRotation, firstDelay);
 }
 
 function renderSubscreenAlert() {
