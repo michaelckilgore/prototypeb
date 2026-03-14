@@ -1,149 +1,450 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Expanded Forecast</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expanded Forecast</title>
+  <style>
+    :root{
+      --bg1:#031126;
+      --bg2:#071d3f;
+      --panel:#071524cc;
+      --line:#51b7ff55;
+      --line2:#f0b339;
+      --text:#f7fbff;
+      --soft:#d9e9fb;
+      --muted:#93abca;
+      --glow:0 0 18px rgba(78,178,255,.18);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:
+      radial-gradient(circle at 50% 0%, rgba(42,96,194,.30), transparent 42%),
+      linear-gradient(180deg, #041124 0%, #061732 36%, #061223 100%);
+      color:var(--text); font-family:Arial, Helvetica, sans-serif;}
+    body{display:flex;justify-content:center;align-items:flex-start}
+    .screen{
+      width:100vw;height:100vh;position:relative;overflow:hidden;
+      background:
+       radial-gradient(circle at 80% 10%, rgba(64,149,255,.14), transparent 18%),
+       linear-gradient(180deg, rgba(255,255,255,.03), transparent 22%),
+       linear-gradient(180deg, #041124 0%, #071b38 36%, #040d19 100%);
+    }
+    .screen::before{
+      content:"";position:absolute;inset:0;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,.035) 50%, transparent 100%),
+        radial-gradient(circle at 72% 78%, rgba(255,183,40,.10), transparent 25%);
+      pointer-events:none;
+    }
 
-<body class="page-fade subscreen-body">
-<div class="bg-scene" aria-hidden="true">
-  <div class="bg-gradient"></div>
-  <div class="bg-orb bg-orb-left"></div>
-  <div class="bg-orb bg-orb-right"></div>
-  <div class="bg-wave-layer bg-wave-back"></div>
-  <div class="bg-wave-layer bg-wave-front"></div>
-  <div class="bg-vignette"></div>
+    .subscreen-header{
+      position:relative; width:100%; height:12.3vw; max-height:132px; min-height:100px;
+      z-index:5; overflow:visible;
+    }
+    .subscreen-header .header-bg{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:fill;
+      opacity:.98;
+    }
+    .subscreen-header .header-logo{
+      position:absolute; left:2.7vw; top:0.55vw; width:23vw; max-width:338px; min-width:250px;
+      height:auto; z-index:4; filter:drop-shadow(0 2px 5px rgba(0,0,0,.5));
+    }
+    .subscreen-header .header-title{
+      position:absolute; left:37vw; top:2.2vw; z-index:4;
+      font-size:4vw; line-height:1; font-weight:700; letter-spacing:.12vw;
+      font-style:italic; text-transform:uppercase; color:#fff;
+      text-shadow:0 0 12px rgba(255,255,255,.13), 0 2px 2px rgba(0,0,0,.45);
+      white-space:nowrap;
+    }
+    .subscreen-header .header-clock{
+      position:absolute; right:2.8vw; top:2.0vw; z-index:4;
+      font-size:2.45vw; line-height:1; font-weight:700; letter-spacing:.06vw; color:#f7fbff;
+      text-shadow:0 0 10px rgba(255,255,255,.12);
+      white-space:nowrap;
+    }
+    .subscreen-header .header-station{
+      position:absolute; left:37.2vw; top:6.55vw; z-index:4;
+      font-size:1.15vw; letter-spacing:.13vw; text-transform:uppercase; color:#d9e7f6; opacity:.88;
+      white-space:nowrap;
+    }
+
+    .alert-badge{
+      position:absolute; right:2.8vw; top:5.1vw; z-index:6;
+      width:18vw; min-width:220px; max-width:310px;
+      border:1px solid rgba(255,255,255,.30); border-radius:8px; overflow:hidden;
+      box-shadow:0 8px 22px rgba(0,0,0,.32);
+      display:none;
+      backdrop-filter: blur(3px);
+    }
+    .alert-badge.show{display:block}
+    .alert-badge .alert-top{
+      padding:.45vw .8vw; font-size:1.15vw; font-weight:700; text-transform:uppercase;
+      letter-spacing:.06vw; color:#fff; text-align:center;
+      text-shadow:0 1px 2px rgba(0,0,0,.45);
+    }
+    .alert-badge .alert-bottom{
+      background:rgba(8,16,30,.56);
+      padding:.42vw .8vw; font-size:1vw; font-weight:600; text-align:center; color:#eef5ff;
+    }
+    .alert-badge.pulse{animation:alertPulse 5s ease-in-out infinite}
+    @keyframes alertPulse{
+      0%,82%,100%{box-shadow:0 8px 22px rgba(0,0,0,.32), 0 0 0 rgba(255,0,0,0)}
+      88%{box-shadow:0 8px 22px rgba(0,0,0,.32), 0 0 18px rgba(255,72,72,.42)}
+    }
+
+    .forecast-shell{
+      position:absolute; left:3.6vw; right:3.6vw; top:11.8vh; bottom:11.6vh;
+      display:flex; flex-direction:column; gap:1.05vh;
+    }
+    .forecast-list{
+      flex:1; display:grid; grid-template-rows:repeat(4, 1fr); gap:1vh;
+      min-height:0;
+    }
+    .forecast-row{
+      background:linear-gradient(90deg, rgba(3,10,21,.86), rgba(6,20,40,.78) 56%, rgba(9,30,63,.65));
+      border:1px solid var(--line); border-left:4px solid rgba(61,163,255,.7);
+      box-shadow:var(--glow), inset 0 1px 0 rgba(255,255,255,.05);
+      display:grid; grid-template-columns:10.8vw 1fr 11vw; align-items:center;
+      padding:0 1.2vw 0 .8vw; position:relative; overflow:hidden;
+    }
+    .forecast-row::after{
+      content:""; position:absolute; inset:auto 0 0 0; height:2px;
+      background:linear-gradient(90deg, rgba(64,162,255,.0), rgba(64,162,255,.65), rgba(242,179,57,.85), rgba(64,162,255,.0));
+      opacity:.55;
+    }
+    .forecast-icon-wrap{display:flex; justify-content:center; align-items:center;}
+    .forecast-icon{
+      width:7.2vw; height:7.2vw; max-width:92px; max-height:92px; min-width:62px; min-height:62px;
+      object-fit:contain; filter:drop-shadow(0 0 12px rgba(35,135,255,.18));
+    }
+    .forecast-copy{min-width:0; padding-right:1vw;}
+    .forecast-name{
+      font-size:2.55vw; line-height:1; font-weight:800; letter-spacing:.11vw;
+      text-transform:uppercase; color:#ffffff; margin-bottom:.55vh;
+      text-shadow:0 0 8px rgba(255,255,255,.14);
+    }
+    .forecast-text{
+      font-size:2.05vw; line-height:1.13; color:var(--soft); font-weight:500;
+    }
+    .forecast-temp{
+      justify-self:end; text-align:right; padding-right:.3vw;
+      font-size:5.3vw; line-height:.95; font-weight:800; color:#fff;
+      text-shadow:0 0 16px rgba(255,255,255,.14), 0 0 24px rgba(67,145,255,.18);
+      letter-spacing:-.12vw;
+      min-width:8vw;
+    }
+
+    .seven-day{
+      height:12.7vh; min-height:94px; max-height:118px; display:grid;
+      grid-template-columns:11.2vw repeat(7, 1fr);
+      background:linear-gradient(180deg, rgba(8,16,31,.78), rgba(8,16,31,.62));
+      border:1px solid var(--line); box-shadow:var(--glow);
+      overflow:hidden;
+    }
+    .seven-day-title{
+      background:linear-gradient(180deg, rgba(6,16,34,.9), rgba(6,16,34,.66));
+      border-right:1px solid rgba(82,183,255,.28);
+      display:flex; align-items:center; justify-content:center;
+      font-size:2.15vw; line-height:1.02; letter-spacing:.08vw; font-weight:800;
+      text-transform:uppercase; text-align:center; color:#f5fbff;
+      padding:0 .8vw;
+    }
+    .seven-day-item{
+      display:grid; grid-template-rows:auto 1fr auto auto;
+      align-items:center; justify-items:center;
+      border-left:1px solid rgba(82,183,255,.22);
+      padding:.22vh .2vw .4vh;
+      position:relative;
+    }
+    .seven-day-item:nth-child(odd){background:rgba(255,255,255,.015)}
+    .seven-day-name{
+      font-size:1.95vw; line-height:1; font-weight:800; text-transform:uppercase; letter-spacing:.1vw;
+      color:#fff;
+    }
+    .seven-day-icon{
+      width:4.65vw; height:4.65vw; max-width:66px; max-height:66px; min-width:40px; min-height:40px;
+      object-fit:contain;
+      margin:-.2vh 0;
+    }
+    .seven-day-hi{
+      font-size:2.55vw; line-height:.95; font-weight:800; color:#fff;
+    }
+    .seven-day-lo{
+      font-size:1.7vw; line-height:1; font-weight:700; color:#bfd8ff;
+      margin-top:-.15vh;
+    }
+
+    .footer-bar{
+      position:absolute; left:0; right:0; bottom:0;
+      height:9.2vh; min-height:66px;
+      background:linear-gradient(180deg, rgba(5,15,30,.96), rgba(2,8,19,.96));
+      border-top:1px solid rgba(80,182,255,.26);
+      display:flex; align-items:center; justify-content:center;
+      z-index:4;
+      box-shadow:0 -8px 24px rgba(0,0,0,.22);
+    }
+    .footer-scroll{
+      width:94%; overflow:hidden; position:relative; height:100%;
+      display:flex; align-items:center;
+    }
+    .footer-track{
+      position:absolute; white-space:nowrap; will-change:transform;
+      font-size:2.15vw; font-weight:700; color:#eef5ff;
+      text-shadow:0 1px 2px rgba(0,0,0,.45);
+    }
+    .footer-item{display:inline-flex; align-items:center; margin-right:3.4vw;}
+    .footer-item .label{
+      font-size:1.1vw; letter-spacing:.11vw; text-transform:uppercase; color:#9ab6d8; margin-right:.55vw; font-weight:700;
+    }
+    .footer-item .value{
+      font-size:2.1vw; font-weight:800; color:#fff;
+    }
+
+    @media (max-width: 1280px){
+      .subscreen-header .header-title{font-size:4.2vw}
+      .forecast-name{font-size:2.75vw}
+      .forecast-text{font-size:2.15vw}
+      .forecast-temp{font-size:5.6vw}
+      .seven-day-title{font-size:2.3vw}
+    }
+  </style>
+</head>
+<body>
+<div class="screen">
+  <header class="subscreen-header">
+    <img class="header-bg" src="assets/header/subscreen-header.svg" onerror="this.src='assets/header/subscreen-header.png'" alt="">
+    <img class="header-logo" src="assets/logo/shwn-logo.svg" onerror="this.src='assets/logo/shwn-logo.png'" alt="Sugar Hill Weather Network">
+    <div class="header-title" id="headerTitle">Expanded Forecast</div>
+    <div class="header-station">Sugar Hill Reporting Station</div>
+    <div class="header-clock" id="headerClock">--:-- --</div>
+
+    <div class="alert-badge" id="alertBadge">
+      <div class="alert-top" id="alertTop">Alert</div>
+      <div class="alert-bottom" id="alertBottom">Expires --:-- --</div>
+    </div>
+  </header>
+
+  <main class="forecast-shell">
+    <section class="forecast-list" id="forecastList"></section>
+
+    <section class="seven-day">
+      <div class="seven-day-title">7-Day<br>Outlook</div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+      <div class="seven-day-item"><div class="seven-day-name"></div><img class="seven-day-icon"><div class="seven-day-hi"></div><div class="seven-day-lo"></div></div>
+    </section>
+  </main>
+
+  <footer class="footer-bar">
+    <div class="footer-scroll">
+      <div class="footer-track" id="footerTrack"></div>
+    </div>
+  </footer>
 </div>
 
-<div class="page-fade-overlay"></div>
+<script>
+const titleText = "Expanded Forecast";
+document.getElementById("headerTitle").textContent = titleText;
 
-<main class="forecast-screen-shell">
-  <section class="subscreen-header-bar forecast-header-bar">
-    <div class="forecast-header-left">
-      <div class="forecast-station-kicker">Sugar Hill Reporting Station</div>
-      <div class="forecast-title-row">
-        <div class="forecast-header-title">Expanded Forecast</div>
-        <div class="forecast-twinkle" aria-hidden="true"></div>
+const footerSequence = [];
+const footerState = {
+  pxPerSecond: 90,
+  lastTs: null,
+  x: 0,
+  width: 0,
+  initialized: false
+};
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById("headerClock").textContent = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/Indiana/Indianapolis"
+  }).format(now);
+}
+
+function iconToAsset(url) {
+  if (!url) return "";
+  try {
+    const u = new URL(url, window.location.origin);
+    const path = u.pathname;
+    const match = path.match(/\/icons\/land\/(day|night)\/([a-z_]+),?(\d+)?/i);
+    if (!match) return url;
+    return `images/weathericons/${match[1]}/${match[2]}.svg`;
+  } catch {
+    return url;
+  }
+}
+
+function stripToSentence(text) {
+  return String(text || "").replace(/\s+/g, " ").trim();
+}
+
+function selectFourPeriods(periods) {
+  return (periods || []).slice(0,4);
+}
+
+function buildForecastRows(periods) {
+  const list = document.getElementById("forecastList");
+  list.innerHTML = "";
+  selectFourPeriods(periods).forEach((p) => {
+    const row = document.createElement("article");
+    row.className = "forecast-row";
+    row.innerHTML = `
+      <div class="forecast-icon-wrap">
+        <img class="forecast-icon" alt="" src="${iconToAsset(p.icon)}">
       </div>
-    </div>
-    <div id="forecast-clock" class="forecast-header-clock">--:--</div>
-  </section>
-
-  <section class="forecast-content-shell">
-    <div class="forecast-period-list">
-      <article class="forecast-period-card">
-        <div class="forecast-period-icon-wrap">
-          <img id="forecast-period-icon-1" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
-        </div>
-        <div class="forecast-period-copy">
-          <div class="forecast-period-top">
-            <div id="forecast-period-name-1" class="forecast-period-name">Tonight</div>
-            <div id="forecast-period-temp-1" class="forecast-period-temp">--</div>
-          </div>
-          <div id="forecast-period-text-1" class="forecast-period-text">Forecast loading...</div>
-        </div>
-      </article>
-
-      <article class="forecast-period-card">
-        <div class="forecast-period-icon-wrap">
-          <img id="forecast-period-icon-2" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
-        </div>
-        <div class="forecast-period-copy">
-          <div class="forecast-period-top">
-            <div id="forecast-period-name-2" class="forecast-period-name">Friday</div>
-            <div id="forecast-period-temp-2" class="forecast-period-temp">--</div>
-          </div>
-          <div id="forecast-period-text-2" class="forecast-period-text"></div>
-        </div>
-      </article>
-
-      <article class="forecast-period-card">
-        <div class="forecast-period-icon-wrap">
-          <img id="forecast-period-icon-3" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
-        </div>
-        <div class="forecast-period-copy">
-          <div class="forecast-period-top">
-            <div id="forecast-period-name-3" class="forecast-period-name">Friday Night</div>
-            <div id="forecast-period-temp-3" class="forecast-period-temp">--</div>
-          </div>
-          <div id="forecast-period-text-3" class="forecast-period-text"></div>
-        </div>
-      </article>
-
-      <article class="forecast-period-card">
-        <div class="forecast-period-icon-wrap">
-          <img id="forecast-period-icon-4" class="forecast-period-icon" src="images/cloud.svg" alt="Forecast icon">
-        </div>
-        <div class="forecast-period-copy">
-          <div class="forecast-period-top">
-            <div id="forecast-period-name-4" class="forecast-period-name">Saturday</div>
-            <div id="forecast-period-temp-4" class="forecast-period-temp">--</div>
-          </div>
-          <div id="forecast-period-text-4" class="forecast-period-text"></div>
-        </div>
-      </article>
-    </div>
-
-    <section class="forecast-seven-day-shell">
-      <div class="forecast-seven-day-label">The 7-Day Forecast</div>
-      <div class="forecast-seven-day-grid">
-        <div id="seven-day-1" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
-        <div id="seven-day-2" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
-        <div id="seven-day-3" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
-        <div id="seven-day-4" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
-        <div id="seven-day-5" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
-        <div id="seven-day-6" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
-        <div id="seven-day-7" class="forecast-mini-card">
-          <div class="forecast-mini-day">--</div>
-          <img class="forecast-mini-icon" src="images/cloud.svg" alt="Forecast icon">
-          <div class="forecast-mini-temps">--/--</div>
-          <div class="forecast-mini-pop">--%</div>
-        </div>
+      <div class="forecast-copy">
+        <div class="forecast-name">${p.name || ""}</div>
+        <div class="forecast-text">${stripToSentence(p.detailedForecast || p.shortForecast || "")}</div>
       </div>
-      <div class="forecast-confidence-note">Forecast confidence decreases with time.</div>
-    </section>
+      <div class="forecast-temp">${Number.isFinite(p.temperature) ? `${Math.round(p.temperature)}°` : ""}</div>
+    `;
+    list.appendChild(row);
+  });
+}
 
-    <section class="subscreen-conditions-shell fast-wipe-shell">
-      <div class="subscreen-conditions-title">Current Conditions</div>
-      <div class="subscreen-conditions-window">
-        <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
-      </div>
-    </section>
-  </section>
-</main>
+function buildSevenDay(periods) {
+  const daytime = (periods || []).filter(p => p && p.isDaytime).slice(0,7);
+  const items = [...document.querySelectorAll(".seven-day-item")];
+  items.forEach((item, i) => {
+    const p = daytime[i];
+    const nameEl = item.querySelector(".seven-day-name");
+    const iconEl = item.querySelector(".seven-day-icon");
+    const hiEl = item.querySelector(".seven-day-hi");
+    const loEl = item.querySelector(".seven-day-lo");
+    if (!p) {
+      nameEl.textContent = "--";
+      iconEl.removeAttribute("src");
+      hiEl.textContent = "";
+      loEl.textContent = "";
+      return;
+    }
+    const nextNight = periods.find(q => q.number === p.number + 1 && !q.isDaytime);
+    nameEl.textContent = (p.name || "").replace(/^This /, "");
+    iconEl.src = iconToAsset(p.icon);
+    hiEl.textContent = Number.isFinite(p.temperature) ? `${Math.round(p.temperature)}°` : "";
+    loEl.textContent = nextNight && Number.isFinite(nextNight.temperature) ? `${Math.round(nextNight.temperature)}°` : "";
+  });
+}
 
-<script src="script.js"></script>
+function footerDataFromCurrent(data) {
+  return [
+    ["Temp", data.tempF != null ? `${Math.round(data.tempF)}°` : "--"],
+    ["Feels Like", data.feelsLikeF != null ? `${Math.round(data.feelsLikeF)}°` : "--"],
+    ["Dewpoint", data.dewF != null ? `${Math.round(data.dewF)}°` : "--"],
+    ["Humidity", data.humidity != null ? `${Math.round(data.humidity)}%` : "--"],
+    ["Wind", data.windSpeed != null ? `${Math.round(data.windSpeed)} mph` : "--"],
+    ["Pressure", data.pressureIn != null ? `${Number(data.pressureIn).toFixed(2)} in` : "--"],
+    ["Rain Today", data.rainDailyIn != null ? `${Number(data.rainDailyIn).toFixed(2)} in` : "--"]
+  ];
+}
+
+function renderFooter(items) {
+  const track = document.getElementById("footerTrack");
+  track.innerHTML = items.map(([label, value]) =>
+    `<span class="footer-item"><span class="label">${label}</span><span class="value">${value}</span></span>`
+  ).join("");
+  footerState.width = track.scrollWidth;
+  if (!footerState.initialized) {
+    footerState.x = document.querySelector(".footer-scroll").clientWidth;
+    footerState.initialized = true;
+  }
+}
+
+function animateFooter(ts) {
+  const track = document.getElementById("footerTrack");
+  const viewport = document.querySelector(".footer-scroll").clientWidth;
+  if (footerState.lastTs == null) footerState.lastTs = ts;
+  const dt = (ts - footerState.lastTs) / 1000;
+  footerState.lastTs = ts;
+  footerState.x -= footerState.pxPerSecond * dt;
+  if (footerState.x < -footerState.width) footerState.x = viewport;
+  track.style.transform = `translateX(${footerState.x}px)`;
+  requestAnimationFrame(animateFooter);
+}
+
+function colorForAlert(name = "") {
+  const n = name.toLowerCase();
+  if (n.includes("tornado emergency")) return "#7d2ab6";
+  if (n.includes("tornado warning")) return "#c8102e";
+  if (n.includes("severe thunderstorm warning")) return "#d66817";
+  if (n.includes("tornado watch")) return "#d7b112";
+  if (n.includes("severe thunderstorm watch")) return "#b99611";
+  return "#2d74d6";
+}
+
+function alertPriority(name = "") {
+  const n = name.toLowerCase();
+  if (n.includes("tornado emergency")) return 5;
+  if (n.includes("tornado warning")) return 4;
+  if (n.includes("severe thunderstorm warning")) return 3;
+  if (n.includes("tornado watch")) return 2;
+  if (n.includes("severe thunderstorm watch")) return 1;
+  return 0;
+}
+
+function formatExpires(iso) {
+  if (!iso) return "Expires --:-- --";
+  return "Expires " + new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/Indiana/Indianapolis"
+  }).format(new Date(iso));
+}
+
+async function loadAlerts() {
+  try {
+    const r = await fetch("/api/nws-alerts");
+    const data = await r.json();
+    const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+    const chosen = alerts.sort((a,b)=>alertPriority(b.event)-alertPriority(a.event))[0];
+    const badge = document.getElementById("alertBadge");
+    if (!chosen || alertPriority(chosen.event) < 1) {
+      badge.className = "alert-badge";
+      return;
+    }
+    document.getElementById("alertTop").textContent = chosen.event;
+    document.getElementById("alertBottom").textContent = formatExpires(chosen.expires || chosen.ends);
+    badge.querySelector(".alert-top").style.background = colorForAlert(chosen.event);
+    const severeGlow = alertPriority(chosen.event) >= 3;
+    badge.className = "alert-badge show" + (severeGlow ? " pulse" : "");
+  } catch {
+    document.getElementById("alertBadge").className = "alert-badge";
+  }
+}
+
+async function loadForecast() {
+  const r = await fetch("/api/nws-forecast-detailed");
+  const data = await r.json();
+  if (data && Array.isArray(data.periods) && data.periods.length) {
+    buildForecastRows(data.periods);
+    buildSevenDay(data.periods);
+  }
+}
+
+async function loadCurrent() {
+  const r = await fetch("/api/tempest/current");
+  const data = await r.json();
+  renderFooter(footerDataFromCurrent(data));
+}
+
+updateClock();
+setInterval(updateClock, 15000);
+loadForecast();
+loadCurrent();
+loadAlerts();
+setInterval(loadCurrent, 30000);
+setInterval(loadForecast, 300000);
+setInterval(loadAlerts, 60000);
+requestAnimationFrame(animateFooter);
+</script>
 </body>
 </html>
