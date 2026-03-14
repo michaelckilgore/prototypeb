@@ -52,6 +52,11 @@ const data = {
     updatedAt: null,
     asOfLabel: "As of: --",
     cities: []
+  },
+  textForecast: {
+    updatedAt: null,
+    periods: [],
+    sevenDay: []
   }
 };
 
@@ -64,9 +69,11 @@ let subscreenConditionSetIndex = 0;
 let subscreenConditionTimer = null;
 let activeConditionLine = null;
 
-const SCREEN_ROTATE_MS = 10000;
-const SCREEN_FADE_MS = 250;
+const SCREEN_ROTATE_MS = 5000;
+const SCREEN_FADE_MS = 450;
 const CONDITION_ROTATE_MS = 5000;
+const NWS_POINT_LAT = 39.6092;
+const NWS_POINT_LON = -85.4464;
 
 /* -------------------- helpers -------------------- */
 
@@ -716,6 +723,121 @@ function renderLightningPanel() {
   renderLightningWarning();
 }
 
+
+function forecastIconForText(text, isNight = false) {
+  const value = String(text || "").toLowerCase();
+
+  if (value.includes("thunder")) return "images/weathericons/thunder.svg";
+  if (value.includes("snow") || value.includes("sleet") || value.includes("blizzard")) return "images/weathericons/snowy-6.svg";
+  if (value.includes("rain") || value.includes("showers") || value.includes("drizzle")) return "images/weathericons/rainy-4.svg";
+  if (value.includes("cloud")) return isNight ? "images/weathericons/cloudy-night-2.svg" : "images/weathericons/cloudy-day-2.svg";
+  return isNight ? "images/weathericons/night.svg" : "images/weathericons/day.svg";
+}
+
+function shortenForecastPhrase(text, fallback = "Forecast") {
+  const value = String(text || "").trim();
+  if (!value) return fallback;
+  return value
+    .replace(/\b(?:then|mainly|mostly|partly|slight chance of|chance of)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/^,\s*/, "")
+    .replace(/\s+,/g, ",")
+    .trim()
+    .slice(0, 22) || fallback;
+}
+
+function getDayLabelFromTime(iso, fallback = "Day") {
+  if (!iso) return fallback;
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: "America/Indiana/Indianapolis"
+  }).format(new Date(iso));
+}
+
+function buildSevenDayForecast(periods) {
+  const byDay = new Map();
+
+  periods.forEach((period) => {
+    if (!period || !period.startTime) return;
+    const date = new Date(period.startTime);
+    const key = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Indiana/Indianapolis",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(date);
+
+    if (!byDay.has(key)) {
+      byDay.set(key, {
+        label: getDayLabelFromTime(period.startTime, String(period.name || "").slice(0, 3) || "Day"),
+        high: null,
+        low: null,
+        pop: 0,
+        shortText: shortenForecastPhrase(period.shortForecast, "Forecast"),
+        icon: forecastIconForText(period.shortForecast, !period.isDaytime)
+      });
+    }
+
+    const entry = byDay.get(key);
+
+    if (typeof period.probabilityOfPrecipitation?.value === "number") {
+      entry.pop = Math.max(entry.pop, period.probabilityOfPrecipitation.value);
+    }
+
+    if (typeof period.temperature === "number") {
+      if (period.isDaytime) {
+        entry.high = period.temperature;
+      } else {
+        entry.low = period.temperature;
+      }
+    }
+
+    if (!entry.shortText && period.shortForecast) {
+      entry.shortText = shortenForecastPhrase(period.shortForecast, "Forecast");
+    }
+
+    if (!entry.icon && period.shortForecast) {
+      entry.icon = forecastIconForText(period.shortForecast, !period.isDaytime);
+    }
+  });
+
+  return Array.from(byDay.values()).slice(0, 7);
+}
+
+function renderExpandedForecastScreen() {
+  const page = document.querySelector(".subscreen-forecast-page");
+  if (!page) return;
+
+  const periods = Array.isArray(data.textForecast.periods) ? data.textForecast.periods : [];
+  const sevenDay = Array.isArray(data.textForecast.sevenDay) ? data.textForecast.sevenDay : [];
+
+  for (let i = 0; i < 4; i++) {
+    const period = periods[i];
+    setText(`forecast-period-name-${i}`, period?.name || "Forecast");
+    setText(`forecast-period-text-${i}`, period?.detail || "Forecast data is loading.");
+  }
+
+  for (let i = 0; i < 7; i++) {
+    const day = sevenDay[i];
+    setText(`forecast7-label-${i}`, day?.label || "--");
+    setText(`forecast7-hi-${i}`, typeof day?.high === "number" ? `${Math.round(day.high)}°` : "--");
+    setText(`forecast7-lo-${i}`, typeof day?.low === "number" ? `${Math.round(day.low)}°` : "--");
+    setText(`forecast7-pop-${i}`, typeof day?.pop === "number" ? `${Math.round(day.pop)}%` : "--");
+
+    const summaryEl = document.getElementById(`forecast7-text-${i}`);
+    if (summaryEl) summaryEl.textContent = day?.shortText || "--";
+
+    const iconEl = document.getElementById(`forecast7-icon-${i}`);
+    if (iconEl) {
+      iconEl.src = day?.icon || "images/weathericons/day.svg";
+      iconEl.alt = day?.shortText || "Forecast icon";
+    }
+
+    applyTempColor(document.getElementById(`forecast7-hi-${i}`), day?.high);
+    applyTempColor(document.getElementById(`forecast7-lo-${i}`), day?.low);
+  }
+}
+
 function renderForecast() {
   const labels = getNextThreeDayLabels();
 
@@ -980,6 +1102,105 @@ async function updateLiveNwsAlerts() {
     data.alerts = [];
     renderWarnings(false);
     renderSubscreenAlert();
+  }
+}
+
+
+async function tryFetchForecastEndpoint() {
+  const endpoints = [
+    "http://localhost:3000/api/nws-forecast",
+    "http://localhost:3000/api/forecast",
+    "http://localhost:3000/api/nws/text-forecast"
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      const json = await response.json();
+      if (json) return json;
+    } catch (error) {
+      // keep trying fallbacks
+    }
+  }
+
+  return null;
+}
+
+async function fetchDirectNwsForecast() {
+  const pointsResponse = await fetch(`https://api.weather.gov/points/${NWS_POINT_LAT},${NWS_POINT_LON}`);
+  if (!pointsResponse.ok) throw new Error(`NWS points HTTP ${pointsResponse.status}`);
+  const pointsJson = await pointsResponse.json();
+
+  const forecastUrl = pointsJson?.properties?.forecast;
+  if (!forecastUrl) throw new Error("NWS points response missing forecast URL");
+
+  const forecastResponse = await fetch(forecastUrl);
+  if (!forecastResponse.ok) throw new Error(`NWS forecast HTTP ${forecastResponse.status}`);
+  return forecastResponse.json();
+}
+
+function applyForecastPayload(payload) {
+  let periods = [];
+
+  if (Array.isArray(payload?.periods)) {
+    periods = payload.periods;
+  } else if (Array.isArray(payload?.properties?.periods)) {
+    periods = payload.properties.periods;
+  } else if (Array.isArray(payload?.forecast?.periods)) {
+    periods = payload.forecast.periods;
+  }
+
+  if (!periods.length) throw new Error("No forecast periods returned");
+
+  data.textForecast.updatedAt =
+    payload?.updatedAt ||
+    payload?.properties?.updated ||
+    new Date().toISOString();
+
+  data.textForecast.periods = periods.slice(0, 4).map((period) => ({
+    name: String(period.name || "Forecast"),
+    detail: String(period.detailedForecast || period.shortForecast || "Forecast unavailable.")
+  }));
+
+  data.textForecast.sevenDay = buildSevenDayForecast(periods);
+
+  const daytimePeriods = periods.filter((period) => period && period.isDaytime).slice(0, 3);
+  if (daytimePeriods.length) {
+    data.forecast = daytimePeriods.map((period) => {
+      const matchingNight = periods.find((candidate) => {
+        if (!candidate || candidate.isDaytime || !candidate.startTime || !period.startTime) return false;
+        const candidateDate = new Date(candidate.startTime).toDateString();
+        const periodDate = new Date(period.startTime).toDateString();
+        return candidateDate === periodDate;
+      });
+
+      return {
+        high: typeof period.temperature === "number" ? period.temperature : null,
+        low: typeof matchingNight?.temperature === "number" ? matchingNight.temperature : null,
+        cond: shortenForecastPhrase(period.shortForecast, "Forecast"),
+        pop: typeof period.probabilityOfPrecipitation?.value === "number" ? period.probabilityOfPrecipitation.value : 0
+      };
+    });
+  }
+
+  renderForecast();
+  renderExpandedForecastScreen();
+}
+
+async function updateLiveNwsForecast() {
+  try {
+    const localPayload = await tryFetchForecastEndpoint();
+    if (localPayload) {
+      applyForecastPayload(localPayload);
+      return;
+    }
+
+    const directPayload = await fetchDirectNwsForecast();
+    applyForecastPayload(directPayload);
+  } catch (error) {
+    console.error("Failed to load NWS forecast:", error);
+    renderExpandedForecastScreen();
   }
 }
 
@@ -1517,9 +1738,11 @@ function renderSubscreenAlert() {
 function getNextScreenHref() {
   const path = window.location.pathname.toLowerCase();
 
+  if (path.endsWith("index.html") || path.endsWith("/prototypeb-main/") || path.endsWith("/prototypeb/")) return "subscreen-current.html";
   if (path.endsWith("subscreen-current.html")) return "subscreen-regional-map.html";
-  if (path.endsWith("subscreen-regional-map.html")) return "index.html";
-  return "subscreen-current.html";
+  if (path.endsWith("subscreen-regional-map.html")) return "subscreen-forecast.html";
+  if (path.endsWith("subscreen-forecast.html")) return "index.html";
+  return "index.html";
 }
 
 function schedulePageRotation() {
@@ -1529,6 +1752,12 @@ function schedulePageRotation() {
       window.location.href = getNextScreenHref();
     }, SCREEN_FADE_MS);
   }, SCREEN_ROTATE_MS);
+}
+
+function initPageEntrance() {
+  requestAnimationFrame(() => {
+    document.body.classList.add("page-enter-ready");
+  });
 }
 
 /* -------------------- init -------------------- */
@@ -1547,12 +1776,14 @@ function initMainDashboardPage() {
   updateLiveTempestCurrent();
   updateGraphHistory();
   updateLiveNwsAlerts();
+  updateLiveNwsForecast();
   updateLiveLightning();
 
   setInterval(updateClock, 1000);
   setInterval(updateLiveTempestCurrent, 30000);
   setInterval(updateGraphHistory, 60000);
   setInterval(updateLiveNwsAlerts, 60000);
+  setInterval(updateLiveNwsForecast, 15 * 60 * 1000);
 
   schedulePageRotation();
 }
@@ -1587,12 +1818,35 @@ function initRegionalMapPage() {
   schedulePageRotation();
 }
 
+function initForecastPage() {
+  updateClock();
+  updateLiveTempestCurrent();
+  updateLiveNwsAlerts();
+  updateLiveNwsForecast();
+  startSubscreenConditionRotation();
+
+  setInterval(updateClock, 1000);
+  setInterval(updateLiveTempestCurrent, 30000);
+  setInterval(updateLiveNwsAlerts, 60000);
+  setInterval(updateLiveNwsForecast, 15 * 60 * 1000);
+
+  schedulePageRotation();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initPageEntrance();
+
   const isRegionalMap = !!document.querySelector(".regional-map-shell");
+  const isForecastPage = !!document.querySelector(".subscreen-forecast-page");
   const isSubscreen = !!document.querySelector(".subscreen-current-v2") && !isRegionalMap;
 
   if (isRegionalMap) {
     initRegionalMapPage();
+    return;
+  }
+
+  if (isForecastPage) {
+    initForecastPage();
     return;
   }
 
