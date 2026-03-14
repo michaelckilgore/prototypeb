@@ -1687,20 +1687,68 @@ function showSubscreenConditionSet(index) {
   });
 }
 
+function getForecastConditionRotationAnchorMs() {
+  try {
+    const saved = Number(window.localStorage.getItem(FORECAST_CONDITION_ROTATION_KEY));
+    if (Number.isFinite(saved) && saved > 0) return saved;
+  } catch (error) {
+    console.warn("Forecast condition rotation state unavailable:", error);
+  }
+
+  const now = Date.now();
+  try {
+    window.localStorage.setItem(FORECAST_CONDITION_ROTATION_KEY, String(now));
+  } catch (error) {
+    console.warn("Forecast condition rotation state unavailable:", error);
+  }
+  return now;
+}
+
 function startSubscreenConditionRotation() {
   const track = document.getElementById("subscreen-conditions-track");
   if (!track) return;
 
+  const sets = getSubscreenConditionSets();
+  if (!sets.length) return;
+
   track.innerHTML = "";
   activeConditionLine = null;
-  subscreenConditionSetIndex = 0;
-  showSubscreenConditionSet(subscreenConditionSetIndex);
 
   if (subscreenConditionTimer) clearInterval(subscreenConditionTimer);
-  subscreenConditionTimer = setInterval(() => {
+  if (subscreenConditionTimeout) clearTimeout(subscreenConditionTimeout);
+
+  const isForecastPage = !!document.querySelector(".subscreen-forecast-page");
+
+  if (!isForecastPage) {
+    subscreenConditionSetIndex = 0;
+    showSubscreenConditionSet(subscreenConditionSetIndex);
+
+    subscreenConditionTimer = setInterval(() => {
+      subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
+      showSubscreenConditionSet(subscreenConditionSetIndex);
+    }, CONDITION_ROTATE_MS);
+    return;
+  }
+
+  const anchorMs = getForecastConditionRotationAnchorMs();
+  const nowMs = Date.now();
+  const elapsedMs = Math.max(0, nowMs - anchorMs);
+  const cycleCount = Math.floor(elapsedMs / CONDITION_ROTATE_MS);
+  const cycleProgressMs = elapsedMs % CONDITION_ROTATE_MS;
+  const msUntilNext = Math.max(250, CONDITION_ROTATE_MS - cycleProgressMs);
+
+  subscreenConditionSetIndex = cycleCount % sets.length;
+  showSubscreenConditionSet(subscreenConditionSetIndex);
+
+  subscreenConditionTimeout = setTimeout(() => {
     subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
     showSubscreenConditionSet(subscreenConditionSetIndex);
-  }, CONDITION_ROTATE_MS);
+
+    subscreenConditionTimer = setInterval(() => {
+      subscreenConditionSetIndex = (subscreenConditionSetIndex + 1) % getSubscreenConditionSets().length;
+      showSubscreenConditionSet(subscreenConditionSetIndex);
+    }, CONDITION_ROTATE_MS);
+  }, msUntilNext);
 }
 
 function renderSubscreenAlert() {
