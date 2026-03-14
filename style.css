@@ -37,7 +37,7 @@ body{
   padding:14px;
   position:relative;
   overflow-x:hidden;
-  background:#040915;
+  background:linear-gradient(180deg, #1a3a6a 0%, #0e2a54 45%, #05152d 100%);
 }
 
 .bg-scene{
@@ -52,10 +52,10 @@ body{
   position:absolute;
   inset:-6%;
   background:
-    radial-gradient(circle at 14% 16%, rgba(35,95,205,.18), transparent 24%),
-    radial-gradient(circle at 84% 18%, rgba(0,205,255,.14), transparent 20%),
-    radial-gradient(circle at 78% 74%, rgba(0,120,255,.10), transparent 26%),
-    linear-gradient(180deg, #050913 0%, #07101f 26%, #08152b 55%, #071228 78%, #050913 100%);
+    radial-gradient(circle at 14% 10%, rgba(255,255,255,.07), transparent 20%),
+    radial-gradient(circle at 82% 14%, rgba(120,200,255,.10), transparent 22%),
+    radial-gradient(circle at 78% 72%, rgba(0,120,255,.08), transparent 26%),
+    linear-gradient(180deg, #1a3a6a 0%, #0e2a54 45%, #05152d 100%);
   transform:scale(1.04);
 }
 
@@ -63,7 +63,7 @@ body{
   position:absolute;
   border-radius:50%;
   filter:blur(60px);
-  opacity:.34;
+  opacity:.26;
   mix-blend-mode:screen;
 }
 
@@ -72,7 +72,7 @@ body{
   height:420px;
   left:-140px;
   top:-100px;
-  background:radial-gradient(circle, rgba(33,104,255,.34), rgba(33,104,255,0) 70%);
+  background:radial-gradient(circle, rgba(33,104,255,.28), rgba(33,104,255,0) 70%);
   animation:orbDriftLeft 18s ease-in-out infinite alternate;
 }
 
@@ -81,90 +81,32 @@ body{
   height:520px;
   right:-180px;
   top:40px;
-  background:radial-gradient(circle, rgba(0,221,255,.26), rgba(0,221,255,0) 72%);
+  background:radial-gradient(circle, rgba(0,221,255,.20), rgba(0,221,255,0) 72%);
   animation:orbDriftRight 20s ease-in-out infinite alternate;
 }
 
-.bg-wave-layer{
-  position:absolute;
-  inset:0;
-  transform-origin:center;
-  will-change:transform, opacity;
-}
-
-.bg-wave-layer::before{
-  content:"";
-  position:absolute;
-  right:-8%;
-  top:30%;
-  width:88%;
-  height:34%;
-  border-radius:50%;
-  filter:blur(10px);
-}
-
-.bg-wave-back::before{
-  background:
-    radial-gradient(ellipse at center,
-      rgba(0,190,255,.12) 0%,
-      rgba(0,190,255,.10) 20%,
-      rgba(0,190,255,.00) 68%),
-    linear-gradient(90deg,
-      rgba(0,0,0,0) 0%,
-      rgba(48,109,255,.12) 28%,
-      rgba(82,226,255,.20) 50%,
-      rgba(38,120,255,.16) 68%,
-      rgba(0,0,0,0) 100%);
-  clip-path:polygon(
-    0% 67%, 4% 63%, 8% 61%, 12% 60%, 16% 63%, 20% 68%, 24% 72%, 28% 71%,
-    32% 65%, 36% 57%, 40% 50%, 44% 47%, 48% 50%, 52% 57%, 56% 66%, 60% 72%,
-    64% 72%, 68% 66%, 72% 58%, 76% 50%, 80% 46%, 84% 48%, 88% 54%, 92% 61%,
-    96% 67%, 100% 69%, 100% 100%, 0% 100%
-  );
-  opacity:.42;
-  animation:waveDriftBack 26s ease-in-out infinite alternate;
-}
-
+.bg-wave-layer,
+.bg-wave-layer::before,
+.bg-wave-back::before,
 .bg-wave-front::before{
-  background:
-    radial-gradient(ellipse at center,
-      rgba(123,231,255,.28) 0%,
-      rgba(123,231,255,.16) 22%,
-      rgba(123,231,255,.00) 70%),
-    linear-gradient(90deg,
-      rgba(0,0,0,0) 0%,
-      rgba(60,135,255,.10) 28%,
-      rgba(110,240,255,.30) 46%,
-      rgba(57,173,255,.20) 64%,
-      rgba(0,0,0,0) 100%);
-  box-shadow:
-    0 0 24px rgba(123,231,255,.08),
-    0 0 60px rgba(0,170,255,.06);
-  clip-path:polygon(
-    0% 63%, 4% 59%, 8% 57%, 12% 58%, 16% 62%, 20% 68%, 24% 72%, 28% 70%,
-    32% 63%, 36% 55%, 40% 48%, 44% 44%, 48% 45%, 52% 51%, 56% 60%, 60% 68%,
-    64% 70%, 68% 66%, 72% 58%, 76% 48%, 80% 42%, 84% 43%, 88% 48%, 92% 55%,
-    96% 61%, 100% 63%, 100% 100%, 0% 100%
-  );
-  opacity:.54;
-  animation:waveDriftFront 18s ease-in-out infinite alternate;
+  display:none !important;
 }
 
 .bg-vignette{
   position:absolute;
   inset:0;
   background:
-    radial-gradient(circle at center, rgba(0,0,0,0) 40%, rgba(0,0,0,.18) 72%, rgba(0,0,0,.38) 100%);
+    radial-gradient(circle at center, rgba(0,0,0,0) 40%, rgba(0,0,0,.14) 72%, rgba(0,0,0,.30) 100%);
 }
 
 @keyframes orbDriftLeft{
-  0%{ transform:translate3d(0,0,0) scale(1); opacity:.26; }
-  100%{ transform:translate3d(42px,22px,0) scale(1.08); opacity:.36; }
+  0%{ transform:translate3d(0,0,0) scale(1); opacity:.22; }
+  100%{ transform:translate3d(42px,22px,0) scale(1.08); opacity:.30; }
 }
 
 @keyframes orbDriftRight{
-  0%{ transform:translate3d(0,0,0) scale(1); opacity:.24; }
-  100%{ transform:translate3d(-34px,18px,0) scale(1.06); opacity:.34; }
+  0%{ transform:translate3d(0,0,0) scale(1); opacity:.18; }
+  100%{ transform:translate3d(-34px,18px,0) scale(1.06); opacity:.26; }
 }
 
 @keyframes waveDriftBack{
