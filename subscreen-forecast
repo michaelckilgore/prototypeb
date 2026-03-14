@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expanded Forecast</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="page-fade subscreen-body">
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-gradient"></div>
+  <div class="bg-orb bg-orb-left"></div>
+  <div class="bg-orb bg-orb-right"></div>
+  <div class="bg-wave-layer bg-wave-back"></div>
+  <div class="bg-wave-layer bg-wave-front"></div>
+  <div class="bg-vignette"></div>
+</div>
+
+<div class="page-fade-overlay"></div>
+
+<main class="subscreen-forecast-page">
+  <section class="subscreen-header-bar">
+    <div class="subscreen-header-title">EXPANDED FORECAST</div>
+    <div id="subscreen-clock" class="subscreen-header-clock">--:--</div>
+  </section>
+
+  <section class="forecast-expanded-shell">
+    <div class="forecast-expanded-grid">
+      <article class="forecast-period-card">
+        <div id="forecast-period-name-0" class="forecast-period-name">Loading</div>
+        <div id="forecast-period-text-0" class="forecast-period-text">Forecast data is loading.</div>
+      </article>
+      <article class="forecast-period-card">
+        <div id="forecast-period-name-1" class="forecast-period-name">Loading</div>
+        <div id="forecast-period-text-1" class="forecast-period-text">Forecast data is loading.</div>
+      </article>
+      <article class="forecast-period-card">
+        <div id="forecast-period-name-2" class="forecast-period-name">Loading</div>
+        <div id="forecast-period-text-2" class="forecast-period-text">Forecast data is loading.</div>
+      </article>
+      <article class="forecast-period-card">
+        <div id="forecast-period-name-3" class="forecast-period-name">Loading</div>
+        <div id="forecast-period-text-3" class="forecast-period-text">Forecast data is loading.</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="forecast-seven-day-shell">
+    <div class="forecast-seven-day-title">THE 7-DAY FORECAST</div>
+    <div class="forecast-seven-day-row">
+
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-0" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-0" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-0" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-0" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-0" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-0" class="forecast-seven-day-pop">--</div>
+      </article>
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-1" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-1" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-1" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-1" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-1" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-1" class="forecast-seven-day-pop">--</div>
+      </article>
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-2" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-2" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-2" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-2" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-2" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-2" class="forecast-seven-day-pop">--</div>
+      </article>
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-3" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-3" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-3" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-3" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-3" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-3" class="forecast-seven-day-pop">--</div>
+      </article>
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-4" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-4" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-4" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-4" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-4" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-4" class="forecast-seven-day-pop">--</div>
+      </article>
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-5" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-5" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-5" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-5" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-5" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-5" class="forecast-seven-day-pop">--</div>
+      </article>
+      <article class="forecast-seven-day-card">
+        <div id="forecast7-label-6" class="forecast-seven-day-label">--</div>
+        <img id="forecast7-icon-6" class="forecast-seven-day-icon" src="images/weathericons/day.svg" alt="Forecast icon">
+        <div id="forecast7-text-6" class="forecast-seven-day-text">--</div>
+        <div class="forecast-seven-day-temps">
+          <div id="forecast7-hi-6" class="forecast-seven-day-high">--</div>
+          <div id="forecast7-lo-6" class="forecast-seven-day-low">--</div>
+        </div>
+        <div id="forecast7-pop-6" class="forecast-seven-day-pop">--</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="forecast-disclaimer-shell">
+    <div class="forecast-disclaimer-text">Forecast confidence decreases with time.</div>
+  </section>
+
+  <section class="subscreen-conditions-shell">
+    <div class="subscreen-conditions-title">Current Conditions</div>
+    <div class="subscreen-conditions-window">
+      <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
+    </div>
+  </section>
+
+  <section id="subscreen-alert-ribbon" class="subscreen-alert-ribbon" style="display:none;">
+    <div id="subscreen-alert-text" class="subscreen-alert-text"></div>
+  </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
