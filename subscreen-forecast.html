@@ -56,42 +56,16 @@
       object-fit: cover;
       display: block;
     }
-
-    .clock-mask {
-      position: absolute;
-      right: 14px;
-      top: 36px;
-      width: 286px;
-      height: 46px;
-      background: linear-gradient(180deg, rgba(8,31,74,0.84) 0%, rgba(4,20,53,0.84) 100%);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 6px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-      opacity: 1;
-      z-index: 2;
-    }
-
-    .clock-mask::after {
-      content: "";
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 0;
-      height: 3px;
-      background: linear-gradient(90deg, rgba(244,191,52,0.9), rgba(244,191,52,0.35));
-      border-radius: 2px;
-    }
-
     .header-clock {
       position: absolute;
-      right: 30px;
-      top: 46px;
-      font-size: 23px;
+      right: 22px;
+      top: 42px;
+      font-size: 24px;
       line-height: 1;
       font-weight: 700;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.6px;
       color: #ffffff;
-      text-shadow: 0 0 8px rgba(255,255,255,0.18);
+      text-shadow: 0 0 8px rgba(255,255,255,0.16);
       z-index: 3;
     }
 
@@ -137,7 +111,7 @@
       position: absolute;
       left: 24px;
       right: 24px;
-      top: 152px;
+      top: 162px;
       bottom: 52px;
       display: grid;
       grid-template-rows: 1fr 114px;
@@ -289,9 +263,9 @@
     }
 
     .day-icon-row.has-pop {
-      justify-content: flex-start;
+      justify-content: center;
       gap: 4px;
-      padding-left: 7px;
+      padding-left: 0;
     }
 
     .day-icon-row.no-pop {
@@ -437,7 +411,6 @@
   <div class="screen">
     <div class="header">
       <img class="header-bar" src="assets/header/expanded-forecast-bar.png" alt="Expanded Forecast Header" />
-      <div class="clock-mask"></div>
       <div id="alertBox" class="alert-box">
         <div id="alertTop" class="alert-top"></div>
         <div id="alertBottom" class="alert-bottom"></div>
