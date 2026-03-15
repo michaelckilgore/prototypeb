@@ -1696,7 +1696,8 @@ function getNextScreenHref() {
   if (path.endsWith("index.html") || path.endsWith("/prototypeb-main/") || path.endsWith("/")) return "subscreen-current.html";
   if (path.endsWith("subscreen-current.html")) return "subscreen-regional-map.html";
   if (path.endsWith("subscreen-regional-map.html")) return "subscreen-forecast.html";
-  if (path.endsWith("subscreen-forecast.html")) return "index.html";
+  if (path.endsWith("subscreen-forecast.html")) return "subscreen-severe.html";
+  if (path.endsWith("subscreen-severe.html")) return "index.html";
   return "subscreen-current.html";
 }
 
@@ -1780,10 +1781,17 @@ function initForecastPage() {
   schedulePageRotation();
 }
 
+function initSeverePage() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  schedulePageRotation();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const isRegionalMap = !!document.querySelector(".regional-map-shell");
   const isForecastPage = !!document.querySelector(".forecast-screen-shell");
-  const isSubscreen = !!document.querySelector(".subscreen-current-v2") && !isRegionalMap && !isForecastPage;
+  const isSeverePage = !!document.querySelector(".severe-screen-shell");
+  const isSubscreen = !!document.querySelector(".subscreen-current-v2") && !isRegionalMap && !isForecastPage && !isSeverePage;
 
   if (isRegionalMap) {
     initRegionalMapPage();
@@ -1792,6 +1800,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (isForecastPage) {
     initForecastPage();
+    return;
+  }
+
+  if (isSeverePage) {
+    initSeverePage();
     return;
   }
 
