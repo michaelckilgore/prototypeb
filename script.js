@@ -1467,7 +1467,6 @@ function showSubscreenConditionSet(index) {
   });
 }
 
-
 function startSubscreenConditionRotation() {
   const track = document.getElementById("subscreen-conditions-track");
   if (!track) return;
@@ -1556,11 +1555,7 @@ function renderSubscreenAlert() {
   text.textContent = `⚠ ${getShortAlertLabel(highest)} • ${normalizeAlertText(highest.area || "Rush County")} • ${formatMinutesUntil(highest.expires)}`;
 }
 
-
 /* -------------------- forecast subscreen -------------------- */
-
-const NWS_POINT_LAT = 39.6092;
-const NWS_POINT_LON = -85.4464;
 
 function normalizeIconUrl(url) {
   if (!url) return "images/cloud.svg";
@@ -1678,7 +1673,6 @@ async function loadForecastScreenData() {
   }
 }
 
-
 /* -------------------- page rotation -------------------- */
 
 function getNextScreenHref() {
@@ -1686,8 +1680,7 @@ function getNextScreenHref() {
 
   if (path.endsWith("index.html") || path.endsWith("/prototypeb-main/") || path.endsWith("/")) return "subscreen-current.html";
   if (path.endsWith("subscreen-current.html")) return "subscreen-regional-map.html";
-  if (path.endsWith("subscreen-regional-map.html")) return "subscreen-watch-sample.html";
-  if (path.endsWith("subscreen-watch-sample.html")) return "subscreen-forecast.html";
+  if (path.endsWith("subscreen-regional-map.html")) return "subscreen-watch.html";
   if (path.endsWith("subscreen-watch.html")) return "subscreen-forecast.html";
   if (path.endsWith("subscreen-forecast.html")) return "index.html";
   return "subscreen-current.html";

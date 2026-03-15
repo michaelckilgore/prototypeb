@@ -8,8 +8,6 @@
     :root {
       --bg1: #07111f;
       --bg2: #0d2039;
-      --panel: rgba(3, 11, 26, 0.78);
-      --panel-border: rgba(255,255,255,0.09);
       --gold: #f2cf62;
       --white: #f6f7fb;
       --red1: #ff3a3a;
@@ -337,7 +335,7 @@
 </head>
 <body>
   <div id="screen">
-    <div id="layout-build">Layout build: 2026-03-15 watch-v3</div>
+    <div id="layout-build">Layout build: 2026-03-15 watch-v4</div>
 
     <div class="topbar">
       <div class="logo-box">
@@ -388,7 +386,7 @@
 
   <script>
     const LOCAL_TZ = 'America/Indiana/Indianapolis';
-    const API_URL = '/api/spc-watches';
+    const API_URL = 'http://localhost:3000/api/spc-watches';
     const MAP_RETRY_MS = 30000;
     let latestPayload = null;
     let currentMapUrl = '';
