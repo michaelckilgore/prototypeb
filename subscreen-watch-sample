@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sample Tornado Watch</title>
+<style>
+body{
+    margin:0;
+    background:#000;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+.header{
+    text-align:center;
+    background:#111;
+    padding:20px 10px;
+    border-bottom:3px solid #ffd400;
+}
+.header h1{
+    margin:0;
+    color:#ffd400;
+    font-size:60px;
+}
+.header h2{
+    margin:5px 0 0 0;
+    font-size:32px;
+    font-weight:normal;
+}
+.container{
+    display:flex;
+    padding:20px;
+}
+.map{
+    flex:2;
+}
+.map img{
+    width:100%;
+}
+.info{
+    flex:1;
+    padding-left:30px;
+}
+.section-title{
+    color:#ffd400;
+    font-size:30px;
+    margin-top:20px;
+}
+ul{
+    font-size:26px;
+}
+.sample{
+    position:absolute;
+    top:10px;
+    right:20px;
+    color:#ff4444;
+    font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sample">SAMPLE – WATCH DISPLAY TEST</div>
+
+<div class="header">
+<h1>TORNADO WATCH #50</h1>
+<h2>Valid until 1:00 PM EDT</h2>
+</div>
+
+<div class="container">
+
+<div class="map">
+<img src="watch50.png">
+</div>
+
+<div class="info">
+
+<div class="section-title">AREA</div>
+<ul>
+<li>Central Georgia</li>
+<li>Central and Eastern South Carolina</li>
+</ul>
+
+<div class="section-title">THREATS POSSIBLE</div>
+<ul>
+<li>Several tornadoes possible</li>
+<li>Hail up to 2 inches</li>
+<li>Wind gusts to 70 mph</li>
+</ul>
+
+</div>
+</div>
+
+</body>
+</html>
