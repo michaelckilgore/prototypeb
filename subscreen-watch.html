@@ -1,522 +1,148 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch Screen</title>
-  <style>
-    :root {
-      --bg1: #07111f;
-      --bg2: #0d2039;
-      --gold: #f2cf62;
-      --white: #f6f7fb;
-      --red1: #ff3a3a;
-      --red2: #ca0000;
-      --red3: #880000;
-    }
+<meta charset="UTF-8">
+<title>SPC Watch</title>
 
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #04101f;
-      color: var(--white);
-    }
+<style>
 
-    body {
-      background:
-        radial-gradient(circle at 50% 80%, rgba(255,255,255,.08), transparent 26%),
-        linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.35)),
-        linear-gradient(180deg, #12253f 0%, #0a1830 45%, #081221 100%);
-    }
+body{
+    margin:0;
+    background:#000;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    overflow:hidden;
+}
 
-    #screen {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      padding: 12px 18px 10px;
-    }
+#header{
+    position:absolute;
+    top:12px;
+    left:20px;
+    font-size:22px;
+    font-weight:bold;
+}
 
-    #layout-build {
-      position: absolute;
-      top: 1px;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      font-size: 11px;
-      line-height: 1;
-      color: rgba(255,255,255,.34);
-      letter-spacing: .8px;
-      pointer-events: none;
-      z-index: 20;
-    }
+#clock{
+    position:absolute;
+    top:12px;
+    right:20px;
+    font-size:18px;
+}
 
-    .topbar {
-      position: absolute;
-      left: 6px;
-      right: 6px;
-      top: 12px;
-      height: 106px;
-      display: grid;
-      grid-template-columns: 290px 1fr 270px;
-      gap: 14px;
-      align-items: stretch;
-    }
+#watchNumber{
+    position:absolute;
+    top:60px;
+    left:20px;
+    font-size:38px;
+    font-weight:bold;
+}
 
-    .logo-box,
-    .clock-box,
-    .header-box,
-    .side-panel,
-    .footer-box {
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(8,20,40,.96), rgba(2,10,24,.96));
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 25px rgba(0,0,0,.35);
-    }
+#mapContainer{
+    position:absolute;
+    top:120px;
+    left:0;
+    right:0;
+    bottom:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
 
-    .logo-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-    }
+#mapContainer img{
+    max-width:95%;
+    max-height:95%;
+}
 
-    .logo-box img {
-      max-width: 88%;
-      max-height: 78px;
-      display: block;
-      object-fit: contain;
-    }
+#pending{
+    font-size:28px;
+    text-align:center;
+    line-height:1.4;
+}
 
-    .header-box {
-      background: linear-gradient(180deg, var(--red1) 0%, var(--red2) 50%, var(--red3) 100%);
-      box-shadow: inset 0 2px rgba(255,255,255,.2), 0 10px 25px rgba(0,0,0,.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0 28px;
-    }
-
-    #watch-header-text {
-      font-size: 66px;
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      text-shadow: 0 4px 10px rgba(0,0,0,.28);
-      white-space: nowrap;
-    }
-
-    .clock-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: 45px;
-      font-weight: 900;
-      letter-spacing: .5px;
-    }
-
-    .content {
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      top: 130px;
-      bottom: 58px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.92fr) minmax(330px, .86fr);
-      gap: 18px;
-      align-items: stretch;
-    }
-
-    .map-wrap {
-      position: relative;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 18px;
-      background: transparent;
-    }
-
-    .map-inner {
-      position: absolute;
-      inset: 8px 8px 8px 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #watch-map {
-      max-width: 100%;
-      max-height: 100%;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center center;
-      filter: drop-shadow(0 12px 24px rgba(0,0,0,.52));
-      opacity: 0;
-      transition: opacity .5s ease;
-      display: none;
-    }
-
-    #watch-map.loaded {
-      opacity: 1;
-    }
-
-    #map-fallback {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px;
-      color: var(--white);
-      line-height: 1.35;
-      text-shadow: 0 2px 8px rgba(0,0,0,.4);
-    }
-
-    #map-fallback .fallback-title {
-      font-size: 40px;
-      font-weight: 800;
-      margin-bottom: 18px;
-    }
-
-    #map-fallback .fallback-subtitle {
-      font-size: 34px;
-      font-weight: 700;
-      opacity: .96;
-    }
-
-    .side-stack {
-      display: grid;
-      grid-template-rows: auto auto 1fr;
-      gap: 18px;
-      min-width: 0;
-    }
-
-    .side-panel {
-      background: linear-gradient(180deg, rgba(5,16,34,.88), rgba(3,9,22,.9));
-      border-radius: 18px;
-      padding: 22px 24px 20px;
-    }
-
-    .panel-title {
-      color: var(--gold);
-      font-size: 36px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin: 0 0 18px;
-    }
-
-    .threat-list,
-    .portion-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .threat-item,
-    .portion-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      margin: 0 0 16px;
-      font-weight: 800;
-      text-shadow: 0 2px 8px rgba(0,0,0,.4);
-    }
-
-    .threat-item {
-      font-size: 48px;
-      line-height: 1.18;
-    }
-
-    .portion-item {
-      font-size: 28px;
-      line-height: 1.15;
-      margin-bottom: 12px;
-    }
-
-    .bullet {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 18px;
-      border-radius: 50%;
-      margin-top: .28em;
-      box-shadow: 0 0 10px rgba(255,255,255,.12);
-    }
-
-    .bullet.tornado { background: #ff4747; }
-    .bullet.hail { background: #ff9c2f; }
-    .bullet.wind { background: #ffd84a; }
-    .bullet.generic { background: #d4b04f; }
-
-    .timing-panel {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      text-align: center;
-      padding-top: 10px;
-    }
-
-    #valid-local {
-      color: var(--gold);
-      font-size: 36px;
-      line-height: 1.12;
-      font-weight: 900;
-      text-shadow: 0 2px 10px rgba(0,0,0,.4);
-      margin-bottom: 8px;
-    }
-
-    #valid-spc {
-      color: rgba(255,255,255,.9);
-      font-size: 23px;
-      line-height: 1.15;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-
-    #source-line {
-      color: rgba(255,255,255,.84);
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .expired-banner {
-      position: absolute;
-      left: 50%;
-      bottom: 78px;
-      transform: translateX(-50%);
-      z-index: 10;
-      display: none;
-      padding: 12px 28px;
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(120,0,0,.95), rgba(70,0,0,.95));
-      color: #fff;
-      font-size: 34px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.45);
-      text-align: center;
-      white-space: nowrap;
-    }
-
-    .footer-box {
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: 10px;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: rgba(255,255,255,.9);
-      font-weight: 700;
-    }
-
-    @media (max-width: 1600px) {
-      #watch-header-text { font-size: 56px; }
-      .clock-box { font-size: 38px; }
-      .threat-item { font-size: 40px; }
-      .portion-item { font-size: 24px; }
-      #valid-local { font-size: 30px; }
-      #valid-spc { font-size: 20px; }
-    }
-  </style>
+</style>
 </head>
+
 <body>
-  <div id="screen">
-    <div id="layout-build">Layout build: 2026-03-15 watch-v4</div>
 
-    <div class="topbar">
-      <div class="logo-box">
-        <img id="logo-image" src="assets/logo/logo.png" alt="Sugar Hill Weather logo" />
-      </div>
-      <div class="header-box">
-        <div id="watch-header-text">TORNADO WATCH #000</div>
-      </div>
-      <div class="clock-box" id="clock-box">--:-- --</div>
-    </div>
+<div id="header">SPC WATCH</div>
+<div id="clock"></div>
+<div id="watchNumber">WATCH #--</div>
 
-    <div class="content">
-      <div class="map-wrap">
-        <div class="map-inner">
-          <img id="watch-map" alt="Storm Prediction Center watch map" />
-          <div id="map-fallback">
-            <div>
-              <div class="fallback-title">Storm Prediction Center Map</div>
-              <div class="fallback-subtitle">Will Be Available Shortly</div>
-            </div>
-          </div>
-        </div>
-      </div>
+<div id="mapContainer">
+<div id="pending">Loading Watch Data…</div>
+</div>
 
-      <div class="side-stack">
-        <div class="side-panel">
-          <div class="panel-title">Primary Threats</div>
-          <ul class="threat-list" id="threat-list"></ul>
-        </div>
+<script>
 
-        <div class="side-panel">
-          <div class="panel-title">Portions Of</div>
-          <ul class="portion-list" id="portion-list"></ul>
-        </div>
+const ROTATE_MS = 5000;
 
-        <div class="timing-panel">
-          <div id="valid-local">Valid Until --</div>
-          <div id="valid-spc">SPC: --</div>
-          <div id="source-line">Storm Prediction Center</div>
-        </div>
-      </div>
-    </div>
+function updateClock(){
+    const now = new Date();
+    document.getElementById("clock").textContent =
+        now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+}
 
-    <div class="expired-banner" id="expired-banner">EXPIRED · NO LONGER VALID</div>
+setInterval(updateClock,1000);
+updateClock();
 
-    <div class="footer-box" id="footer-box">Watch display returns to the forecast shortly.</div>
-  </div>
+async function loadWatch(){
 
-  <script>
-    const LOCAL_TZ = 'America/Indiana/Indianapolis';
-    const API_URL = 'http://localhost:3000/api/spc-watches';
-    const MAP_RETRY_MS = 30000;
-    let latestPayload = null;
-    let currentMapUrl = '';
-    let retryTimer = null;
+    try{
 
-    function formatClock() {
-      return new Intl.DateTimeFormat('en-US', {
-        timeZone: LOCAL_TZ,
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZoneName: 'short'
-      }).format(new Date());
+        const r = await fetch("http://localhost:3000/api/spc-watches");
+        const j = await r.json();
+
+        if(!j.watches || j.watches.length === 0){
+            document.getElementById("pending").textContent =
+                "No Active SPC Watches";
+            return;
+        }
+
+        const watch = j.watches[0];
+
+        document.getElementById("watchNumber").textContent =
+            "WATCH #" + watch;
+
+        const img = document.createElement("img");
+
+        img.src = "https://www.spc.noaa.gov/products/watch/wou" + watch + "_radar.gif";
+
+        img.onload = () => {
+            const c = document.getElementById("mapContainer");
+            c.innerHTML = "";
+            c.appendChild(img);
+        };
+
+        img.onerror = () => {
+            document.getElementById("pending").textContent =
+                "Storm Prediction Center Map Will Be Available Shortly";
+        };
+
+    }catch(e){
+
+        document.getElementById("pending").textContent =
+            "Unable to Load Watch Data";
+
     }
 
-    function escapeHtml(text) {
-      return String(text || '').replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+
+loadWatch();
+
+function rotate(){
+
+    const path = window.location.pathname.toLowerCase();
+
+    if(path.endsWith("subscreen-watch.html")){
+        window.location.href = "subscreen-forecast.html";
     }
 
-    function formatLocalValidUntil(iso) {
-      if (!iso) return 'Valid Until --';
-      const d = new Date(iso);
-      return 'Valid Until ' + new Intl.DateTimeFormat('en-US', {
-        timeZone: LOCAL_TZ,
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZoneName: 'short'
-      }).format(d);
-    }
+}
 
-    function bulletClassForThreat(threat) {
-      const t = String(threat || '').toLowerCase();
-      if (t.includes('tornado')) return 'tornado';
-      if (t.includes('hail')) return 'hail';
-      if (t.includes('wind')) return 'wind';
-      return 'generic';
-    }
+setTimeout(rotate, ROTATE_MS);
 
-    function renderList(listId, items, bulletClassResolver) {
-      const target = document.getElementById(listId);
-      target.innerHTML = '';
-      (items || []).forEach(item => {
-        const li = document.createElement('li');
-        li.className = listId === 'threat-list' ? 'threat-item' : 'portion-item';
-        li.innerHTML = `<span class="bullet ${bulletClassResolver(item)}"></span><span>${escapeHtml(item)}</span>`;
-        target.appendChild(li);
-      });
-    }
+</script>
 
-    function showMapFallback() {
-      document.getElementById('map-fallback').style.display = 'flex';
-      const map = document.getElementById('watch-map');
-      map.style.display = 'none';
-      map.classList.remove('loaded');
-    }
-
-    function showMap(url) {
-      const map = document.getElementById('watch-map');
-      const fallback = document.getElementById('map-fallback');
-      if (!url) {
-        showMapFallback();
-        return;
-      }
-      currentMapUrl = url;
-      map.onload = () => {
-        fallback.style.display = 'none';
-        map.style.display = 'block';
-        requestAnimationFrame(() => map.classList.add('loaded'));
-      };
-      map.onerror = () => {
-        showMapFallback();
-        scheduleMapRetry();
-      };
-      map.classList.remove('loaded');
-      map.style.display = 'none';
-      fallback.style.display = 'flex';
-      map.src = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
-    }
-
-    function scheduleMapRetry() {
-      clearTimeout(retryTimer);
-      retryTimer = setTimeout(() => {
-        if (currentMapUrl) showMap(currentMapUrl);
-      }, MAP_RETRY_MS);
-    }
-
-    function renderWatch(payload) {
-      latestPayload = payload;
-      const watch = payload?.watch || {};
-      document.getElementById('watch-header-text').textContent = `${watch.type || 'WATCH'} #${watch.number || '--'}`;
-      document.getElementById('valid-local').textContent = formatLocalValidUntil(watch.expires);
-      document.getElementById('valid-spc').textContent = `SPC: ${watch.officialTimeLabel || '--'}`;
-      document.getElementById('expired-banner').style.display = payload?.isExpired ? 'block' : 'none';
-      document.getElementById('footer-box').textContent = payload?.isExpired
-        ? 'Most recent watch shown for layout testing.'
-        : 'Watch display returns to the forecast shortly.';
-
-      renderList('threat-list', watch.primaryThreats?.length ? watch.primaryThreats : ['Threat details pending'], bulletClassForThreat);
-      renderList('portion-list', watch.portions?.length ? watch.portions : ['Watch area shown on map'], () => 'generic');
-
-      showMap(watch.mapImageUrl || '');
-    }
-
-    async function loadWatch() {
-      try {
-        const res = await fetch(API_URL, { cache: 'no-store' });
-        const data = await res.json();
-        renderWatch(data);
-      } catch (err) {
-        if (latestPayload) return;
-        renderWatch({
-          isExpired: true,
-          watch: {
-            type: 'TORNADO WATCH',
-            number: '--',
-            officialTimeLabel: '--',
-            primaryThreats: ['Data unavailable'],
-            portions: ['Watch area shown on map']
-          }
-        });
-      }
-    }
-
-    setInterval(() => {
-      document.getElementById('clock-box').textContent = formatClock();
-    }, 1000);
-    document.getElementById('clock-box').textContent = formatClock();
-    loadWatch();
-    setInterval(loadWatch, 30000);
-  </script>
 </body>
 </html>
