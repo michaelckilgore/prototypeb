@@ -34,7 +34,7 @@
   }
   .header{
     display:grid;
-    grid-template-columns:220px 1fr 220px;
+    grid-template-columns:260px 1fr 220px;
     align-items:center;
     border:1px solid var(--line);
     border-radius:16px;
@@ -172,7 +172,7 @@
     </div>
   </div>
 
-  <div class="footer">Sample watch screen inserted into rotation for functional testing.</div>
+  <div class="footer">Sample watch screen stays in rotation while live watch support is being built.</div>
 </div>
 
 <script>
@@ -189,12 +189,30 @@
     document.getElementById("watch-clock").textContent = str;
   }
 
+  async function goNext() {
+    try {
+      const response = await fetch("http://localhost:3000/api/spc-watches", { cache: "no-store" });
+      if (response.ok) {
+        const json = await response.json();
+        const watches = Array.isArray(json?.watches) ? json.watches : [];
+        if (watches.length) {
+          const i = Number.parseInt(localStorage.getItem("shrsLiveWatchIndex") || "0", 10) || 0;
+          const watch = watches[i % watches.length];
+          localStorage.setItem("shrsLiveWatchIndex", String(i + 1));
+          window.location.href = "subscreen-watch.html?watch=" + encodeURIComponent(String(watch));
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("SPC watch lookup failed:", err);
+    }
+
+    window.location.href = "subscreen-forecast.html";
+  }
+
   updateClock();
   window.setInterval(updateClock, 1000);
-
-  window.setTimeout(() => {
-    window.location.href = "subscreen-forecast.html";
-  }, SCREEN_ROTATE_MS);
+  window.setTimeout(goNext, SCREEN_ROTATE_MS);
 </script>
 </body>
 </html>
