@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sample Tornado Watch</title>
+<title>Live Watch Display</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   :root{
@@ -14,9 +14,15 @@
     --gold:#f3d26f;
     --text:#f6f9ff;
     --muted:#c6d2e8;
-    --banner1:#ff3838;
-    --banner2:#bf0000;
-    --banner3:#760000;
+    --tornado1:#ff3838;
+    --tornado2:#bf0000;
+    --tornado3:#760000;
+    --severe1:#ffb22b;
+    --severe2:#cc7600;
+    --severe3:#7a4400;
+    --expired1:#9da7b7;
+    --expired2:#5e6777;
+    --expired3:#303743;
   }
 
   *{ box-sizing:border-box; }
@@ -69,7 +75,7 @@
     width:100%;
     height:100%;
     display:grid;
-    grid-template-rows:94px 1fr 56px;
+    grid-template-rows:94px auto 1fr 56px;
     gap:12px;
     padding:14px 16px 12px;
   }
@@ -83,7 +89,8 @@
 
   .header-logo-wrap,
   .header-clock-wrap,
-  .header-banner{
+  .header-banner,
+  .expired-banner{
     border-radius:12px;
     border:1px solid rgba(255,255,255,0.14);
     box-shadow:var(--panel-shadow);
@@ -96,6 +103,7 @@
     align-items:center;
     justify-content:center;
     background:linear-gradient(180deg, rgba(10,18,30,0.88), rgba(12,20,35,0.84));
+    backdrop-filter:blur(2px);
   }
 
   .header-logo{
@@ -115,22 +123,44 @@
     white-space:nowrap;
   }
 
-  .header-banner{
+  .header-banner,
+  .expired-banner{
     display:flex;
     align-items:center;
     justify-content:center;
     text-align:center;
     padding:0 20px;
     color:#ffffff;
-    background:linear-gradient(180deg, var(--banner1), var(--banner2) 58%, var(--banner3));
     box-shadow:
       inset 0 2px 0 rgba(255,255,255,0.24),
       inset 0 -2px 0 rgba(0,0,0,0.25),
       var(--panel-shadow);
   }
 
+  .header-banner{
+    background:linear-gradient(180deg, var(--banner1), var(--banner2) 58%, var(--banner3));
+  }
+
   .header-banner-text{
     font-size:52px;
+    font-weight:900;
+    letter-spacing:1.1px;
+    text-shadow:0 3px 12px rgba(0,0,0,0.45);
+    line-height:1;
+  }
+
+  .expired-banner{
+    display:none;
+    min-height:68px;
+    background:linear-gradient(180deg, var(--expired1), var(--expired2) 58%, var(--expired3));
+  }
+
+  .expired-banner.show{
+    display:flex;
+  }
+
+  .expired-banner-text{
+    font-size:40px;
     font-weight:900;
     letter-spacing:1.1px;
     text-shadow:0 3px 12px rgba(0,0,0,0.45);
@@ -150,6 +180,7 @@
     border:1px solid var(--panel-border);
     background:var(--panel);
     box-shadow:var(--panel-shadow);
+    backdrop-filter:blur(2px);
   }
 
   .map-panel{
@@ -163,22 +194,57 @@
     width:100%;
     height:100%;
     position:relative;
-    border-radius:10px;
     overflow:hidden;
-    border:2px solid rgba(255,255,255,0.78);
-    background:linear-gradient(180deg, rgba(20,27,40,0.84), rgba(9,15,25,0.88));
-    box-shadow:
-      0 14px 34px rgba(0,0,0,0.62),
-      inset 0 1px 0 rgba(255,255,255,0.22);
+    background:transparent;
   }
 
-  .map-frame img{
+  .map-frame img,
+  .map-fallback{
     position:absolute;
     inset:0;
     width:100%;
     height:100%;
+  }
+
+  .map-frame img{
     object-fit:contain;
-    background:#0b1120;
+    object-position:center center;
+    opacity:0;
+    transition:opacity 0.55s ease;
+    filter:drop-shadow(0 10px 20px rgba(0,0,0,0.55));
+  }
+
+  .map-frame img.loaded{
+    opacity:1;
+  }
+
+  .map-fallback{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:60px 40px;
+    text-align:center;
+    background:
+      radial-gradient(circle at center, rgba(255,255,255,0.04), transparent 45%),
+      linear-gradient(180deg, rgba(20,28,42,0.72), rgba(10,16,26,0.72));
+    border-radius:12px;
+  }
+
+  .map-fallback-title{
+    font-size:48px;
+    font-weight:900;
+    line-height:1.08;
+    color:#ffffff;
+    text-shadow:0 2px 10px rgba(0,0,0,0.45);
+  }
+
+  .map-fallback-subtitle{
+    margin-top:22px;
+    font-size:42px;
+    font-weight:800;
+    line-height:1.15;
+    color:#dbe6f8;
   }
 
   .info-panel{
@@ -237,7 +303,8 @@
   .threat-bullet.tornado{ background:#ff3434; }
   .threat-bullet.hail{ background:#ff9f1e; }
   .threat-bullet.wind{ background:#ffd447; }
-  .area-bullet{ background:rgba(243,210,111,0.78); width:10px; height:10px; flex-basis:10px; margin-top:12px; }
+  .threat-bullet.default{ background:#8eb3d8; }
+  .area-bullet{ background:#d4b04f; width:10px; height:10px; flex-basis:10px; margin-top:12px; }
 
   .threat-text,
   .area-text{
@@ -285,9 +352,21 @@
     letter-spacing:0.3px;
     text-align:center;
   }
+
+  .theme-tornado{
+    --banner1:var(--tornado1);
+    --banner2:var(--tornado2);
+    --banner3:var(--tornado3);
+  }
+
+  .theme-severe{
+    --banner1:var(--severe1);
+    --banner2:var(--severe2);
+    --banner3:var(--severe3);
+  }
 </style>
 </head>
-<body>
+<body class="theme-tornado">
 <div class="storm-bg"></div>
 <div class="storm-overlay"></div>
 <div class="screen">
@@ -296,53 +375,56 @@
       <img class="header-logo" src="assets/logo/sugar-hill-logo.png" alt="Sugar Hill Weather logo">
     </div>
     <div class="header-banner">
-      <div class="header-banner-text">TORNADO WATCH #50</div>
+      <div id="watch-banner-text" class="header-banner-text">LOADING WATCH...</div>
     </div>
     <div class="header-clock-wrap">
       <div id="watch-clock" class="header-clock">--:--</div>
     </div>
   </div>
 
+  <div id="expired-banner" class="expired-banner">
+    <div class="expired-banner-text">EXPIRED · NO LONGER VALID</div>
+  </div>
+
   <div class="content">
     <div class="panel map-panel">
       <div class="map-frame">
-        <img src="https://www.spc.noaa.gov/products/watch/ww0050_overview_big.gif" alt="SPC Tornado Watch 50 overview map">
+        <img id="watch-map" alt="Storm Prediction Center watch map">
+        <div id="map-fallback" class="map-fallback">
+          <div class="map-fallback-title">Storm Prediction Center Map</div>
+          <div class="map-fallback-subtitle">Will Be Available Shortly</div>
+        </div>
       </div>
     </div>
 
     <div class="panel info-panel">
       <div class="info-card">
         <div class="info-heading">Primary Threats</div>
-        <ul class="threat-list">
-          <li><span class="threat-bullet tornado"></span><span class="threat-text">A Couple Tornadoes</span></li>
-          <li><span class="threat-bullet hail"></span><span class="threat-text">Large Hail</span></li>
-          <li><span class="threat-bullet wind"></span><span class="threat-text">Damaging Winds To 70 MPH</span></li>
-        </ul>
+        <ul id="primary-threats" class="threat-list"></ul>
       </div>
 
       <div class="info-card">
         <div class="info-heading">Portions Of</div>
-        <ul class="area-list">
-          <li><span class="area-bullet"></span><span class="area-text">FAR EASTERN AND SOUTHEASTERN GEORGIA</span></li>
-          <li><span class="area-bullet"></span><span class="area-text">MUCH OF CENTRAL SOUTH CAROLINA</span></li>
-          <li><span class="area-bullet"></span><span class="area-text">MUCH OF SOUTHERN SOUTH CAROLINA</span></li>
-        </ul>
+        <ul id="watch-areas" class="area-list"></ul>
       </div>
 
       <div></div>
 
       <div class="valid-wrap">
-        <div class="valid-text">Valid Until 1:00 PM EDT</div>
+        <div id="valid-until" class="valid-text">Valid Until --</div>
         <div class="source-text">Storm Prediction Center</div>
       </div>
     </div>
   </div>
 
-  <div class="footer">Sample watch screen stays in rotation while live watch support is being built.</div>
+  <div id="footer-text" class="footer">Watch display returns to the forecast shortly.</div>
 </div>
 
 <script>
   const SCREEN_ROTATE_MS = 5000;
+  const MAP_RETRY_MS = 30000;
+  let mapRetryTimer = null;
+  let activeMapUrl = "";
 
   function updateClock() {
     const now = new Date();
@@ -355,30 +437,224 @@
     document.getElementById("watch-clock").textContent = str;
   }
 
-  async function goNext() {
-    try {
-      const response = await fetch("http://localhost:3000/api/spc-watches", { cache: "no-store" });
-      if (response.ok) {
-        const json = await response.json();
-        const watches = Array.isArray(json?.watches) ? json.watches : [];
-        if (watches.length) {
-          const i = Number.parseInt(localStorage.getItem("shrsLiveWatchIndex") || "0", 10) || 0;
-          const watch = watches[i % watches.length];
-          localStorage.setItem("shrsLiveWatchIndex", String(i + 1));
-          window.location.href = "subscreen-watch.html?watch=" + encodeURIComponent(String(watch));
-          return;
-        }
-      }
-    } catch (err) {
-      console.error("SPC watch lookup failed:", err);
+  function padWatchNumber(value) {
+    return String(value).padStart(4, "0");
+  }
+
+  function defaultThreats(type) {
+    const name = String(type || "").toLowerCase();
+    if (name.includes("severe thunderstorm")) {
+      return [
+        { text: "Damaging Winds", tone: "wind" },
+        { text: "Large Hail", tone: "hail" },
+        { text: "Isolated Tornadoes", tone: "tornado" }
+      ];
+    }
+    return [
+      { text: "Tornadoes", tone: "tornado" },
+      { text: "Large Hail", tone: "hail" },
+      { text: "Damaging Winds", tone: "wind" }
+    ];
+  }
+
+  function toneForThreat(text) {
+    const value = String(text || "").toLowerCase();
+    if (value.includes("tornado")) return "tornado";
+    if (value.includes("hail")) return "hail";
+    if (value.includes("wind")) return "wind";
+    return "default";
+  }
+
+  function renderThreats(items, type) {
+    const list = document.getElementById("primary-threats");
+    const threats = Array.isArray(items) && items.length
+      ? items.map((item) => typeof item === "string" ? { text: item, tone: toneForThreat(item) } : item)
+      : defaultThreats(type);
+
+    list.innerHTML = threats.map((item) => {
+      const text = String(item.text || item || "").trim();
+      const tone = String(item.tone || toneForThreat(text));
+      return `<li><span class="threat-bullet ${tone}"></span><span class="threat-text">${escapeHtml(text)}</span></li>`;
+    }).join("");
+  }
+
+  function normalizeAreaLines(input) {
+    if (!Array.isArray(input) || !input.length) {
+      return ["The Watch Area"];
+    }
+    return input
+      .map((item) => String(item || "").replace(/\s+/g, " ").trim())
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  function renderAreas(items) {
+    const lines = normalizeAreaLines(items);
+    const list = document.getElementById("watch-areas");
+    list.innerHTML = lines.map((line) => `<li><span class="area-bullet"></span><span class="area-text">${escapeHtml(line.toUpperCase())}</span></li>`).join("");
+  }
+
+  function formatValidText(label, isExpired) {
+    if (!label) return isExpired ? "Expired Watch" : "Valid Until --";
+    return isExpired ? `Expired ${label}` : `Valid Until ${label}`;
+  }
+
+  function applyTheme(type) {
+    const body = document.body;
+    if (String(type || "").toLowerCase().includes("severe thunderstorm")) {
+      body.classList.remove("theme-tornado");
+      body.classList.add("theme-severe");
+      return;
+    }
+    body.classList.remove("theme-severe");
+    body.classList.add("theme-tornado");
+  }
+
+  function setBanner(type, number) {
+    const safeType = String(type || "Watch").toUpperCase();
+    document.getElementById("watch-banner-text").textContent = `${safeType} #${number}`;
+  }
+
+  function setExpiredState(isExpired) {
+    const expiredBanner = document.getElementById("expired-banner");
+    const footer = document.getElementById("footer-text");
+
+    if (isExpired) {
+      expiredBanner.classList.add("show");
+      footer.textContent = "Most recent watch shown for testing. This display is expired and no longer valid.";
+      return;
     }
 
-    window.location.href = "subscreen-forecast.html";
+    expiredBanner.classList.remove("show");
+    footer.textContent = "Watch display returns to the forecast shortly.";
+  }
+
+  function showMapFallback() {
+    document.getElementById("map-fallback").style.display = "flex";
+  }
+
+  function hideMapFallback() {
+    document.getElementById("map-fallback").style.display = "none";
+  }
+
+  function scheduleMapRetry() {
+    window.clearTimeout(mapRetryTimer);
+    if (!activeMapUrl) return;
+    mapRetryTimer = window.setTimeout(() => {
+      const map = document.getElementById("watch-map");
+      map.classList.remove("loaded");
+      map.src = `${activeMapUrl}${activeMapUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
+    }, MAP_RETRY_MS);
+  }
+
+  function loadMap(url) {
+    const map = document.getElementById("watch-map");
+    activeMapUrl = url;
+    showMapFallback();
+    map.classList.remove("loaded");
+    map.onload = () => {
+      hideMapFallback();
+      map.classList.add("loaded");
+      window.clearTimeout(mapRetryTimer);
+    };
+    map.onerror = () => {
+      showMapFallback();
+      scheduleMapRetry();
+    };
+    map.src = `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  }
+
+  function fallbackMapUrl(number) {
+    return `https://www.spc.noaa.gov/products/watch/ww${padWatchNumber(number)}_overview_big.gif`;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  async function fetchWatchPayload() {
+    const response = await fetch("http://localhost:3000/api/spc-watches", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  }
+
+  function chooseWatchFromPayload(payload, requestedWatchNumber) {
+    const details = Array.isArray(payload?.watchDetails) ? payload.watchDetails : [];
+    const fallbackWatch = payload?.fallbackWatch || null;
+    const hasActiveWatch = Boolean(payload?.hasActiveWatch && details.length);
+
+    if (requestedWatchNumber) {
+      const requestedNumber = Number(requestedWatchNumber);
+      const activeMatch = details.find((item) => Number(item?.number) === requestedNumber);
+      if (activeMatch) return { detail: activeMatch, isExpired: false };
+      if (fallbackWatch && Number(fallbackWatch?.number) === requestedNumber) {
+        return { detail: fallbackWatch, isExpired: true };
+      }
+    }
+
+    if (hasActiveWatch) {
+      return { detail: details[details.length - 1], isExpired: false };
+    }
+
+    if (fallbackWatch) {
+      return { detail: fallbackWatch, isExpired: true };
+    }
+
+    return { detail: null, isExpired: false };
+  }
+
+  async function initWatch() {
+    const params = new URLSearchParams(window.location.search);
+    const requestedWatch = params.get("watch");
+
+    try {
+      const payload = await fetchWatchPayload();
+      const choice = chooseWatchFromPayload(payload, requestedWatch);
+      const detail = choice.detail;
+      const isExpired = choice.isExpired;
+
+      if (!detail) {
+        document.getElementById("watch-banner-text").textContent = "NO WATCH AVAILABLE";
+        renderThreats([], "Tornado Watch");
+        renderAreas(["No current or recent watch available"]);
+        document.getElementById("valid-until").textContent = "Watch Status Unavailable";
+        setExpiredState(false);
+        showMapFallback();
+        return;
+      }
+
+      const type = detail?.type || "Tornado Watch";
+      const mapUrl = detail?.mapUrl || fallbackMapUrl(detail.number);
+
+      applyTheme(type);
+      setBanner(type, detail.number);
+      setExpiredState(isExpired);
+      renderThreats(detail?.primaryThreats, type);
+      renderAreas(detail?.areas);
+      document.getElementById("valid-until").textContent = formatValidText(detail?.expiresLabel || detail?.expiresDisplay || "--", isExpired);
+      loadMap(mapUrl);
+    } catch (err) {
+      console.error("SPC watch detail lookup failed:", err);
+      document.getElementById("watch-banner-text").textContent = "WATCH DATA UNAVAILABLE";
+      renderThreats([], "Tornado Watch");
+      renderAreas(["Watch details unavailable"]);
+      document.getElementById("valid-until").textContent = "Watch Status Unavailable";
+      setExpiredState(false);
+      showMapFallback();
+    }
   }
 
   updateClock();
+  initWatch();
   window.setInterval(updateClock, 1000);
-  window.setTimeout(goNext, SCREEN_ROTATE_MS);
+  window.setTimeout(() => {
+    window.location.href = "subscreen-forecast.html";
+  }, SCREEN_ROTATE_MS);
 </script>
 </body>
 </html>
