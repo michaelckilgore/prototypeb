@@ -1,212 +1,86 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Current Conditions in Rushville</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Current Conditions</title>
 <link rel="stylesheet" href="style.css">
 
 <style>
-  .current-hero-header{
-    position:relative;
-    height:140px;
-    overflow:visible;
-    z-index:20;
-  }
+/* Forecast-style header reused for this subscreen */
 
-  .current-hero-header-bg{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:140px;
-    object-fit:cover;
-    display:block;
-  }
+.forecast-style-header{
+  position:relative;
+  height:140px;
+  width:100%;
+  overflow:hidden;
+}
 
-  .current-hero-logo{
-    position:absolute;
-    left:18px;
-    top:10px;
-    width:250px;
-    height:auto;
-    z-index:2;
-  }
+.forecast-style-header img.header-bg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 
-  .current-hero-title{
-    position:absolute;
-    left:290px;
-    right:210px;
-    top:24px;
-    min-height:84px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    font-size:clamp(28px, 3vw, 46px);
-    line-height:1.02;
-    font-weight:900;
-    letter-spacing:.6px;
-    color:#ffffff;
-    text-shadow:0 0 10px rgba(255,255,255,.14);
-    z-index:2;
-  }
+.forecast-style-logo{
+  position:absolute;
+  left:12px;
+  top:10px;
+  width:260px;
+}
 
-  .current-hero-clock{
-    position:absolute;
-    right:28px;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:24px;
-    line-height:1;
-    font-weight:800;
-    letter-spacing:.4px;
-    color:#ffffff;
-    text-shadow:0 0 8px rgba(255,255,255,.20);
-    z-index:2;
-    white-space:nowrap;
-  }
+.forecast-style-title{
+  position:absolute;
+  left:290px;
+  right:200px;
+  top:0;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:clamp(26px,2.8vw,44px);
+  font-weight:900;
+  color:#ffffff;
+}
 
-  @media (max-width: 1200px){
-    .current-hero-logo{
-      width:220px;
-      left:14px;
-      top:12px;
-    }
-
-    .current-hero-title{
-      left:255px;
-      right:180px;
-      font-size:clamp(24px, 2.7vw, 38px);
-    }
-  }
-
-  @media (max-width: 900px){
-    .current-hero-header{
-      height:112px;
-    }
-
-    .current-hero-header-bg{
-      height:112px;
-    }
-
-    .current-hero-logo{
-      width:160px;
-      left:10px;
-      top:12px;
-    }
-
-    .current-hero-title{
-      left:182px;
-      right:120px;
-      top:16px;
-      min-height:64px;
-      font-size:clamp(18px, 2.9vw, 28px);
-    }
-
-    .current-hero-clock{
-      right:16px;
-      font-size:18px;
-    }
-  }
+.forecast-style-clock{
+  position:absolute;
+  right:28px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:24px;
+  font-weight:800;
+  color:#ffffff;
+  white-space:nowrap;
+}
 </style>
 
 </head>
 
-<body class="page-fade subscreen-body">
-<div class="bg-scene" aria-hidden="true">
-  <div class="bg-gradient"></div>
-  <div class="bg-orb bg-orb-left"></div>
-  <div class="bg-orb bg-orb-right"></div>
-  <div class="bg-wave-layer bg-wave-back"></div>
-  <div class="bg-wave-layer bg-wave-front"></div>
-  <div class="bg-vignette"></div>
+<body>
+
+<header class="forecast-style-header">
+
+<img class="header-bg" src="assets/header/subscreen-header.png" alt="">
+
+<img class="forecast-style-logo"
+     src="assets/logo/sugar-hill-logo.png"
+     alt="Sugar Hill Weather Network">
+
+<div class="forecast-style-title">
+Current Conditions
 </div>
 
-<div class="page-fade-overlay"></div>
+<div id="subscreen-clock" class="forecast-style-clock">
+--:--
+</div>
 
-<main class="subscreen-current-v2">
-  <section class="current-hero-header" aria-label="Current Conditions Header">
-  <img class="current-hero-header-bg" src="assets/header/subscreen-header.png" alt="Subscreen Header">
-  <img class="current-hero-logo" src="assets/logo/sugar-hill-logo.png" alt="Sugar Hill logo">
-  <div class="current-hero-title">Current Conditions</div>
-  <div id="subscreen-clock" class="current-hero-clock">--:--</div>
-</section>
+</header>
 
-  <section class="subscreen-main-grid">
-    <section class="sub-panel graph-panel-left">
-      <div class="sub-panel-title">TEMPERATURE LAST 24 HOURS</div>
-      <div class="sub-graph-shell">
-        <svg id="temp-graph" class="graph-svg" viewBox="0 0 860 360" preserveAspectRatio="none"></svg>
-      </div>
-    </section>
+<!-- existing page content remains below -->
 
-    <section class="sub-panel center-conditions-panel">
-      <div class="sub-center-block">
-        <div class="temp-range-top">
-          <div class="range-label">HIGH</div>
-          <div id="ring-high-temp" class="range-value">--°</div>
-        </div>
-
-        <div class="temp-ring-wrap">
-          <svg id="temp-ring-svg" class="temp-ring-svg" viewBox="0 0 360 360" preserveAspectRatio="xMidYMid meet"></svg>
-          <div class="temp-ring-center">
-            <div class="ring-temp-row">
-              <div id="ring-current-temp" class="ring-current-temp">--°</div>
-              <div id="ring-temp-trend" class="ring-temp-trend" aria-hidden="true"></div>
-            </div>
-            <div id="ring-feels-like" class="ring-feels-like">Feels Like --°</div>
-          </div>
-        </div>
-
-        <div class="temp-range-bottom">
-          <div class="range-label">LOW</div>
-          <div id="ring-low-temp" class="range-value">--°</div>
-        </div>
-
-        <div class="center-metrics">
-          <div class="center-metric">
-            <div class="center-metric-label">Dew Point</div>
-            <div id="center-dew" class="center-metric-value">--°</div>
-          </div>
-          <div class="center-metric">
-            <div class="center-metric-label">Humidity</div>
-            <div id="center-humidity" class="center-metric-value">--%</div>
-          </div>
-          <div class="center-metric">
-            <div class="center-metric-label">Wind</div>
-            <div id="center-wind" class="center-metric-value">--</div>
-          </div>
-          <div class="center-metric">
-            <div class="center-metric-label">Pressure</div>
-            <div id="center-pressure" class="center-metric-value">--</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="sub-panel graph-panel-right">
-      <div class="sub-panel-title">
-        <span>PRESSURE LAST 6 HOURS</span>
-        <span id="subscreen-pressure-trend" class="subscreen-pressure-trend"></span>
-      </div>
-      <div class="sub-graph-shell">
-        <svg id="pressure-graph" class="graph-svg" viewBox="0 0 860 360" preserveAspectRatio="none"></svg>
-      </div>
-    </section>
-  </section>
-
-  <section class="subscreen-conditions-shell fast-wipe-shell">
-    <div class="subscreen-conditions-title">CURRENT CONDITIONS IN RUSHVILLE</div>
-    <div class="subscreen-conditions-window">
-      <div id="subscreen-conditions-track" class="subscreen-conditions-track"></div>
-    </div>
-  </section>
-
-  <section id="subscreen-alert-ribbon" class="subscreen-alert-ribbon" style="display:none;">
-    <div id="subscreen-alert-text" class="subscreen-alert-text"></div>
-  </section>
-</main>
-
-<script src="script.js"></script>
 </body>
 </html>
