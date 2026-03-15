@@ -1,95 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Sample Tornado Watch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
+  :root{
+    --bg1:#03142f;
+    --bg2:#021126;
+    --text:#eef6ff;
+    --muted:#bcd2e8;
+    --gold:#f4bf34;
+    --panel:rgba(5,17,38,0.92);
+    --line:rgba(255,255,255,0.16);
+  }
+  *{box-sizing:border-box}
+  html,body{
     margin:0;
-    background:#000;
-    color:white;
-    font-family:Arial, Helvetica, sans-serif;
-}
-.header{
-    text-align:center;
-    background:#111;
-    padding:20px 10px;
-    border-bottom:3px solid #ffd400;
-}
-.header h1{
-    margin:0;
-    color:#ffd400;
-    font-size:60px;
-}
-.header h2{
-    margin:5px 0 0 0;
-    font-size:32px;
-    font-weight:normal;
-}
-.container{
-    display:flex;
-    padding:20px;
-}
-.map{
-    flex:2;
-}
-.map img{
     width:100%;
-}
-.info{
-    flex:1;
-    padding-left:30px;
-}
-.section-title{
-    color:#ffd400;
-    font-size:30px;
-    margin-top:20px;
-}
-ul{
-    font-size:26px;
-}
-.sample{
-    position:absolute;
-    top:10px;
-    right:20px;
-    color:#ff4444;
-    font-size:20px;
-}
+    height:100%;
+    overflow:hidden;
+    font-family:Arial, Helvetica, sans-serif;
+    background:radial-gradient(circle at top, #0a2a56 0%, var(--bg1) 38%, var(--bg2) 100%);
+    color:var(--text);
+  }
+  .screen{
+    width:100%;
+    height:100%;
+    display:grid;
+    grid-template-rows:92px 1fr 30px;
+    gap:14px;
+    padding:12px 16px 10px;
+  }
+  .header{
+    display:grid;
+    grid-template-columns:220px 1fr 220px;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:linear-gradient(180deg, rgba(8,27,58,0.96), rgba(4,16,35,0.96));
+    box-shadow:0 10px 30px rgba(0,0,0,0.28);
+    padding:0 18px;
+  }
+  .sample-tag{
+    color:#ff8585;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:0.4px;
+  }
+  .title-wrap{
+    text-align:center;
+  }
+  .title{
+    color:var(--gold);
+    font-size:42px;
+    font-weight:900;
+    line-height:1;
+    letter-spacing:0.6px;
+  }
+  .subtitle{
+    margin-top:6px;
+    font-size:22px;
+    font-weight:700;
+  }
+  .clock{
+    text-align:right;
+    font-size:28px;
+    font-weight:700;
+  }
+  .content{
+    display:grid;
+    grid-template-columns:1.45fr 0.95fr;
+    gap:18px;
+    min-height:0;
+  }
+  .panel{
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:var(--panel);
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.28);
+  }
+  .map-panel{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px;
+  }
+  .map-panel img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:#0a1222;
+    border-radius:12px;
+  }
+  .info{
+    display:grid;
+    grid-template-rows:auto auto 1fr auto;
+    gap:14px;
+    padding:18px 20px;
+  }
+  .block-title{
+    color:var(--gold);
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:0.5px;
+    margin-bottom:6px;
+  }
+  .watch-text{
+    font-size:22px;
+    line-height:1.3;
+  }
+  .list{
+    margin:0;
+    padding-left:24px;
+    font-size:24px;
+    line-height:1.45;
+  }
+  .list li{ margin-bottom:10px; }
+  .note{
+    color:var(--muted);
+    font-size:18px;
+  }
+  .footer{
+    text-align:center;
+    color:#8aa5c6;
+    font-size:16px;
+    letter-spacing:0.4px;
+  }
 </style>
 </head>
-
 <body>
+<div class="screen">
+  <div class="header">
+    <div class="sample-tag">SAMPLE – WATCH DISPLAY TEST</div>
+    <div class="title-wrap">
+      <div class="title">TORNADO WATCH #50</div>
+      <div class="subtitle">Until 1:00 PM EDT</div>
+    </div>
+    <div id="watch-clock" class="clock">--:--</div>
+  </div>
 
-<div class="sample">SAMPLE – WATCH DISPLAY TEST</div>
+  <div class="content">
+    <div class="panel map-panel">
+      <img
+        src="https://www.spc.noaa.gov/products/watch/ww0050_overview_big.gif"
+        alt="SPC Tornado Watch 50 overview map">
+    </div>
 
-<div class="header">
-<h1>TORNADO WATCH #50</h1>
-<h2>Valid until 1:00 PM EDT</h2>
+    <div class="panel info">
+      <div>
+        <div class="block-title">WATCH AREA</div>
+        <div class="watch-text">Far Eastern and Southeastern Georgia</div>
+        <div class="watch-text">Much of Central and Southern South Carolina</div>
+      </div>
+
+      <div>
+        <div class="block-title">PRIMARY THREATS</div>
+        <ul class="list">
+          <li>A couple tornadoes possible</li>
+          <li>Isolated damaging wind gusts to 70 mph possible</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="block-title">SOURCE</div>
+        <div class="note">SPC Tornado Watch 50 sample layout for rotation testing.</div>
+      </div>
+
+      <div class="note">Not a live dashboard trigger. Prototype sample only.</div>
+    </div>
+  </div>
+
+  <div class="footer">Sample watch screen inserted into rotation for functional testing.</div>
 </div>
 
-<div class="container">
+<script>
+  const SCREEN_ROTATE_MS = 5000;
 
-<div class="map">
-<img src="watch50.png">
-</div>
+  function updateClock() {
+    const now = new Date();
+    const str = now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short"
+    });
+    document.getElementById("watch-clock").textContent = str;
+  }
 
-<div class="info">
+  updateClock();
+  window.setInterval(updateClock, 1000);
 
-<div class="section-title">AREA</div>
-<ul>
-<li>Central Georgia</li>
-<li>Central and Eastern South Carolina</li>
-</ul>
-
-<div class="section-title">THREATS POSSIBLE</div>
-<ul>
-<li>Several tornadoes possible</li>
-<li>Hail up to 2 inches</li>
-<li>Wind gusts to 70 mph</li>
-</ul>
-
-</div>
-</div>
-
+  window.setTimeout(() => {
+    window.location.href = "subscreen-forecast.html";
+  }, SCREEN_ROTATE_MS);
+</script>
 </body>
 </html>
