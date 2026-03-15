@@ -1659,26 +1659,17 @@ function renderSevenDaySummary(days) {
 
 async function loadForecastScreenData() {
   try {
-    const pointResp = await fetch(`https://api.weather.gov/points/${NWS_POINT_LAT},${NWS_POINT_LON}`, {
-      headers: { "Accept": "application/geo+json" },
+    const forecastResp = await fetch("http://localhost:3000/api/nws-forecast", {
       cache: "no-store"
     });
-    if (!pointResp.ok) throw new Error(`NWS points ${pointResp.status}`);
-
-    const pointJson = await pointResp.json();
-    const forecastUrl = pointJson?.properties?.forecast;
-    if (!forecastUrl) throw new Error("Missing NWS forecast URL");
-
-    const forecastResp = await fetch(forecastUrl, {
-      headers: { "Accept": "application/geo+json" },
-      cache: "no-store"
-    });
-    if (!forecastResp.ok) throw new Error(`NWS forecast ${forecastResp.status}`);
+    if (!forecastResp.ok) throw new Error(`Forecast proxy ${forecastResp.status}`);
 
     const forecastJson = await forecastResp.json();
-    const periods = Array.isArray(forecastJson?.properties?.periods)
-      ? forecastJson.properties.periods
-      : [];
+    const periods = Array.isArray(forecastJson?.periods)
+      ? forecastJson.periods
+      : Array.isArray(forecastJson?.properties?.periods)
+        ? forecastJson.properties.periods
+        : [];
 
     periods.slice(0, 4).forEach((period, index) => setForecastPeriod(index + 1, period));
     renderSevenDaySummary(buildSevenDaySummary(periods));
@@ -1693,12 +1684,11 @@ async function loadForecastScreenData() {
 function getNextScreenHref() {
   const path = window.location.pathname.toLowerCase();
 
-  if (path.endsWith("index.html") || path.endsWith("/prototypeb-main/") || path.endsWith("/")) return "subscreen-severe.html";
-  if (path.endsWith("subscreen-severe.html")) return "subscreen-current.html";
+  if (path.endsWith("index.html") || path.endsWith("/prototypeb-main/") || path.endsWith("/")) return "subscreen-current.html";
   if (path.endsWith("subscreen-current.html")) return "subscreen-regional-map.html";
   if (path.endsWith("subscreen-regional-map.html")) return "subscreen-forecast.html";
   if (path.endsWith("subscreen-forecast.html")) return "index.html";
-  return "subscreen-severe.html";
+  return "subscreen-current.html";
 }
 
 function schedulePageRotation() {
