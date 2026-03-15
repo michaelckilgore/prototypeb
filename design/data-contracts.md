@@ -1,108 +1,103 @@
 # Data Contracts
 
-This document defines the API responses used by the dashboard.
+## `/api/tempest/current`
 
-## /api/tempest/current
+Purpose: return normalized current local weather conditions.
 
-Source: Tempest weather station
+Representative fields:
+- `tempF`
+- `dewF`
+- `feelsLikeF`
+- `humidity`
+- `pressureIn`
+- `pressureMb`
+- `windSpeed`
+- `windGust`
+- `windDir`
+- `rainDailyIn`
+- `rainRateInHr`
+- `todayHighF`
+- `todayLowF`
+- `condition`
+- `updatedAt`
 
-Fields:
+## `/api/nws-forecast`
 
-- tempF
-- dewF
-- feelsLikeF
-- humidity
-- pressureIn
-- pressureMb
-- windSpeed
-- windGust
-- windDir
-- rainDailyIn
-- rainRateInHr
-- todayHighF
-- todayLowF
-- updatedAt
+Purpose: return forecast periods from NWS.
 
-## /api/nws-forecast
+Shape:
+- `periods` array
+- `updatedAt`
 
-Source: National Weather Service
+## `/api/nws-forecast-detailed`
 
-Returns:
-- periods[]
+Currently mirrors `/api/nws-forecast`.
 
-Each period includes:
+## `/api/nws-alerts`
 
-- name
-- temperature
-- temperatureUnit
-- shortForecast
-- detailedForecast
-- probabilityOfPrecipitation
+Purpose: return active alerts affecting the configured home point.
 
-## /api/nws-alerts
+Alert object fields currently returned:
+- `event`
+- `headline`
+- `description`
+- `area`
+- `expires`
+- `ends`
 
-Source: National Weather Service
+Envelope:
+- `alerts`
 
-Returns:
-- alerts[]
+## `/api/regional-temps`
 
-Fields:
+Purpose: return current temperatures for regional cities.
 
-- event
+Envelope fields:
+- `cities`
+- `updatedAt`
+- `asOfLabel`
+
+City object fields:
+- `name`
+- `tempF`
+- `x`
+- `y`
+
+## `/api/history/temperature`
+
+Current state: placeholder.
+
+Currently returns:
+- `points` as an empty array
+- `startOfDayMs`
+- `endOfDayMs`
+- `todayHighF`
+- `todayLowF`
+
+## `/api/history/pressure`
+
+Current state: placeholder.
+
+Currently returns:
+- `points` as an empty array
+- `startMs`
+- `endMs`
+
+## `/api/tempest/lightning`
+
+Current state: placeholder.
+
+Currently returns an empty object.
+
+## `/api/spc-watches`
+
+Purpose: return active severe watch numbers derived from NWS alerts.
+
+Current response shape:
+- `watches` array of numbers
+
+Future desired expansion:
+- watch type
 - headline
-- description
-- area
-- expires
-- ends
-
-## /api/regional-temps
-
-Returns:
-
-cities[]
-
-Each city:
-
-- name
-- tempF
-- x
-- y
-
-Used by:
-- regional map screen
-
-## /api/history/temperature
-
-Used for:
-- temperature graph
-
-Returns:
-
-- points[]
-- startOfDayMs
-- endOfDayMs
-- todayHighF
-- todayLowF
-
-## /api/history/pressure
-
-Used for:
-- pressure graph
-
-Returns:
-
-- points[]
-- startMs
-- endMs
-
-## /api/tempest/lightning
-
-Lightning strike information.
-
-Fields may include:
-
-- lastStrikeEpoch
-- lastStrikeDistanceMiles
-- minuteCount
-- hourCount
-- todayCount
+- areas affected
+- expiration time

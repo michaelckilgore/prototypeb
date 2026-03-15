@@ -1,87 +1,58 @@
 # Data Sources
 
-## Purpose
-Track the data sources used by the dashboard and how they are expected to be used.
+## Tempest Personal Weather Station
 
-## Current / Planned Sources
+Provider: WeatherFlow / Tempest
 
-### Tempest Personal Weather Station
-Purpose:
-- local station observations
-- wind
-- rain
-- pressure
-- lightning-related local data
+Current station ID:
+- `211052`
 
-Usage:
-- Current Conditions
-- station graphs
-- rainfall and wind modules
+Used for live local conditions including:
+- air temperature
+- dew point
+- feels like temperature
+- relative humidity
+- station pressure
+- wind speed
+- wind gust
+- wind direction
+- local daily precipitation
+- short-interval precipitation
 
-### National Weather Service (NWS)
-Primary endpoint:
-`https://api.weather.gov/alerts/active`
+Backend converts source metric values into:
+- Fahrenheit
+- miles per hour
+- inches of mercury
+- inches of rain
 
-Purpose:
-- warnings
-- watches from NWS when applicable
-- text alerts
-- future local severe-weather logic
+## National Weather Service API
 
-Important fields:
-- `id`
-- `properties.event`
-- `properties.areaDesc`
-- `properties.expires`
-- `properties.description`
+Base API:
+- `https://api.weather.gov`
 
-Usage:
-- `subscreen-warning.html`
-- severe alert logic
-- future local warning prioritization
+Used for:
+- point metadata
+- forecast retrieval
+- active alerts at home point
+- regional station observations
+- nationwide Tornado Watch and Severe Thunderstorm Watch detection
 
-### Storm Prediction Center (SPC)
-Watch source:
-`https://www.spc.noaa.gov/products/watch/`
+Headers currently used by backend:
+- `User-Agent: SugarHillDashboard/1.0`
+- `Accept: application/geo+json`
 
-Purpose:
-- national severe weather watches
-- future mesoscale discussion support
-- future outlook support
+## Home location
 
-Primary identifier:
-- SPC Watch Number
+Current configured home point:
+- latitude: `39.6092`
+- longitude: `-85.4464`
 
-Usage:
-- `subscreen-watch.html`
-- national severe-weather rotation entries
+## Regional observation stations
 
-### Forecast Data
-Current system already uses forecast-related data sources for:
-- extended forecast
-- daily periods
-- 7-day display
-
-## Prototype Severe Weather Rules
-
-For the initial severe-weather prototype:
-
-- always include the sample watch
-- include all active national SPC watches, capped at 10
-- include all active Indiana NWS warnings, capped at 10
-
-## Audio Trigger Rules
-
-Prototype sound logic:
-
-- new watch activation → light ding
-- new warning activation → stronger alert
-
-Only trigger on **newly activated** items, not on every screen rotation.
-
-## Known Issues To Address Later
-
-- local-area filtering is not yet polygon-based
-- SPC feeds may later move to structured JSON ingestion
-- radar and mapping sources are not yet formalized in this doc
-- severe-weather data priority rules still need later refinement
+Current station list:
+- KIND — Indianapolis
+- KMIE — Muncie
+- KGEZ — Shelbyville
+- KBAK — Columbus
+- KBMG — Bloomington
+- KLUK — Cincinnati
