@@ -1,0 +1,2 @@
+Delete this file from the repo:
+- subscreen-watch-sample.html

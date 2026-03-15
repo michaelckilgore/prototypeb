@@ -1,26 +1,30 @@
+# Alerts and Watch Architecture
 
-# Alert System Architecture
+## Watch Screen Runtime Rules
 
-Two completely separate alert layers must exist.
+- Use `subscreen-watch.html` for both live and test watch display.
+- The separate sample watch page has been retired.
+- If an active watch exists, the watch screen shows the current live watch.
+- If no active watch exists, the watch screen shows the most recent cached watch with a very clear expired state.
+- The expired state must be labeled exactly:
+  - `EXPIRED · NO LONGER VALID`
+- This expired display is for testing and layout review only.
 
-LOCAL ALERT LAYER
-- Used by main dashboard
-- Shows alerts for Sugar Hill location only
+## SPC Map Handling
 
-SEVERE WEATHER MODULE
-- Used by rotating severe weather screens
-- Indiana Tornado Warnings
-- Indiana Severe Thunderstorm Warnings
-- National SPC Watches
+- Preferred map image is the SPC watch overview graphic.
+- If the SPC map image is not yet available, show the text fallback:
+  - `Storm Prediction Center Map`
+  - `Will Be Available Shortly`
+- Retry failed SPC map loads automatically.
 
-These must never share the same filtering logic.
+## Area Text Policy
 
+- Default watch screen area text should use the SPC regional wording such as `PORTIONS OF CENTRAL ILLINOIS`.
+- County lists are not the default watch-screen presentation because counties already appear on the SPC map.
+- County-based watch text can be revisited later for Indiana-specific watches if needed.
 
-## Watch map fallback
+## UI Preference
 
-When a new SPC watch is issued, the watch number and text can appear before the SPC overview map is published. The watch screen should keep the map frame visible and show centered fallback text instead of a blank or broken image:
-
-- Storm Prediction Center Map
-- Will Be Available Shortly
-
-The client should retry the SPC map URL every 30 seconds until the map loads, then fade the map in without changing the panel layout.
+- Long design-doc text should not be streamed into the chat window.
+- Repo-ready `.md` files in a ZIP are preferred for design-doc updates.
