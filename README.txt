@@ -1,8 +1,11 @@
-Replace these two files:
+Replace these two full files only:
 - script.js
 - subscreen-watch.html
 
-What this fixes:
-- removes subscreen-watch-sample.html from rotation
-- rotates regional map -> watch -> forecast
-- watch page now fetches from http://localhost:3000/api/spc-watches
+This restores your full original script.js logic and changes only the rotation path:
+regional map -> watch -> forecast
+
+The watch page now works with the current live API format:
+{ "watches": [ ... ] }
+
+No backend changes required.

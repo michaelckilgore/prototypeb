@@ -1,148 +1,340 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SPC Watch</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Screen</title>
+  <style>
+    :root {
+      --bg1: #07111f;
+      --bg2: #0d2039;
+      --gold: #f2cf62;
+      --white: #f6f7fb;
+      --red1: #ff3a3a;
+      --red2: #ca0000;
+      --red3: #880000;
+    }
 
-<style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #04101f;
+      color: var(--white);
+    }
 
-body{
-    margin:0;
-    background:#000;
-    color:#fff;
-    font-family:Arial,Helvetica,sans-serif;
-    overflow:hidden;
-}
+    body {
+      background:
+        radial-gradient(circle at 50% 80%, rgba(255,255,255,.08), transparent 26%),
+        linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.35)),
+        linear-gradient(180deg, #12253f 0%, #0a1830 45%, #081221 100%);
+    }
 
-#header{
-    position:absolute;
-    top:12px;
-    left:20px;
-    font-size:22px;
-    font-weight:bold;
-}
+    #screen {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      padding: 12px 18px 10px;
+    }
 
-#clock{
-    position:absolute;
-    top:12px;
-    right:20px;
-    font-size:18px;
-}
+    #layout-build {
+      position: absolute;
+      top: 1px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1;
+      color: rgba(255,255,255,.34);
+      letter-spacing: .8px;
+      pointer-events: none;
+      z-index: 20;
+    }
 
-#watchNumber{
-    position:absolute;
-    top:60px;
-    left:20px;
-    font-size:38px;
-    font-weight:bold;
-}
+    .topbar {
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      top: 12px;
+      height: 106px;
+      display: grid;
+      grid-template-columns: 290px 1fr 270px;
+      gap: 14px;
+      align-items: stretch;
+    }
 
-#mapContainer{
-    position:absolute;
-    top:120px;
-    left:0;
-    right:0;
-    bottom:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
+    .logo-box,
+    .clock-box,
+    .header-box,
+    .footer-box {
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(8,20,40,.96), rgba(2,10,24,.96));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 25px rgba(0,0,0,.35);
+    }
 
-#mapContainer img{
-    max-width:95%;
-    max-height:95%;
-}
+    .logo-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
 
-#pending{
-    font-size:28px;
-    text-align:center;
-    line-height:1.4;
-}
+    .logo-box img {
+      max-width: 88%;
+      max-height: 78px;
+      display: block;
+      object-fit: contain;
+    }
 
-</style>
+    .header-box {
+      background: linear-gradient(180deg, var(--red1) 0%, var(--red2) 50%, var(--red3) 100%);
+      box-shadow: inset 0 2px rgba(255,255,255,.2), 0 10px 25px rgba(0,0,0,.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 28px;
+    }
+
+    #watch-header-text {
+      font-size: 66px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 4px 10px rgba(0,0,0,.28);
+      white-space: nowrap;
+    }
+
+    .clock-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 45px;
+      font-weight: 900;
+      letter-spacing: .5px;
+    }
+
+    .content {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 130px;
+      bottom: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .map-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 18px;
+      background: transparent;
+    }
+
+    .map-inner {
+      position: absolute;
+      inset: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #watch-map {
+      max-width: 100%;
+      max-height: 100%;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,.52));
+      opacity: 0;
+      transition: opacity .5s ease;
+      display: none;
+    }
+
+    #watch-map.loaded {
+      opacity: 1;
+    }
+
+    #map-fallback {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+      color: var(--white);
+      line-height: 1.35;
+      text-shadow: 0 2px 8px rgba(0,0,0,.4);
+      font-size: 34px;
+      font-weight: 700;
+      white-space: pre-line;
+    }
+
+    .footer-box {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 10px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: rgba(255,255,255,.9);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1600px) {
+      #watch-header-text { font-size: 56px; }
+      .clock-box { font-size: 38px; }
+    }
+  </style>
 </head>
-
 <body>
+  <div id="screen">
+    <div id="layout-build">Layout build: 2026-03-15 watch-v5</div>
 
-<div id="header">SPC WATCH</div>
-<div id="clock"></div>
-<div id="watchNumber">WATCH #--</div>
+    <div class="topbar">
+      <div class="logo-box">
+        <img id="logo-image" src="assets/logo/logo.png" alt="Sugar Hill Weather logo" />
+      </div>
+      <div class="header-box">
+        <div id="watch-header-text">SPC WATCH #--</div>
+      </div>
+      <div class="clock-box" id="clock-box">--:-- --</div>
+    </div>
 
-<div id="mapContainer">
-<div id="pending">Loading Watch Data…</div>
-</div>
+    <div class="content">
+      <div class="map-wrap">
+        <div class="map-inner">
+          <img id="watch-map" alt="Storm Prediction Center watch map" />
+          <div id="map-fallback">Storm Prediction Center Map
+Will Be Available Shortly</div>
+        </div>
+      </div>
+    </div>
 
-<script>
+    <div class="footer-box" id="footer-box">Watch display returns to the forecast shortly.</div>
+  </div>
 
-const ROTATE_MS = 5000;
+  <script>
+    const LOCAL_TZ = 'America/Indiana/Indianapolis';
+    const API_URL = 'http://localhost:3000/api/spc-watches';
+    const MAP_RETRY_MS = 30000;
+    const PAGE_ROTATE_MS = 5000;
+    let currentMapUrl = '';
+    let retryTimer = null;
 
-function updateClock(){
-    const now = new Date();
-    document.getElementById("clock").textContent =
-        now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-}
-
-setInterval(updateClock,1000);
-updateClock();
-
-async function loadWatch(){
-
-    try{
-
-        const r = await fetch("http://localhost:3000/api/spc-watches");
-        const j = await r.json();
-
-        if(!j.watches || j.watches.length === 0){
-            document.getElementById("pending").textContent =
-                "No Active SPC Watches";
-            return;
-        }
-
-        const watch = j.watches[0];
-
-        document.getElementById("watchNumber").textContent =
-            "WATCH #" + watch;
-
-        const img = document.createElement("img");
-
-        img.src = "https://www.spc.noaa.gov/products/watch/wou" + watch + "_radar.gif";
-
-        img.onload = () => {
-            const c = document.getElementById("mapContainer");
-            c.innerHTML = "";
-            c.appendChild(img);
-        };
-
-        img.onerror = () => {
-            document.getElementById("pending").textContent =
-                "Storm Prediction Center Map Will Be Available Shortly";
-        };
-
-    }catch(e){
-
-        document.getElementById("pending").textContent =
-            "Unable to Load Watch Data";
-
+    function formatClock() {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: LOCAL_TZ,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZoneName: 'short'
+      }).format(new Date());
     }
 
-}
-
-loadWatch();
-
-function rotate(){
-
-    const path = window.location.pathname.toLowerCase();
-
-    if(path.endsWith("subscreen-watch.html")){
-        window.location.href = "subscreen-forecast.html";
+    function showMapFallback(message) {
+      const fallback = document.getElementById('map-fallback');
+      fallback.textContent = message || 'Storm Prediction Center Map\nWill Be Available Shortly';
+      fallback.style.display = 'flex';
+      const map = document.getElementById('watch-map');
+      map.style.display = 'none';
+      map.classList.remove('loaded');
     }
 
-}
+    function paddedWatchNumber(n) {
+      const num = Number(n);
+      if (!Number.isFinite(num)) return null;
+      return String(num).padStart(4, '0');
+    }
 
-setTimeout(rotate, ROTATE_MS);
+    function buildMapUrl(watchNumber) {
+      const padded = paddedWatchNumber(watchNumber);
+      if (!padded) return '';
+      return `https://www.spc.noaa.gov/products/watch/ww${padded}.png`;
+    }
 
-</script>
+    function showMap(url) {
+      const map = document.getElementById('watch-map');
+      const fallback = document.getElementById('map-fallback');
+      if (!url) {
+        showMapFallback();
+        return;
+      }
+      currentMapUrl = url;
+      map.onload = () => {
+        fallback.style.display = 'none';
+        map.style.display = 'block';
+        requestAnimationFrame(() => map.classList.add('loaded'));
+      };
+      map.onerror = () => {
+        showMapFallback('Storm Prediction Center Map\nWill Be Available Shortly');
+        scheduleMapRetry();
+      };
+      map.classList.remove('loaded');
+      map.style.display = 'none';
+      fallback.style.display = 'flex';
+      map.src = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+    }
 
+    function scheduleMapRetry() {
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(() => {
+        if (currentMapUrl) showMap(currentMapUrl);
+      }, MAP_RETRY_MS);
+    }
+
+    function renderFromWatchList(payload) {
+      const watches = Array.isArray(payload?.watches) ? payload.watches : [];
+      if (!watches.length) {
+        document.getElementById('watch-header-text').textContent = 'SPC WATCH #--';
+        showMapFallback('No Active SPC Watches');
+        return;
+      }
+
+      const watchNumber = watches[0];
+      document.getElementById('watch-header-text').textContent = `SPC WATCH #${watchNumber}`;
+      showMap(buildMapUrl(watchNumber));
+    }
+
+    async function loadWatch() {
+      try {
+        const res = await fetch(API_URL, { cache: 'no-store' });
+        const data = await res.json();
+        renderFromWatchList(data);
+      } catch (err) {
+        showMapFallback('Unable to Load Watch Data');
+      }
+    }
+
+    function rotateOffPage() {
+      document.body.classList.add('page-fade-out');
+      setTimeout(() => {
+        window.location.href = 'subscreen-forecast.html';
+      }, 250);
+    }
+
+    setInterval(() => {
+      document.getElementById('clock-box').textContent = formatClock();
+    }, 1000);
+    document.getElementById('clock-box').textContent = formatClock();
+    loadWatch();
+    setTimeout(rotateOffPage, PAGE_ROTATE_MS);
+  </script>
 </body>
 </html>
