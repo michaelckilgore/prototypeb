@@ -1,30 +1,18 @@
-# Alerts and Watch Architecture
+# Watch Screen Notes
 
-## Watch Screen Runtime Rules
+## Current watch-screen rules
 
-- Use `subscreen-watch.html` for both live and test watch display.
-- The separate sample watch page has been retired.
-- If an active watch exists, the watch screen shows the current live watch.
-- If no active watch exists, the watch screen shows the most recent cached watch with a very clear expired state.
-- The expired state must be labeled exactly:
-  - `EXPIRED · NO LONGER VALID`
-- This expired display is for testing and layout review only.
-
-## SPC Map Handling
-
-- Preferred map image is the SPC watch overview graphic.
-- If the SPC map image is not yet available, show the text fallback:
+- The live watch page is also used for testing when no active watch exists.
+- If no active watch exists, the most recent cached watch is shown in an expired state.
+- The expired state must display a bold `EXPIRED · NO LONGER VALID` label.
+- The map fallback message is:
   - `Storm Prediction Center Map`
   - `Will Be Available Shortly`
-- Retry failed SPC map loads automatically.
-
-## Area Text Policy
-
-- Default watch screen area text should use the SPC regional wording such as `PORTIONS OF CENTRAL ILLINOIS`.
-- County lists are not the default watch-screen presentation because counties already appear on the SPC map.
-- County-based watch text can be revisited later for Indiana-specific watches if needed.
-
-## UI Preference
-
-- Long design-doc text should not be streamed into the chat window.
-- Repo-ready `.md` files in a ZIP are preferred for design-doc updates.
+- The watch timing block shows two lines:
+  - local dashboard time (EDT/EST for Sugar Hill)
+  - official SPC time line from the watch text
+- `PORTIONS OF` should come from SPC watch text regional wording, not county parsing.
+- County names are already shown on the SPC map and should not normally be duplicated in the right panel.
+- The `PORTIONS OF` text is intentionally smaller than the primary-threat text because regional wording can be long.
+- A very small layout-build label is shown at the top center during development to confirm the current page is loaded.
+- Long design-doc text should not be streamed in chat when repo-ready `.md` files can be provided instead.
