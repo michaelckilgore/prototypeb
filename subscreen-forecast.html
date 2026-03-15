@@ -759,17 +759,8 @@
       n.style.display = 'block';
     }
 
-    const SCREEN_ROTATE_MS = 5000;
-
-    function scheduleRotation() {
-      window.setTimeout(() => {
-        window.location.href = 'index.html';
-      }, SCREEN_ROTATE_MS);
-    }
-
     async function init() {
       startClock();
-      scheduleRotation();
       try {
         const [forecast, current, alerts] = await Promise.all([
           fetchJson('/api/nws-forecast-detailed'),
